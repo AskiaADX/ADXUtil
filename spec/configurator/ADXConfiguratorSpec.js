@@ -1,25 +1,25 @@
-describe('ADCConfigurator', function () {
+describe('ADXConfigurator', function () {
 
     var fs = require('fs'),
         path = require("path"),
         et = require('elementtree'),
         ElementTree = et.ElementTree,
         common,
-        ADCConfigurator,
+        ADXConfigurator,
         spies = {},
         errMsg,
         successMsg;
 
     beforeEach(function () {
         // Clean the cache, obtain a fresh instance of the object each time
-        var adcConfigKey = require.resolve('../../app/configurator/ADCConfigurator.js'),
+        var adxConfigKey = require.resolve('../../app/configurator/ADXConfigurator.js'),
             commonKey = require.resolve('../../app/common/common.js');
 
         delete require.cache[commonKey];
         common = require('../../app/common/common.js');
 
-        delete require.cache[adcConfigKey];
-        ADCConfigurator = require('../../app/configurator/ADCConfigurator.js').Configurator;
+        delete require.cache[adxConfigKey];
+        ADXConfigurator = require('../../app/configurator/ADXConfigurator.js').Configurator;
 
         // Messages
         errMsg = common.messages.error;
@@ -57,14 +57,14 @@ describe('ADCConfigurator', function () {
         it("should throw an exception when the `path` argument of the constructor is a falsy", function () {
 
             expect(function () {
-                var configurator = new ADCConfigurator();
+                var configurator = new ADXConfigurator();
             }).toThrow(errMsg.invalidPathArg);
 
         });
 
         it("should set the property #path to the object instance", function () {
 
-            var configurator = new ADCConfigurator("my/path");
+            var configurator = new ADXConfigurator("my/path");
             expect(configurator.path).toEqual("my/path");
         });
 
@@ -77,7 +77,7 @@ describe('ADCConfigurator', function () {
                 cb(new Error(errMsg.noSuchFileOrDirectory));
             });
             runSync(function (done) {
-                var configurator = new ADCConfigurator("an/invalid/path");
+                var configurator = new ADXConfigurator("an/invalid/path");
                 configurator.load(function (err) {
                     expect(err.message).toEqual(errMsg.noSuchFileOrDirectory);
                     done();
@@ -90,7 +90,7 @@ describe('ADCConfigurator', function () {
                 cb(null, true);
             });
             runSync(function (done) {
-                var configurator = new ADCConfigurator("a/valid/path");
+                var configurator = new ADXConfigurator("a/valid/path");
 
                 spies.fs.readFile.andCallFake(function (filepath) {
                     expect(filepath).toEqual(path.join("a/valid/path", "config.xml"));
@@ -102,8 +102,8 @@ describe('ADCConfigurator', function () {
             });
         });
 
-        it("should return an error when it could not config.xml read the file", function () {
-            var theError = new Error("A fake errror");
+        it("should return an error when it could not read the config.xml file", function () {
+            var theError = new Error("A fake error");
             spies.dirExists.andCallFake(function (p, cb) {
                 cb(null, true);
             });
@@ -111,7 +111,7 @@ describe('ADCConfigurator', function () {
                 cb(theError, null);
             });
             runSync(function (done) {
-                var configurator = new ADCConfigurator("an/invalid/path");
+                var configurator = new ADXConfigurator("an/invalid/path");
                 configurator.load(function (err) {
                     expect(err).toBe(theError);
                     done();
@@ -127,7 +127,7 @@ describe('ADCConfigurator', function () {
                 cb(null, '<xml></xml>');
             });
             runSync(function (done) {
-                var configurator = new ADCConfigurator("an/valid/path");
+                var configurator = new ADXConfigurator("an/valid/path");
                 configurator.load(function () {
                     expect(configurator.xmldoc instanceof ElementTree).toBe(true);
                     done();
@@ -144,7 +144,7 @@ describe('ADCConfigurator', function () {
                 cb(null, '<control><info><guid>the-guid</guid><name>the-name</name></info></control>');
             });
             runSync(function (done) {
-                var configurator = new ADCConfigurator("an/valid/path");
+                var configurator = new ADXConfigurator("an/valid/path");
                 configurator.load(function () {
                     expect(configurator.info).toBeDefined();
                     done();
@@ -176,7 +176,7 @@ describe('ADCConfigurator', function () {
 
         it("should reset the configuration with XML", function () {
             runSync(function (done) {
-                var configurator = new ADCConfigurator("an/valid/path");
+                var configurator = new ADXConfigurator("an/valid/path");
                 configurator.load(function () {
                     configurator.fromXml('<control>\n  <info>\n  <name>new-name</name>\n  <guid>new-guid</guid>\n  ' +
                         '<version>new-version</version>\n  <date>new-date</date>\n  <description><![CDATA[new-description]]></description>\n  ' +
@@ -340,7 +340,7 @@ describe('ADCConfigurator', function () {
 
         it("should return the configuration as XML", function () {
             runSync(function (done) {
-                var configurator = new ADCConfigurator("an/valid/path");
+                var configurator = new ADXConfigurator("an/valid/path");
                 configurator.load(function () {
                     var result = configurator.toXml();
                     expect(result ).toEqual('<?xml version="1.0" encoding="utf-8"?>'+
@@ -580,7 +580,7 @@ describe('ADCConfigurator', function () {
 
         it("should return the configuration as object", function () {
             runSync(function (done) {
-                var configurator = new ADCConfigurator("an/valid/path");
+                var configurator = new ADXConfigurator("an/valid/path");
                 configurator.load(function () {
                     var result = configurator.get();
                     expect(result ).toEqual({
@@ -955,7 +955,7 @@ describe('ADCConfigurator', function () {
 
         it("should set the configuration using the object in arg", function () {
             runSync(function (done) {
-                var configurator = new ADCConfigurator("an/valid/path");
+                var configurator = new ADXConfigurator("an/valid/path");
                 configurator.load(function () {
                     configurator.set({
                         info : {
@@ -1495,7 +1495,7 @@ describe('ADCConfigurator', function () {
             it("should return the ADC information as plain object", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         var result = configurator.info.get();
                         expect(result ).toEqual({
@@ -1539,7 +1539,7 @@ describe('ADCConfigurator', function () {
             it("should set the ADC information with plain object", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         configurator.info.set({
                             name : "new-name",
@@ -1614,7 +1614,7 @@ describe('ADCConfigurator', function () {
                     cb(null, '<control></control>');
                 });
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         configurator.info.set({
                             name : "new-name",
@@ -1688,7 +1688,7 @@ describe('ADCConfigurator', function () {
                 it("should return the value from the xml node", function () {
 
                     runSync(function (done) {
-                        var configurator = new ADCConfigurator("an/valid/path");
+                        var configurator = new ADXConfigurator("an/valid/path");
                         configurator.load(function () {
                             var result = configurator.info[propName]();
                             expect(result ).toEqual('the-' + propName);
@@ -1699,7 +1699,7 @@ describe('ADCConfigurator', function () {
 
                 it("should set the value", function () {
                     runSync(function (done) {
-                        var configurator = new ADCConfigurator("an/valid/path");
+                        var configurator = new ADXConfigurator("an/valid/path");
                         configurator.load(function () {
                             configurator.info[propName]('new-' + propName);
                             var result = configurator.info[propName]();
@@ -1714,7 +1714,7 @@ describe('ADCConfigurator', function () {
                         cb(null, '<control></control>');
                     });
                     runSync(function (done) {
-                        var configurator = new ADCConfigurator("an/valid/path");
+                        var configurator = new ADXConfigurator("an/valid/path");
                         configurator.load(function () {
                             configurator.info[propName]('new-' + propName);
                             var result = configurator.info[propName]();
@@ -1734,7 +1734,7 @@ describe('ADCConfigurator', function () {
             it("should return the value from the xml node", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         var result = configurator.info.style();
                         expect(result ).toEqual({ width : 200, height : 400});
@@ -1745,7 +1745,7 @@ describe('ADCConfigurator', function () {
 
             it("should set the value", function () {
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         configurator.info.style({width : 300, height : 500});
                         var result = configurator.info.style();
@@ -1760,7 +1760,7 @@ describe('ADCConfigurator', function () {
             it("should return the value from the xml node", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         var result = configurator.info.categories();
                         expect(result ).toEqual(['cat-1', 'cat-2']);
@@ -1771,7 +1771,7 @@ describe('ADCConfigurator', function () {
 
             it("should set the value", function () {
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         configurator.info.categories(['new-1', 'new-2', 'new-3']);
                         var result = configurator.info.categories();
@@ -1786,7 +1786,7 @@ describe('ADCConfigurator', function () {
             it("should return the value from the xml node", function () {
 
                  runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         var result = configurator.info.constraints();
                         expect(result ).toEqual({
@@ -1811,7 +1811,7 @@ describe('ADCConfigurator', function () {
 
             it("should set the value", function () {
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         configurator.info.constraints({
                             questions : {
@@ -1918,7 +1918,7 @@ describe('ADCConfigurator', function () {
                             it("should return the value from the xml attribute ('" + att.name + "')", function () {
 
                                 runSync(function (done) {
-                                    var configurator = new ADCConfigurator("an/valid/path");
+                                    var configurator = new ADXConfigurator("an/valid/path");
                                     configurator.load(function () {
                                         var result = configurator.info.constraint(target.name, att.name);
                                         expect(result).toEqual(att.value);
@@ -1929,7 +1929,7 @@ describe('ADCConfigurator', function () {
 
                             it("should set the value ('" + att.name + "')", function () {
                                 runSync(function (done) {
-                                    var configurator = new ADCConfigurator("an/valid/path");
+                                    var configurator = new ADXConfigurator("an/valid/path");
                                     configurator.load(function () {
                                         configurator.info.constraint(target.name, att.name, att.newValue);
                                         var result = configurator.info.constraint(target.name, att.name);
@@ -1952,7 +1952,7 @@ describe('ADCConfigurator', function () {
             it("should return the ADC information as Xml String", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         var result = configurator.info.toXml();
                         expect(result ).toEqual('  <info>' +
@@ -2043,7 +2043,7 @@ describe('ADCConfigurator', function () {
             it("should return the id of the default output", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         var result = configurator.outputs.defaultOutput();
                         expect(result ).toEqual('main');
@@ -2054,7 +2054,7 @@ describe('ADCConfigurator', function () {
 
             it("should set the id of the default output", function () {
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         configurator.outputs.defaultOutput('second');
                         var result = configurator.outputs.defaultOutput();
@@ -2080,7 +2080,7 @@ describe('ADCConfigurator', function () {
                         '</control>');
                 });
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         configurator.outputs.defaultOutput('second');
                         var result = configurator.outputs.defaultOutput();
@@ -2095,7 +2095,7 @@ describe('ADCConfigurator', function () {
             it("should return an object with the keys: `defaultOutput` (a string) and `outputs` (an array)", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         var result = configurator.outputs.get();
                         expect(typeof result.defaultOutput).toEqual('string');
@@ -2108,7 +2108,7 @@ describe('ADCConfigurator', function () {
             it("should return an object with the keys: `defaultOutput` set with the id of the default output", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         var result = configurator.outputs.get();
                         expect(result.defaultOutput).toEqual('main');
@@ -2120,7 +2120,7 @@ describe('ADCConfigurator', function () {
             it("should return an object with the keys: `outputs` which contains an array of output object", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         var result = configurator.outputs.get();
                         expect(result.outputs).toEqual([
@@ -2215,7 +2215,7 @@ describe('ADCConfigurator', function () {
             it("should set the ADC outputs with plain object", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         configurator.outputs.set({
                             defaultOutput : "new-second",
@@ -2410,7 +2410,7 @@ describe('ADCConfigurator', function () {
                         '</control>');
                 });
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         configurator.outputs.set({
                             defaultOutput : "new-second",
@@ -2594,7 +2594,7 @@ describe('ADCConfigurator', function () {
             it("should return the ADC outputs as Xml String", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         var result = configurator.outputs.toXml();
                         expect(result).toEqual('  <outputs defaultOutput="main">' +
@@ -2752,7 +2752,7 @@ describe('ADCConfigurator', function () {
             it("should return an object with the keys: `categories` (an array)", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         var result = configurator.properties.get();
                         expect(Array.isArray(result.categories)).toBe(true);
@@ -2763,7 +2763,7 @@ describe('ADCConfigurator', function () {
 
             it("should return an object which contains the definition of the categories / properties", function () {
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         var result = configurator.properties.get();
                         expect(result).toEqual({
@@ -2910,7 +2910,7 @@ describe('ADCConfigurator', function () {
             it("should set the ADC properties with plain object", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         configurator.properties.set({
                             categories : [{
@@ -3240,7 +3240,7 @@ describe('ADCConfigurator', function () {
                         '</control>');
                 });
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         configurator.properties.set({
                             categories : [{
@@ -3523,7 +3523,7 @@ describe('ADCConfigurator', function () {
         describe("#toXml", function () {
             it("should return the ADC properties as Xml String", function () {
                 runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("an/valid/path");
                     configurator.load(function () {
                         var result = configurator.properties.toXml();
                         expect(result).toEqual('  <properties>' +
@@ -3705,7 +3705,7 @@ describe('ADCConfigurator', function () {
 
         it("should transform the current configurator to XML and write it into the config file", function () {
             runSync(function (done) {
-                var configurator = new ADCConfigurator("an/valid/path");
+                var configurator = new ADXConfigurator("an/valid/path");
                 spyOn(configurator, 'toXml').andReturn('<thexml />');
                 spies.fs.writeFile.andCallFake(function (filePath, content, options) {
                     expect(filePath).toBe(path.join('an/valid/path', common.CONFIG_FILE_NAME));
@@ -3721,7 +3721,7 @@ describe('ADCConfigurator', function () {
         });
 
         it("should reload the configurator when it was successfully saved", function () {
-            var configurator = new ADCConfigurator("an/valid/path");
+            var configurator = new ADXConfigurator("an/valid/path");
             spyOn(configurator, 'toXml').andReturn('<thexml />');
             spies.fs.writeFile.andCallFake(function (filePath, content, options, cb) {
                 cb(null);
@@ -3736,7 +3736,7 @@ describe('ADCConfigurator', function () {
 
 
         it("should not reload the configurator when an error occurred while writing the the file", function () {
-            var configurator = new ADCConfigurator("an/valid/path");
+            var configurator = new ADXConfigurator("an/valid/path");
             var theError = new Error('An error');
             var resultError;
             spyOn(configurator, 'toXml').andReturn('<thexml />');
