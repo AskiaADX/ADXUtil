@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<control xmlns="http://www.askia.com/ADCSchema"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.askia.com/ADCSchema http://www.askia.com/Downloads/dev/schemas/adc2.0/Config.xsd"
+         version="2.0.0"
+         askiaCompat="5.3.3">
+  <info>
+    <name>{{ADCName}}</name>
+    <guid>{{ADCGuid}}</guid>
+    <version>1.0.0</version>
+    <date>2000-01-01</date>
+    <description>
+      <![CDATA[{{ADCDescription}}]]>
+    </description>
+    <author>
+      <![CDATA[{{ADCAuthor}}]]>
+    </author>
+    <company>{{ADCAuthor.Company}}</company>
+    <helpURL></helpURL>
+    <site>{{ADCAuthor.Website}}</site>
+    <categories>
+      <category>General</category>
+    </categories>
+    <style width="400" height="300"/>
+    <constraints>
+      <constraint on="questions" chapter="false" single="false" multiple="false" numeric="false" date="false"
+                  open="false" requireParentLoop="false" />
+      <constraint on="controls" responseblock="true" label="false" textbox="false" />
+    </constraints>
+  </info>
+
+  <outputs defaultOutput="default">
+    <output id="default">
+      <description><![CDATA[Default output]]></description>
+      <content fileName="default.html" type="html" mode="dynamic" position="placeholder" />
+    </output>
+  </outputs>
+
+</control>

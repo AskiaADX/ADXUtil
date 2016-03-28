@@ -1,0 +1,41 @@
+{
+  "name": "adxutil",
+  "version": "2.0.0",
+  "description": "Utilities tools for Askia Design eXtension",
+  "main": "./app/ADXUtilAPI.js",
+  "dependencies": {
+    "cli-color": "^0.2.2",
+    "commander": "^1.1.1",
+    "elementtree": "^0.1.6",
+    "jszip": "^2.2.2",
+    "node-uuid": "^1.4.0",
+    "wrench": "^1.5.1",
+    "xml2js": "^0.2.7"
+  },
+  "bin": {
+    "ADXUtil": "./app/ADXUtil.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AskiaADX/ADXUtil.git"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-shell": "^0.4.2",
+    "jasmine-node": "^1.14.5"
+  },
+  "scripts": {
+    "test": "jasmine-node spec/"
+  },
+  "keywords": [
+    "Askia",
+    "Design",
+    "Control",
+    "Extension",
+    "ADC",
+    "ADP",
+    "ADX"
+  ],
+  "author": "Mamadou Sy <mamadou@askia.com>",
+  "license": "ISC"
+}
