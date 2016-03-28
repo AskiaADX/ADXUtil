@@ -113,7 +113,8 @@ exports.messages = {
         noFixtureDefinedForShow : "Please specify the name of the fixture you want to use, using the option -f or --fixture.",
 
         // Configurator
-        invalidPathArg          : "Invalid `path` argument"
+        invalidPathArg          : "Invalid `path` argument",
+        invalidConfigFile       : "Invalid `config.xml` file"
     },
     warning : {
         // Validator

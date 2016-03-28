@@ -119,7 +119,7 @@ describe('ADXConfigurator', function () {
             });
         });
 
-        it("should initialize the #xmldoc property with the XML parse result", function () {
+        it("should call the #fromXml() method with the content of the config.xml file", function () {
             spies.dirExists.andCallFake(function (p, cb) {
                 cb(null, true);
             });
@@ -127,31 +127,15 @@ describe('ADXConfigurator', function () {
                 cb(null, '<xml></xml>');
             });
             runSync(function (done) {
-                var configurator = new ADXConfigurator("an/valid/path");
-                configurator.load(function () {
-                    expect(configurator.xmldoc instanceof ElementTree).toBe(true);
+                var configurator = new ADXConfigurator("an/invalid/path");
+                var spyFromXml = spyOn(configurator, 'fromXml');
+                configurator.load(function (err) {
+                    expect(spyFromXml).toHaveBeenCalledWith('<xml></xml>');
                     done();
                 });
             });
-
         });
 
-        it("should initialize the #info property with an object to manage the ADC info", function () {
-            spies.dirExists.andCallFake(function (p, cb) {
-                cb(null, true);
-            });
-            spies.fs.readFile.andCallFake(function (p, cb) {
-                cb(null, '<control><info><guid>the-guid</guid><name>the-name</name></info></control>');
-            });
-            runSync(function (done) {
-                var configurator = new ADXConfigurator("an/valid/path");
-                configurator.load(function () {
-                    expect(configurator.info).toBeDefined();
-                    done();
-                });
-            });
-
-        });
     });
 
     describe("#fromXml", function () {
@@ -172,6 +156,55 @@ describe('ADXConfigurator', function () {
                     '\n  </constraints>' +
                     '\n  </info></control>');
             });
+        });
+
+        it("should set the #xmldoc property with the XML parse result", function () {
+            var configurator = new ADXConfigurator("an/valid/path");
+            configurator.fromXml('<control></control>');
+            expect(configurator.xmldoc instanceof ElementTree).toBe(true);
+        });
+
+        it("should set the #projectType to 'adc' when the root node of the xml is `control`", function () {
+            var configurator = new ADXConfigurator("an/valid/path");
+            configurator.fromXml('<control><info><guid>the-guid</guid><name>the-name</name></info></control>');
+            expect(configurator.projectType).toEqual('adc');
+        });
+
+        it("should set the #projectType to 'adp' when the root node of the xml is `page`", function () {
+            var configurator = new ADXConfigurator("an/valid/path");
+            configurator.fromXml('<page><info><guid>the-guid</guid><name>the-name</name></info></page>');
+            expect(configurator.projectType).toEqual('adp');
+        });
+
+        it("should set the #projectVersion to '2.0.0' by default for the ADC", function () {
+            var configurator = new ADXConfigurator("an/valid/path");
+            configurator.fromXml('<control><info><guid>the-guid</guid><name>the-name</name></info></control>');
+            expect(configurator.projectVersion).toEqual('2.0.0');
+        });
+
+        it("should set the #projectVersion with the value defined in the root node of the ADC", function () {
+            var configurator = new ADXConfigurator("an/valid/path");
+            configurator.fromXml('<control version="2.1.0"><info><guid>the-guid</guid><name>the-name</name></info></control>');
+            expect(configurator.projectVersion).toEqual('2.1.0');
+        });
+
+        it("should set the #projectVersion to '2.1.0' by default for the ADP", function () {
+            var configurator = new ADXConfigurator("an/valid/path");
+            configurator.fromXml('<page><info><guid>the-guid</guid><name>the-name</name></info></page>');
+            expect(configurator.projectVersion).toEqual('2.1.0');
+        });
+
+        it("should set the #projectVersion with the value defined in the root node of the ADP", function () {
+            var configurator = new ADXConfigurator("an/valid/path");
+            configurator.fromXml('<page version="2.1.1"><info><guid>the-guid</guid><name>the-name</name></info></page>');
+            expect(configurator.projectVersion).toEqual('2.1.1');
+        });
+
+        it("should throw an error when the xml root node is not 'control' nor 'page'", function () {
+            expect(function () {
+                var configurator = new ADXConfigurator("an/valid/path");
+                configurator.fromXml('<something><info><guid>the-guid</guid><name>the-name</name></info></something>');
+            }).toThrow(new Error(common.messages.error.invalidConfigFile))
         });
 
         it("should reset the configuration with XML", function () {
@@ -223,6 +256,8 @@ describe('ADXConfigurator', function () {
                 });
             });
         });
+
+
     });
 
     describe("#toXml", function () {
@@ -403,12 +438,6 @@ describe('ADXConfigurator', function () {
                         '\n  </outputs>' +
                         '\n  <properties>' +
                         '\n    <category id="general" name="General">' +
-                        '\n      <property xsi:type="askiaProperty" id="askia-theme">' +
-                        '\n        <options>' +
-                        '\n          <option value="red-theme" text="Red" />' +
-                        '\n          <option value="blue-theme" text="Blue" />' +
-                        '\n        </options>' +
-                        '\n      </property>' +
                         '\n      <property xsi:type="standardProperty" id="renderingType" name="Rendering type" type="string">' +
                         '\n        <description><![CDATA[Type of rendering]]></description>' +
                         '\n        <value><![CDATA[classic]]></value>' +
@@ -425,14 +454,10 @@ describe('ADXConfigurator', function () {
                         '\n      <property xsi:type="standardProperty" id="singleImage" name="Image for single question" type="file" fileExtension=".png, .gif, .jpg">' +
                         '\n        <description><![CDATA[Image of single question when the rendering type is image]]></description>' +
                         '\n        <value><![CDATA[Single.png]]></value>' +
-                        '\n        <value theme="red-theme"><![CDATA[SingleRed.png]]></value>' +
-                        '\n        <value theme="blue-theme"><![CDATA[SingleBlue.png]]></value>' +
                         '\n      </property>' +
                         '\n      <property xsi:type="standardProperty" id="multipleImage" name="Image for multiple question" type="file" fileExtension=".png, .gif, .jpg">' +
                         '\n        <description><![CDATA[Image of multiple question when the rendering type is image]]></description>' +
                         '\n        <value><![CDATA[Multiple.png]]></value>' +
-                        '\n        <value theme="red-theme"><![CDATA[MultipleRed.png]]></value>' +
-                        '\n        <value theme="blue-theme"><![CDATA[MultipleBlue.png]]></value>' +
                         '\n      </property>' +
                         '\n    </category>' +
                         '\n    <category id="fake" name="Fake for test">' +
@@ -470,6 +495,9 @@ describe('ADXConfigurator', function () {
             spies.dirExists.andCallFake(function (p, cb) {
                 cb(null, true);
             });
+        });
+
+        it("should return the configuration of the ADC as object  (clean object)", function () {
             spies.fs.readFile.andCallFake(function (p, cb) {
                 cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
                     '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
@@ -576,9 +604,7 @@ describe('ADXConfigurator', function () {
                     '</properties>' +
                     '</control>');
             });
-        });
 
-        it("should return the configuration as object", function () {
             runSync(function (done) {
                 var configurator = new ADXConfigurator("an/valid/path");
                 configurator.load(function () {
@@ -706,19 +732,320 @@ describe('ADXConfigurator', function () {
                                 name: "General",
                                 properties: [
                                     {
-                                        xsiType: "askiaProperty",
-                                        id: "askia-theme",
+                                        id: "renderingType",
+                                        name: "Rendering type",
+                                        type: "string",
+                                        description: "Type of rendering",
+                                        value: "classic",
                                         options: [
                                             {
-                                                value: "red-theme",
-                                                text: "Red"
+                                                value: "classic",
+                                                text: "Classic"
                                             },
                                             {
-                                                value: "blue-theme",
-                                                text: "Blue"
+                                                value: "image",
+                                                text: "Image"
                                             }
                                         ]
                                     },
+                                    {
+                                        id: "other",
+                                        name: "Open-ended question for semi-open",
+                                        type: "question",
+                                        numeric : true,
+                                        open : true,
+                                        description: "Additional open-ended question that could be use to emulate semi-open"
+                                    }
+                                ]
+                            },
+                                {
+                                    id : "images",
+                                    name : "Rendering type images",
+                                    properties : [
+                                        {
+                                            id : "singleImage",
+                                            name : "Image for single question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of single question when the rendering type is image",
+                                            value : "Single.png"
+                                        },
+                                        {
+                                            id : "multipleImage",
+                                            name : "Image for multiple question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of multiple question when the rendering type is image",
+                                            value : "Multiple.png"
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "fake",
+                                    name : "Fake for test",
+                                    properties : [
+                                        {
+                                            id : "testNumber",
+                                            name : "TEST",
+                                            type : "number",
+                                            mode : "dynamic",
+                                            visible : false,
+                                            require : true,
+                                            min  :12,
+                                            max : 100.5,
+                                            decimal : 3,
+                                            description : "Test number properties",
+                                            value : "13"
+                                        },
+                                        {
+                                            id : "testColor",
+                                            name : "TEST",
+                                            type : "color",
+                                            colorFormat  :"rgb",
+                                            description : "Test color properties",
+                                            value : "255,255,255"
+                                        },
+                                        {
+                                            id : "testQuestion",
+                                            name : "TEST",
+                                            type : "question",
+                                            chapter : false,
+                                            single : true,
+                                            multiple : true,
+                                            numeric : false,
+                                            open : false,
+                                            date : false,
+                                            description : "Test question properties",
+                                            value : ""
+                                        },
+                                        {
+                                            id : "testFile",
+                                            name : "TEST",
+                                            type : "file",
+                                            fileExtension : ".test, .test2",
+                                            description : "Test file properties",
+                                            value : "file.test"
+                                        },
+                                        {
+                                            id : "testString",
+                                            name : "TEST",
+                                            type : "string",
+                                            pattern : ".+@.+",
+                                            description : "Test string properties",
+                                            value : "test@test.com"
+                                        }
+                                    ]
+                                }]
+                        }
+                    });
+                    done();
+                });
+            });
+        });
+
+        it("should return the configuration of the ADP as object (clean object)", function () {
+            spies.fs.readFile.andCallFake(function (p, cb) {
+                cb(null, '<page><info><name>the-name</name><guid>the-guid</guid>' +
+                    '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                    '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                    '<helpURL>the-helpURL</helpURL>' +
+                    '<categories><category>cat-1</category><category>cat-2</category></categories>' +
+                    '<style width="200" height="400" />' +
+                    '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
+                    '<constraint on="controls" label="true" responseblock="true" />' +
+                    '<constraint on="responses" min="2" max="*" />' +
+                    '</constraints>' +
+                    '</info>' +
+                    '<outputs defaultOutput="main">' +
+                    '<output id="main" masterPage="default_main.html">' +
+                    '<description><![CDATA[Main output]]></description>' +
+                    '<content fileName="main.css" type="css" mode="static" position="head" />' +
+                    '<content fileName="main.html" type="html" mode="dynamic" position="placeholder" />' +
+                    '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                    '</output>' +
+                    '<output id="second" masterPage="default_second.html">' +
+                    '<description><![CDATA[Second output]]></description>' +
+                    '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                    '<content fileName="second.css" type="css" mode="static" position="head" />' +
+                    '<content fileName="second.html" type="html" mode="dynamic" position="placeholder" />' +
+                    '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                    '</output>' +
+                    '<output id="third" defaultGeneration="false" maxIterations="12" masterPage="default_third.html">' +
+                    '<description><![CDATA[Third output]]></description>' +
+                    '<content fileName="third.css" type="css" mode="static" position="head" >' +
+                    ' <attribute name="rel">' +
+                    '<value>alternate</value>' +
+                    '</attribute>' +
+                    '<attribute name="media">' +
+                    '<value>print</value>' +
+                    '</attribute>' +
+                    '</content>' +
+                    '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                    '<yield>' +
+                    '<![CDATA[' +
+                    '<!--[if lte IE 9]>' +
+                    '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
+                    '<![endif]-->' +
+                    ']]>' +
+                    '</yield>' +
+                    '</content>'+
+                    '</output>' +
+                    '</outputs>' +
+                    '<properties>' +
+                    '<category id="general" name="General">' +
+                    '<property xsi:type="askiaProperty" id="askia-theme">' +
+                    '<options>' +
+                    '<option value="red-theme" text="Red" />' +
+                    '<option value="blue-theme" text="Blue" />' +
+                    '</options>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="renderingType" name="Rendering type" type="string">' +
+                    '<description>Type of rendering</description>' +
+                    '<value>classic</value>' +
+                    '<options>' +
+                    '<option value="classic" text="Classic"/>' +
+                    '<option value="image" text="Image"/>' +
+                    '</options>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="other" name="Open-ended question for semi-open" type="question" open="true" numeric="true">' +
+                    '<description>Additional open-ended question that could be use to emulate semi-open</description>' +
+                    '</property>' +
+                    '</category>' +
+                    '<category id="images" name="Rendering type images">' +
+                    '<property xsi:type="standardProperty" id="singleImage" name="Image for single question" type="file" fileExtension=".png, .gif, .jpg">' +
+                    '<description>Image of single question when the rendering type is image</description>' +
+                    '<value>Single.png</value>' +
+                    '<value theme="red-theme">SingleRed.png</value>' +
+                    '<value theme="blue-theme">SingleBlue.png</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="multipleImage" name="Image for multiple question" type="file" fileExtension=".png, .gif, .jpg">' +
+                    '<description>Image of multiple question when the rendering type is image</description>' +
+                    '<value>Multiple.png</value>' +
+                    '<value theme="red-theme">MultipleRed.png</value>' +
+                    '<value theme="blue-theme">MultipleBlue.png</value>' +
+                    '</property>' +
+                    '</category>' +
+                    '<category id="fake" name="Fake for test">' +
+                    '<property xsi:type="standardProperty" id="testNumber" name="TEST" type="number" min="12" max="100.5" decimal="3" mode="dynamic" visible="false" require="true">' +
+                    '<description>Test number properties</description>' +
+                    '<value>13</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testColor" name="TEST" type="color" colorFormat="rgb">' +
+                    '<description>Test color properties</description>' +
+                    '<value>255,255,255</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testQuestion" name="TEST" type="question" chapter="false" single="true" multiple="true" numeric="false" open="false" date="false">' +
+                    '<description>Test question properties</description>' +
+                    '<value></value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testFile" name="TEST" type="file" fileExtension=".test, .test2">' +
+                    '<description>Test file properties</description>' +
+                    '<value>file.test</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testString" name="TEST" type="string" pattern=".+@.+">' +
+                    '<description>Test string properties</description>' +
+                    '<value>test@test.com</value>' +
+                    '</property>' +
+                    '</category>' +
+                    '</properties>' +
+                    '</page>');
+            });
+
+            runSync(function (done) {
+                var configurator = new ADXConfigurator("an/valid/path");
+                configurator.load(function () {
+                    var result = configurator.get();
+                    expect(result ).toEqual({
+                        info : {
+                            name : "the-name",
+                            guid : "the-guid",
+                            version : "the-version",
+                            date : "the-date",
+                            description : "the-description",
+                            company : "the-company",
+                            author : "the-author",
+                            site : "the-site",
+                            helpURL : "the-helpURL"
+                        },
+                        outputs : {
+                            defaultOutput : 'main',
+                            outputs : [
+                                {
+                                    id : "main",
+                                    masterPage : "default_main.html",
+                                    description : "Main output",
+                                    contents : [
+                                        {
+                                            fileName : 'main.css',
+                                            type : 'css',
+                                            mode : 'static',
+                                            position : 'head'
+                                        },
+                                        {
+                                            fileName : 'main.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position: 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "second",
+                                    masterPage : "default_second.html",
+                                    description : "Second output",
+                                    condition : "Browser.Support(\"javascript\")",
+                                    contents : [
+                                        {
+                                            fileName : 'second.css',
+                                            type : 'css',
+                                            mode : 'static',
+                                            position : 'head'
+                                        },
+                                        {
+                                            fileName : 'second.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "third",
+                                    description : "Third output",
+                                    masterPage : "default_third.html",
+                                    contents : [
+                                        {
+                                            fileName : "third.css",
+                                            type  : "css",
+                                            mode : "static",
+                                            position : "head",
+                                            attributes : [
+                                                {
+                                                    name : "rel",
+                                                    value : "alternate"
+                                                },
+                                                {
+                                                    name : "media",
+                                                    value : "print"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            fileName : 'HTML5Shim.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'head',
+                                            yieldValue : '<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->'
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        properties : {
+                            categories : [{
+                                id: "general",
+                                name: "General",
+                                properties: [
                                     {
                                         id: "renderingType",
                                         name: "Rendering type",
@@ -756,11 +1083,7 @@ describe('ADXConfigurator', function () {
                                             type : "file",
                                             fileExtension : ".png, .gif, .jpg",
                                             description : "Image of single question when the rendering type is image",
-                                            value : "Single.png",
-                                            valueTheme : {
-                                                "red-theme" : "SingleRed.png",
-                                                "blue-theme" : "SingleBlue.png"
-                                            }
+                                            value : "Single.png"
                                         },
                                         {
                                             id : "multipleImage",
@@ -768,11 +1091,7 @@ describe('ADXConfigurator', function () {
                                             type : "file",
                                             fileExtension : ".png, .gif, .jpg",
                                             description : "Image of multiple question when the rendering type is image",
-                                            value : "Multiple.png",
-                                            valueTheme : {
-                                                "red-theme" : "MultipleRed.png",
-                                                "blue-theme" : "MultipleBlue.png"
-                                            }
+                                            value : "Multiple.png"
                                         }
                                     ]
                                 },
@@ -845,6 +1164,9 @@ describe('ADXConfigurator', function () {
             spies.dirExists.andCallFake(function (p, cb) {
                 cb(null, true);
             });
+        });
+
+        it("should set the configuration of the ADC using the object in arg (with cleaning)", function () {
             spies.fs.readFile.andCallFake(function (p, cb) {
                 cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
                     '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
@@ -951,9 +1273,7 @@ describe('ADXConfigurator', function () {
                     '</properties>' +
                     '</control>');
             });
-        });
 
-        it("should set the configuration using the object in arg", function () {
             runSync(function (done) {
                 var configurator = new ADXConfigurator("an/valid/path");
                 configurator.load(function () {
@@ -1079,7 +1399,7 @@ describe('ADXConfigurator', function () {
                                 properties: [
                                     {
                                         xsiType: "askiaProperty",
-                                        id: "new-askia-theme",
+                                        id: "askia-theme",
                                         options: [
                                             {
                                                 value: "new-red-theme",
@@ -1334,8 +1654,338 @@ describe('ADXConfigurator', function () {
                                 name: "New General",
                                 properties: [
                                     {
+                                        id: "newRenderingType",
+                                        name: "New rendering type",
+                                        type: "string",
+                                        description: "New Type of rendering",
+                                        value: "new-classic",
+                                        options: [
+                                            {
+                                                value: "new-classic",
+                                                text: "New Classic"
+                                            },
+                                            {
+                                                value: "new-image",
+                                                text: "New Image"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        id: "new-other",
+                                        name: "Open-ended question for semi-open",
+                                        type: "question",
+                                        single : true,
+                                        multiple : true,
+                                        numeric : false,
+                                        open : false,
+                                        description: "Additional open-ended question that could be use to emulate semi-open"
+                                    }
+                                ]
+                            },
+                                {
+                                    id : "images",
+                                    name : "Rendering type images",
+                                    properties : [
+                                        {
+                                            id : "singleImage",
+                                            name : "Image for single question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of single question when the rendering type is image",
+                                            value : "Single.png"
+                                        },
+                                        {
+                                            id : "multipleImage",
+                                            name : "Image for multiple question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of multiple question when the rendering type is image",
+                                            value : "Multiple.png"
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "newFake",
+                                    name : "New Fake for test",
+                                    properties : [
+                                        {
+                                            id : "testNumber",
+                                            name : "Number value",
+                                            type : "number",
+                                            mode : "static",
+                                            visible : true,
+                                            require : false,
+                                            min  :25,
+                                            max : 200,
+                                            decimal : 1,
+                                            description : "New Test number properties",
+                                            value : "26"
+                                        },
+                                        {
+                                            id : "testColor",
+                                            name : "Color value",
+                                            type : "color",
+                                            colorFormat  :"rgba",
+                                            description : "Test color properties",
+                                            value : "255,255,255,.9"
+                                        },
+                                        {
+                                            id : "testQuestion",
+                                            name : "Question value",
+                                            type : "question",
+                                            chapter : true,
+                                            single : false,
+                                            multiple : false,
+                                            numeric : true,
+                                            open : true,
+                                            date : true,
+                                            description : "Test question properties",
+                                            value : "CurrentQuestion"
+                                        },
+                                        {
+                                            id : "testFile",
+                                            name : "File value",
+                                            type : "file",
+                                            fileExtension : ".doc, .docx",
+                                            description : "Test file properties",
+                                            value : "file.docs"
+                                        },
+                                        {
+                                            id : "testString",
+                                            name : "String value",
+                                            type : "string",
+                                            pattern : "\w@\w",
+                                            description : "Test string properties",
+                                            value : "foo@bar.com"
+                                        }
+                                    ]
+                                }]
+                        }
+                    });
+                    done();
+                });
+            });
+        });
+
+        it("should set the configuration of the ADP using the object in arg (with cleaning)", function () {
+            spies.fs.readFile.andCallFake(function (p, cb) {
+                cb(null, '<page><info><name>the-name</name><guid>the-guid</guid>' +
+                    '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                    '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                    '<helpURL>the-helpURL</helpURL>' +
+                    '</info>' +
+                    '<outputs defaultOutput="main">' +
+                    '<output id="main" masterPage="default_main.html">' +
+                    '<description><![CDATA[Main output]]></description>' +
+                    '<content fileName="main.css" type="css" mode="static" position="head" />' +
+                    '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                    '</output>' +
+                    '<output id="second" masterPage="default_second.html">' +
+                    '<description><![CDATA[Second output]]></description>' +
+                    '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                    '<content fileName="second.css" type="css" mode="static" position="head" />' +
+                    '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                    '</output>' +
+                    '<output id="third" masterPage="default_third.html">' +
+                    '<description><![CDATA[Third output]]></description>' +
+                    '<content fileName="third.css" type="css" mode="static" position="head" >' +
+                    ' <attribute name="rel">' +
+                    '<value>alternate</value>' +
+                    '</attribute>' +
+                    '<attribute name="media">' +
+                    '<value>print</value>' +
+                    '</attribute>' +
+                    '</content>' +
+                    '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                    '<yield>' +
+                    '<![CDATA[' +
+                    '<!--[if lte IE 9]>' +
+                    '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
+                    '<![endif]-->' +
+                    ']]>' +
+                    '</yield>' +
+                    '</content>'+
+                    '</output>' +
+                    '</outputs>' +
+                    '<properties>' +
+                    '<category id="general" name="General">' +
+                    '<property xsi:type="standardProperty" id="renderingType" name="Rendering type" type="string">' +
+                    '<description>Type of rendering</description>' +
+                    '<value>classic</value>' +
+                    '<options>' +
+                    '<option value="classic" text="Classic"/>' +
+                    '<option value="image" text="Image"/>' +
+                    '</options>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="other" name="Open-ended question for semi-open" type="question" open="true" numeric="true">' +
+                    '<description>Additional open-ended question that could be use to emulate semi-open</description>' +
+                    '</property>' +
+                    '</category>' +
+                    '<category id="images" name="Rendering type images">' +
+                    '<property xsi:type="standardProperty" id="singleImage" name="Image for single question" type="file" fileExtension=".png, .gif, .jpg">' +
+                    '<description>Image of single question when the rendering type is image</description>' +
+                    '<value>Single.png</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="multipleImage" name="Image for multiple question" type="file" fileExtension=".png, .gif, .jpg">' +
+                    '<description>Image of multiple question when the rendering type is image</description>' +
+                    '<value>Multiple.png</value>' +
+                    '</property>' +
+                    '</category>' +
+                    '<category id="fake" name="Fake for test">' +
+                    '<property xsi:type="standardProperty" id="testNumber" name="TEST" type="number" min="12" max="100.5" decimal="3" mode="dynamic" visible="false" require="true">' +
+                    '<description>Test number properties</description>' +
+                    '<value>13</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testColor" name="TEST" type="color" colorFormat="rgb">' +
+                    '<description>Test color properties</description>' +
+                    '<value>255,255,255</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testQuestion" name="TEST" type="question" chapter="false" single="true" multiple="true" numeric="false" open="false" date="false">' +
+                    '<description>Test question properties</description>' +
+                    '<value></value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testFile" name="TEST" type="file" fileExtension=".test, .test2">' +
+                    '<description>Test file properties</description>' +
+                    '<value>file.test</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testString" name="TEST" type="string" pattern=".+@.+">' +
+                    '<description>Test string properties</description>' +
+                    '<value>test@test.com</value>' +
+                    '</property>' +
+                    '</category>' +
+                    '</properties>' +
+                    '</page>');
+            });
+
+            runSync(function (done) {
+                var configurator = new ADXConfigurator("an/valid/path");
+                configurator.load(function () {
+                    configurator.set({
+                        info : {
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL",
+                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
+                            style : {
+                                width : 300,
+                                height : 500
+                            },
+                            constraints : {
+                                questions : {
+                                    single : false,
+                                    numeric : true
+                                },
+                                controls : {
+                                    label :false,
+                                    checkbox : true
+                                },
+                                responses : {
+                                    min : 10
+                                }
+                            }
+                        },
+                        outputs : {
+                            defaultOutput : "new-second",
+                            outputs : [
+                                {
+                                    id : "new-main",
+                                    masterPage : "new_default_main.html",
+                                    description : "New Main output",
+                                    contents : [
+                                        {
+                                            fileName : 'new-main.css',
+                                            type : 'css',
+                                            mode : 'dynamic',
+                                            position : 'none'
+                                        },
+                                        {
+                                            fileName : 'new-main.html',
+                                            type : 'html',
+                                            mode : 'dynamic',
+                                            position : 'placeholder'
+                                        },
+                                        {
+                                            fileName : 'new-main.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position: 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-second",
+                                    masterPage : "new_default_second.html",
+                                    description : "New Second output",
+                                    condition : "Browser.Support(\"javascript\") and true",
+                                    contents : [
+                                        {
+                                            fileName : 'new-second.css',
+                                            type : 'css',
+                                            mode : 'static',
+                                            position : 'head'
+                                        },
+                                        {
+                                            fileName : 'new-second.html',
+                                            type : 'html',
+                                            mode : 'dynamic',
+                                            position : 'placeholder'
+                                        },
+                                        {
+                                            fileName : 'new-second.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-third",
+                                    masterPage : "new_default_third.html",
+                                    description : "New Third output",
+                                    maxIterations : 50,
+                                    defaultGeneration : true,
+                                    contents : [
+                                        {
+                                            fileName : "new-third.css",
+                                            type  : "css",
+                                            mode : "static",
+                                            position : "head",
+                                            attributes : [
+                                                {
+                                                    name : "new-rel",
+                                                    value : "new-alternate"
+                                                },
+                                                {
+                                                    name : "new-media",
+                                                    value : "new-print"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            fileName : 'new-HTML5Shim.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'head',
+                                            yieldValue :'<!--New-->\n<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->'
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        properties : {
+                            categories : [{
+                                id: "new-general",
+                                name: "New General",
+                                properties: [
+                                    {
                                         xsiType: "askiaProperty",
-                                        id: "new-askia-theme",
+                                        id: "askia-theme",
                                         options: [
                                             {
                                                 value: "new-red-theme",
@@ -1464,6 +2114,207 @@ describe('ADXConfigurator', function () {
                                 }]
                         }
                     });
+                    var result = configurator.get();
+                    expect(result ).toEqual({
+                        info : {
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL"
+                        },
+                        outputs : {
+                            defaultOutput : "new-second",
+                            outputs : [
+                                {
+                                    id : "new-main",
+                                    masterPage : "new_default_main.html",
+                                    description : "New Main output",
+                                    contents : [
+                                        {
+                                            fileName : 'new-main.css',
+                                            type : 'css',
+                                            mode : 'dynamic',
+                                            position : 'none'
+                                        },
+                                        {
+                                            fileName : 'new-main.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position: 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-second",
+                                    masterPage : "new_default_second.html",
+                                    description : "New Second output",
+                                    condition : "Browser.Support(\"javascript\") and true",
+                                    contents : [
+                                        {
+                                            fileName : 'new-second.css',
+                                            type : 'css',
+                                            mode : 'static',
+                                            position : 'head'
+                                        },
+                                        {
+                                            fileName : 'new-second.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-third",
+                                    masterPage : "new_default_third.html",
+                                    description : "New Third output",
+                                    contents : [
+                                        {
+                                            fileName : "new-third.css",
+                                            type  : "css",
+                                            mode : "static",
+                                            position : "head",
+                                            attributes : [
+                                                {
+                                                    name : "new-rel",
+                                                    value : "new-alternate"
+                                                },
+                                                {
+                                                    name : "new-media",
+                                                    value : "new-print"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            fileName : 'new-HTML5Shim.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'head',
+                                            yieldValue :'<!--New-->\n<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->'
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        properties : {
+                            categories : [{
+                                id: "new-general",
+                                name: "New General",
+                                properties: [
+                                    {
+                                        id: "newRenderingType",
+                                        name: "New rendering type",
+                                        type: "string",
+                                        description: "New Type of rendering",
+                                        value: "new-classic",
+                                        options: [
+                                            {
+                                                value: "new-classic",
+                                                text: "New Classic"
+                                            },
+                                            {
+                                                value: "new-image",
+                                                text: "New Image"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        id: "new-other",
+                                        name: "Open-ended question for semi-open",
+                                        type: "question",
+                                        single : true,
+                                        multiple : true,
+                                        numeric : false,
+                                        open : false,
+                                        description: "Additional open-ended question that could be use to emulate semi-open"
+                                    }
+                                ]
+                            },
+                                {
+                                    id : "images",
+                                    name : "Rendering type images",
+                                    properties : [
+                                        {
+                                            id : "singleImage",
+                                            name : "Image for single question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of single question when the rendering type is image",
+                                            value : "Single.png"
+                                        },
+                                        {
+                                            id : "multipleImage",
+                                            name : "Image for multiple question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of multiple question when the rendering type is image",
+                                            value : "Multiple.png"
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "newFake",
+                                    name : "New Fake for test",
+                                    properties : [
+                                        {
+                                            id : "testNumber",
+                                            name : "Number value",
+                                            type : "number",
+                                            mode : "static",
+                                            visible : true,
+                                            require : false,
+                                            min  :25,
+                                            max : 200,
+                                            decimal : 1,
+                                            description : "New Test number properties",
+                                            value : "26"
+                                        },
+                                        {
+                                            id : "testColor",
+                                            name : "Color value",
+                                            type : "color",
+                                            colorFormat  :"rgba",
+                                            description : "Test color properties",
+                                            value : "255,255,255,.9"
+                                        },
+                                        {
+                                            id : "testQuestion",
+                                            name : "Question value",
+                                            type : "question",
+                                            chapter : true,
+                                            single : false,
+                                            multiple : false,
+                                            numeric : true,
+                                            open : true,
+                                            date : true,
+                                            description : "Test question properties",
+                                            value : "CurrentQuestion"
+                                        },
+                                        {
+                                            id : "testFile",
+                                            name : "File value",
+                                            type : "file",
+                                            fileExtension : ".doc, .docx",
+                                            description : "Test file properties",
+                                            value : "file.docs"
+                                        },
+                                        {
+                                            id : "testString",
+                                            name : "String value",
+                                            type : "string",
+                                            pattern : "\w@\w",
+                                            description : "Test string properties",
+                                            value : "foo@bar.com"
+                                        }
+                                    ]
+                                }]
+                        }
+                    });
                     done();
                 });
             });
@@ -1477,7 +2328,8 @@ describe('ADXConfigurator', function () {
                 cb(null, true);
             });
             spies.fs.readFile.andCallFake(function (p, cb) {
-                cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
+                if (p === 'adc\\path\\config.xml') {
+                    cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
                         '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
                         '<company>the-company</company><author>the-author</author><site>the-site</site>' +
                         '<helpURL>the-helpURL</helpURL>' +
@@ -1488,14 +2340,35 @@ describe('ADXConfigurator', function () {
                         '<constraint on="responses" min="2" max="*" />' +
                         '</constraints>' +
                         '</info></control>');
+                }
+                else if (p === 'adc2.1\\path\\config.xml') {
+                    cb(null, '<control version="2.1.0"><info><name>the-name</name><guid>the-guid</guid>' +
+                        '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                        '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                        '<helpURL>the-helpURL</helpURL>' +
+                        '<categories><category>cat-1</category><category>cat-2</category></categories>' +
+                        '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
+                        '<constraint on="controls" label="true" responseblock="true" />' +
+                        '<constraint on="responses" min="2" max="*" />' +
+                        '</constraints>' +
+                        '</info></control>');
+                }
+                else  if (p === 'adp\\path\\config.xml') {
+                    cb(null, '<page><info><name>the-name</name><guid>the-guid</guid>' +
+                        '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                        '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                        '<helpURL>the-helpURL</helpURL>' +
+                        '</info></page>');
+                }
             });
+
         });
 
         describe("#get", function () {
             it("should return the ADC information as plain object", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         var result = configurator.info.get();
                         expect(result ).toEqual({
@@ -1533,13 +2406,73 @@ describe('ADXConfigurator', function () {
                     });
                 });
             });
+
+            it("should return the ADC 2.1 information as plain object", function () {
+
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adc2.1/path");
+                    configurator.load(function () {
+                        var result = configurator.info.get();
+                        expect(result ).toEqual({
+                            name : "the-name",
+                            guid : "the-guid",
+                            version : "the-version",
+                            date : "the-date",
+                            description : "the-description",
+                            company : "the-company",
+                            author : "the-author",
+                            site : "the-site",
+                            helpURL : "the-helpURL",
+                            categories : ["cat-1", "cat-2"],
+                            constraints : {
+                                questions : {
+                                    single : true,
+                                    multiple : true,
+                                    open : false
+                                },
+                                controls : {
+                                    label : true,
+                                    responseblock : true
+                                },
+                                responses : {
+                                    min : 2,
+                                    max : '*'
+                                }
+                            }
+                        });
+                        done();
+                    });
+                });
+            });
+
+            it("should return the ADP information as plain object", function () {
+
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adp/path");
+                    configurator.load(function () {
+                        var result = configurator.info.get();
+                        expect(result ).toEqual({
+                            name : "the-name",
+                            guid : "the-guid",
+                            version : "the-version",
+                            date : "the-date",
+                            description : "the-description",
+                            company : "the-company",
+                            author : "the-author",
+                            site : "the-site",
+                            helpURL : "the-helpURL"
+                        });
+                        done();
+                    });
+                });
+            });
         });
 
         describe("#set", function () {
             it("should set the ADC information with plain object", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         configurator.info.set({
                             name : "new-name",
@@ -1614,7 +2547,7 @@ describe('ADXConfigurator', function () {
                     cb(null, '<control></control>');
                 });
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         configurator.info.set({
                             name : "new-name",
@@ -1679,62 +2612,272 @@ describe('ADXConfigurator', function () {
                     });
                 });
             });
+
+            it("should set the ADC 2.1 information with plain object", function () {
+
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adc2.1/path");
+                    configurator.load(function () {
+                        configurator.info.set({
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL",
+                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
+                            style : {
+                                width : 300,
+                                height : 500
+                            },
+                            constraints : {
+                                questions : {
+                                    single : false,
+                                    numeric : true
+                                },
+                                controls : {
+                                    label :false,
+                                    checkbox : true
+                                },
+                                responses : {
+                                    min : 10
+                                }
+                            }
+                        });
+                        var result = configurator.info.get();
+                        expect(result ).toEqual({
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL",
+                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
+                            constraints : {
+                                questions : {
+                                    single : false,
+                                    multiple : true,
+                                    open : false,
+                                    numeric : true
+                                },
+                                controls : {
+                                    label : false,
+                                    responseblock : true,
+                                    checkbox : true
+                                },
+                                responses : {
+                                    min : 10,
+                                    max : '*'
+                                }
+                            }
+                        });
+                        done();
+                    });
+                });
+            });
+
+            it("should create the ADC 2.1 information when it's not defined in the xml", function () {
+                spies.fs.readFile.andCallFake(function (p, cb) {
+                    cb(null, '<control version="2.1.0:"></control>');
+                });
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adc2.1/path");
+                    configurator.load(function () {
+                        configurator.info.set({
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL",
+                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
+                            style : {
+                                width : 300,
+                                height : 500
+                            },
+                            constraints : {
+                                questions : {
+                                    single : false,
+                                    numeric : true
+                                },
+                                controls : {
+                                    label :false,
+                                    checkbox : true
+                                },
+                                responses : {
+                                    min : 10
+                                }
+                            }
+                        });
+                        var result = configurator.info.get();
+                        expect(result ).toEqual({
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL",
+                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
+                            constraints : {
+                                questions : {
+                                    single : false,
+                                    numeric : true
+                                },
+                                controls : {
+                                    label : false,
+                                    checkbox : true
+                                },
+                                responses : {
+                                    min : 10
+                                }
+                            }
+                        });
+                        done();
+                    });
+                });
+            });
+
+            it("should set the ADP information with plain object", function () {
+
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adp/path");
+                    configurator.load(function () {
+                        configurator.info.set({
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL"
+                        });
+                        var result = configurator.info.get();
+                        expect(result ).toEqual({
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL"
+                        });
+                        done();
+                    });
+                });
+            });
+
+            it("should create the ADP information when it's not defined in the xml", function () {
+                spies.fs.readFile.andCallFake(function (p, cb) {
+                    cb(null, '<page></page>');
+                });
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adp/path");
+                    configurator.load(function () {
+                        configurator.info.set({
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL"
+                        });
+                        var result = configurator.info.get();
+                        expect(result ).toEqual({
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL"
+                        });
+                        done();
+                    });
+                });
+            });
         });
 
         ["name", "guid", "version", "date", "description", "company", "author", "site", "helpURL"].forEach(function (propName) {
 
-            describe("#" + propName, function () {
+            ['adc', 'adp'].forEach(function (projectType) {
+                describe("#" + propName, function () {
 
-                it("should return the value from the xml node", function () {
+                    it("should return the value from the " + projectType.toUpperCase() + " xml node", function () {
 
-                    runSync(function (done) {
-                        var configurator = new ADXConfigurator("an/valid/path");
-                        configurator.load(function () {
-                            var result = configurator.info[propName]();
-                            expect(result ).toEqual('the-' + propName);
-                            done();
+                        runSync(function (done) {
+                            var configurator = new ADXConfigurator(projectType + "/path");
+                            configurator.load(function () {
+                                var result = configurator.info[propName]();
+                                expect(result).toEqual('the-' + propName);
+                                done();
+                            });
+                        });
+                    });
+
+                    it("should set the value of " +
+                        projectType.toUpperCase(), function () {
+                        runSync(function (done) {
+                            var configurator = new ADXConfigurator(projectType + "/path");
+                            configurator.load(function () {
+                                configurator.info[propName]('new-' + propName);
+                                var result = configurator.info[propName]();
+                                expect(result).toEqual('new-' + propName);
+                                done();
+                            });
+                        });
+                    });
+
+                    it("should create the node when it's not defined in the " + projectType.toUpperCase() + " xml", function () {
+                        spies.fs.readFile.andCallFake(function (p, cb) {
+                            if (p === 'adc\\path\\config.xml') {
+                                cb(null, '<control></control>');
+                            } else {
+                                cb(null, '<page></page>');
+                            }
+
+                        });
+                        runSync(function (done) {
+                            var configurator = new ADXConfigurator(projectType + "/path");
+                            configurator.load(function () {
+                                configurator.info[propName]('new-' + propName);
+                                var result = configurator.info[propName]();
+                                expect(result).toEqual('new-' + propName);
+                                done();
+                            });
                         });
                     });
                 });
-
-                it("should set the value", function () {
-                    runSync(function (done) {
-                        var configurator = new ADXConfigurator("an/valid/path");
-                        configurator.load(function () {
-                            configurator.info[propName]('new-' + propName);
-                            var result = configurator.info[propName]();
-                            expect(result ).toEqual('new-' + propName);
-                            done();
-                        });
-                    });
-                });
-
-                it("should create the node when it's not defined in the xml", function () {
-                    spies.fs.readFile.andCallFake(function (p, cb) {
-                        cb(null, '<control></control>');
-                    });
-                    runSync(function (done) {
-                        var configurator = new ADXConfigurator("an/valid/path");
-                        configurator.load(function () {
-                            configurator.info[propName]('new-' + propName);
-                            var result = configurator.info[propName]();
-                            expect(result ).toEqual('new-' + propName);
-                            done();
-                        });
-                    });
-                });
-
-
             });
 
         });
 
-        describe("#style", function () {
+        describe("#style (ADC only)", function () {
 
-            it("should return the value from the xml node", function () {
+            it("should return the value from the xml node (ADC only)", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         var result = configurator.info.style();
                         expect(result ).toEqual({ width : 200, height : 400});
@@ -1743,9 +2886,9 @@ describe('ADXConfigurator', function () {
                 });
             });
 
-            it("should set the value", function () {
+            it("should set the value (ADC only)", function () {
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         configurator.info.style({width : 300, height : 500});
                         var result = configurator.info.style();
@@ -1754,13 +2897,37 @@ describe('ADXConfigurator', function () {
                     });
                 });
             });
-        });
 
-        describe("#categories", function () {
-            it("should return the value from the xml node", function () {
+            it("should NOT return the value from the xml node (ADC 2.1)", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc2.1/path");
+                    configurator.load(function () {
+                        var result = configurator.info.style();
+                        expect(result ).toEqual(undefined);
+                        done();
+                    });
+                });
+            });
+
+            it("should NOT set the value (ADC 2.1)", function () {
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adc2.1/path");
+                    configurator.load(function () {
+                        configurator.info.style({width : 300, height : 500});
+                        var result = configurator.info.style();
+                        expect(result).toEqual(undefined);
+                        done();
+                    });
+                });
+            });
+        });
+
+        describe("#categories (ADC only)", function () {
+            it("should return the value from the xml node (ADC only)", function () {
+
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         var result = configurator.info.categories();
                         expect(result ).toEqual(['cat-1', 'cat-2']);
@@ -1769,9 +2936,9 @@ describe('ADXConfigurator', function () {
                 });
             });
 
-            it("should set the value", function () {
+            it("should set the value (ADC only)", function () {
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         configurator.info.categories(['new-1', 'new-2', 'new-3']);
                         var result = configurator.info.categories();
@@ -1782,11 +2949,11 @@ describe('ADXConfigurator', function () {
             });
         });
 
-        describe("#constraints", function () {
-            it("should return the value from the xml node", function () {
+        describe("#constraints (ADC only)", function () {
+            it("should return the value from the xml node (ADC only)", function () {
 
                  runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         var result = configurator.info.constraints();
                         expect(result ).toEqual({
@@ -1809,9 +2976,9 @@ describe('ADXConfigurator', function () {
                 });
             });
 
-            it("should set the value", function () {
+            it("should set the value (ADC only)", function () {
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         configurator.info.constraints({
                             questions : {
@@ -1847,7 +3014,7 @@ describe('ADXConfigurator', function () {
             });
         });
 
-        describe("#constraint", function () {
+        describe("#constraint (ADC only)", function () {
 
             [
                 {
@@ -1912,13 +3079,13 @@ describe('ADXConfigurator', function () {
                 }
             ].forEach(function (target) {
 
-                   describe("#constraint on=" + target.name, function () {
+                   describe("#constraint on=" + target.name + " (ADC only)", function () {
                         target.atts.forEach(function(att) {
 
-                            it("should return the value from the xml attribute ('" + att.name + "')", function () {
+                            it("should return the value from the xml attribute ('" + att.name + "') (ADC only)", function () {
 
                                 runSync(function (done) {
-                                    var configurator = new ADXConfigurator("an/valid/path");
+                                    var configurator = new ADXConfigurator("adc/path");
                                     configurator.load(function () {
                                         var result = configurator.info.constraint(target.name, att.name);
                                         expect(result).toEqual(att.value);
@@ -1927,9 +3094,9 @@ describe('ADXConfigurator', function () {
                                 });
                             });
 
-                            it("should set the value ('" + att.name + "')", function () {
+                            it("should set the value ('" + att.name + "') (ADC only)", function () {
                                 runSync(function (done) {
-                                    var configurator = new ADXConfigurator("an/valid/path");
+                                    var configurator = new ADXConfigurator("adc/path");
                                     configurator.load(function () {
                                         configurator.info.constraint(target.name, att.name, att.newValue);
                                         var result = configurator.info.constraint(target.name, att.name);
@@ -1942,8 +3109,6 @@ describe('ADXConfigurator', function () {
 
                         });
                    });
-
-
             });
 
         });
@@ -1952,7 +3117,7 @@ describe('ADXConfigurator', function () {
             it("should return the ADC information as Xml String", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         var result = configurator.info.toXml();
                         expect(result ).toEqual('  <info>' +
@@ -1980,8 +3145,63 @@ describe('ADXConfigurator', function () {
                     });
                 });
             });
+
+            it("should return the ADC 2.1 information as Xml String", function () {
+
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adc2.1/path");
+                    configurator.load(function () {
+                        var result = configurator.info.toXml();
+                        expect(result ).toEqual('  <info>' +
+                            '\n    <name>the-name</name>' +
+                            '\n    <guid>the-guid</guid>' +
+                            '\n    <version>the-version</version>' +
+                            '\n    <date>the-date</date>' +
+                            '\n    <description><![CDATA[the-description]]></description>' +
+                            '\n    <company>the-company</company>' +
+                            '\n    <author><![CDATA[the-author]]></author>' +
+                            '\n    <site>the-site</site>' +
+                            '\n    <helpURL>the-helpURL</helpURL>' +
+                            '\n    <categories>' +
+                            '\n      <category>cat-1</category>' +
+                            '\n      <category>cat-2</category>' +
+                            '\n    </categories>' +
+                            '\n    <constraints>' +
+                            '\n      <constraint on="questions" single="true" multiple="true" open="false" />' +
+                            '\n      <constraint on="controls" label="true" responseblock="true" />' +
+                            '\n      <constraint on="responses" min="2" max="*" />' +
+                            '\n    </constraints>' +
+                            '\n  </info>');
+                        done();
+                    });
+                });
+            });
+
+            it("should return the ADP information as Xml String", function () {
+
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adp/path");
+                    configurator.load(function () {
+                        var result = configurator.info.toXml();
+                        expect(result ).toEqual('  <info>' +
+                            '\n    <name>the-name</name>' +
+                            '\n    <guid>the-guid</guid>' +
+                            '\n    <version>the-version</version>' +
+                            '\n    <date>the-date</date>' +
+                            '\n    <description><![CDATA[the-description]]></description>' +
+                            '\n    <company>the-company</company>' +
+                            '\n    <author><![CDATA[the-author]]></author>' +
+                            '\n    <site>the-site</site>' +
+                            '\n    <helpURL>the-helpURL</helpURL>' +
+                            '\n  </info>');
+                        done();
+                    });
+                });
+            });
         });
     });
+
+    return;
 
     describe('#outputs', function () {
         beforeEach(function () {
@@ -2772,20 +3992,6 @@ describe('ADXConfigurator', function () {
                                 name: "General",
                                 properties: [
                                     {
-                                        xsiType: "askiaProperty",
-                                        id: "askia-theme",
-                                        options: [
-                                            {
-                                                value: "red-theme",
-                                                text: "Red"
-                                            },
-                                            {
-                                                value: "blue-theme",
-                                                text: "Blue"
-                                            }
-                                        ]
-                                    },
-                                    {
                                         id: "renderingType",
                                         name: "Rendering type",
                                         type: "string",
@@ -2822,11 +4028,7 @@ describe('ADXConfigurator', function () {
                                         type : "file",
                                         fileExtension : ".png, .gif, .jpg",
                                         description : "Image of single question when the rendering type is image",
-                                        value : "Single.png",
-                                        valueTheme : {
-                                            "red-theme" : "SingleRed.png",
-                                            "blue-theme" : "SingleBlue.png"
-                                        }
+                                        value : "Single.png"
                                     },
                                     {
                                         id : "multipleImage",
@@ -2834,11 +4036,7 @@ describe('ADXConfigurator', function () {
                                         type : "file",
                                         fileExtension : ".png, .gif, .jpg",
                                         description : "Image of multiple question when the rendering type is image",
-                                        value : "Multiple.png",
-                                        valueTheme : {
-                                            "red-theme" : "MultipleRed.png",
-                                            "blue-theme" : "MultipleBlue.png"
-                                        }
+                                        value : "Multiple.png"
                                     }
                                 ]
                             },
@@ -3054,20 +4252,6 @@ describe('ADXConfigurator', function () {
                                 name: "New General",
                                 properties: [
                                     {
-                                        xsiType: "askiaProperty",
-                                        id: "new-askia-theme",
-                                        options: [
-                                            {
-                                                value: "new-red-theme",
-                                                text: "New Red"
-                                            },
-                                            {
-                                                value: "new-blue-theme",
-                                                text: "New Blue"
-                                            }
-                                        ]
-                                    },
-                                    {
                                         id: "newRenderingType",
                                         name: "New rendering type",
                                         type: "string",
@@ -3106,11 +4290,7 @@ describe('ADXConfigurator', function () {
                                             type : "file",
                                             fileExtension : ".png, .gif, .jpg",
                                             description : "Image of single question when the rendering type is image",
-                                            value : "Single.png",
-                                            valueTheme : {
-                                                "new-red-theme" : "SingleRed.png",
-                                                "new-blue-theme" : "SingleBlue.png"
-                                            }
+                                            value : "Single.png"
                                         },
                                         {
                                             id : "multipleImage",
@@ -3118,11 +4298,7 @@ describe('ADXConfigurator', function () {
                                             type : "file",
                                             fileExtension : ".png, .gif, .jpg",
                                             description : "Image of multiple question when the rendering type is image",
-                                            value : "Multiple.png",
-                                            valueTheme : {
-                                                "red-theme" : "MultipleRed.png",
-                                                "blue-theme" : "MultipleBlue.png"
-                                            }
+                                            value : "Multiple.png"
                                         }
                                     ]
                                 },
@@ -3384,20 +4560,6 @@ describe('ADXConfigurator', function () {
                                 name: "New General",
                                 properties: [
                                     {
-                                        xsiType: "askiaProperty",
-                                        id: "new-askia-theme",
-                                        options: [
-                                            {
-                                                value: "new-red-theme",
-                                                text: "New Red"
-                                            },
-                                            {
-                                                value: "new-blue-theme",
-                                                text: "New Blue"
-                                            }
-                                        ]
-                                    },
-                                    {
                                         id: "newRenderingType",
                                         name: "New rendering type",
                                         type: "string",
@@ -3436,11 +4598,7 @@ describe('ADXConfigurator', function () {
                                             type : "file",
                                             fileExtension : ".png, .gif, .jpg",
                                             description : "Image of single question when the rendering type is image",
-                                            value : "Single.png",
-                                            valueTheme : {
-                                                "new-red-theme" : "SingleRed.png",
-                                                "new-blue-theme" : "SingleBlue.png"
-                                            }
+                                            value : "Single.png"
                                         },
                                         {
                                             id : "multipleImage",
@@ -3448,11 +4606,7 @@ describe('ADXConfigurator', function () {
                                             type : "file",
                                             fileExtension : ".png, .gif, .jpg",
                                             description : "Image of multiple question when the rendering type is image",
-                                            value : "Multiple.png",
-                                            valueTheme : {
-                                                "red-theme" : "MultipleRed.png",
-                                                "blue-theme" : "MultipleBlue.png"
-                                            }
+                                            value : "Multiple.png"
                                         }
                                     ]
                                 },
