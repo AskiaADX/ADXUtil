@@ -3201,91 +3201,13 @@ describe('ADXConfigurator', function () {
         });
     });
 
-    return;
-
     describe('#outputs', function () {
         beforeEach(function () {
             spies.dirExists.andCallFake(function (p, cb) {
                 cb(null, true);
             });
             spies.fs.readFile.andCallFake(function (p, cb) {
-                cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
-                    '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
-                    '<company>the-company</company><author>the-author</author><site>the-site</site>' +
-                    '<helpURL>the-helpURL</helpURL>' +
-                    '<categories><category>cat-1</category><category>cat-2</category></categories>' +
-                    '<style width="200" height="400" />' +
-                    '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
-                    '<constraint on="controls" label="true" responseblock="true" />' +
-                    '<constraint on="responses" min="2" max="*" />' +
-                    '</constraints>' +
-                    '</info>' +
-                    '<outputs defaultOutput="main">' +
-                    '<output id="main">' +
-                    '<description><![CDATA[Main output]]></description>' +
-                    '<content fileName="main.css" type="css" mode="static" position="head" />' +
-                    '<content fileName="main.html" type="html" mode="dynamic" position="placeholder" />' +
-                    '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
-                    '</output>' +
-                    '<output id="second">' +
-                    '<description><![CDATA[Second output]]></description>' +
-                    '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
-                    '<content fileName="second.css" type="css" mode="static" position="head" />' +
-                    '<content fileName="second.html" type="html" mode="dynamic" position="placeholder" />' +
-                    '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
-                    '</output>' +
-                    '<output id="third" defaultGeneration="false" maxIterations="12">' +
-                    '<description><![CDATA[Third output]]></description>' +
-                    '<content fileName="third.css" type="css" mode="static" position="head" >' +
-                    ' <attribute name="rel">' +
-                    '<value>alternate</value>' +
-                    '</attribute>' +
-                    '<attribute name="media">' +
-                    '<value>print</value>' +
-                    '</attribute>' +
-                    '</content>' +
-                    '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
-                    '<yield>' +
-                    '<![CDATA[' +
-                    '<!--[if lte IE 9]>' +
-                    '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
-                    '<![endif]-->' +
-                    ']]>' +
-                    '</yield>' +
-                    '</content>'+
-                    '</output>' +
-                    '</outputs>' +
-                    '</control>');
-            });
-        });
-
-        describe("#defaultOutput", function () {
-            it("should return the id of the default output", function () {
-
-                runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
-                    configurator.load(function () {
-                        var result = configurator.outputs.defaultOutput();
-                        expect(result ).toEqual('main');
-                        done();
-                    });
-                });
-            });
-
-            it("should set the id of the default output", function () {
-                runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
-                    configurator.load(function () {
-                        configurator.outputs.defaultOutput('second');
-                        var result = configurator.outputs.defaultOutput();
-                        expect(result ).toEqual('second');
-                        done();
-                    });
-                });
-            });
-
-            it("should create the ADC outputs when it's not defined in the xml", function () {
-                spies.fs.readFile.andCallFake(function (p, cb) {
+                if (p === 'adc\\path\\config.xml') {
                     cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
                         '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
                         '<company>the-company</company><author>the-author</author><site>the-site</site>' +
@@ -3297,50 +3219,188 @@ describe('ADXConfigurator', function () {
                         '<constraint on="responses" min="2" max="*" />' +
                         '</constraints>' +
                         '</info>' +
+                        '<outputs defaultOutput="main">' +
+                        '<output id="main">' +
+                        '<description><![CDATA[Main output]]></description>' +
+                        '<content fileName="main.css" type="css" mode="static" position="head" />' +
+                        '<content fileName="main.html" type="html" mode="dynamic" position="placeholder" />' +
+                        '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                        '</output>' +
+                        '<output id="second">' +
+                        '<description><![CDATA[Second output]]></description>' +
+                        '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                        '<content fileName="second.css" type="css" mode="static" position="head" />' +
+                        '<content fileName="second.html" type="html" mode="dynamic" position="placeholder" />' +
+                        '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                        '</output>' +
+                        '<output id="third" defaultGeneration="false" maxIterations="12">' +
+                        '<description><![CDATA[Third output]]></description>' +
+                        '<content fileName="third.css" type="css" mode="static" position="head" >' +
+                        ' <attribute name="rel">' +
+                        '<value>alternate</value>' +
+                        '</attribute>' +
+                        '<attribute name="media">' +
+                        '<value>print</value>' +
+                        '</attribute>' +
+                        '</content>' +
+                        '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                        '<yield>' +
+                        '<![CDATA[' +
+                        '<!--[if lte IE 9]>' +
+                        '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
+                        '<![endif]-->' +
+                        ']]>' +
+                        '</yield>' +
+                        '</content>'+
+                        '</output>' +
+                        '</outputs>' +
                         '</control>');
-                });
-                runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
-                    configurator.load(function () {
-                        configurator.outputs.defaultOutput('second');
-                        var result = configurator.outputs.defaultOutput();
-                        expect(result ).toEqual('second');
-                        done();
-                    });
-                });
+                } else if (p === 'adp\\path\\config.xml') {
+                    cb(null, '<page><info><name>the-name</name><guid>the-guid</guid>' +
+                        '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                        '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                        '<helpURL>the-helpURL</helpURL>' +
+                        '</info>' +
+                        '<outputs defaultOutput="main">' +
+                        '<output id="main" masterPage="main.html">' +
+                        '<description><![CDATA[Main output]]></description>' +
+                        '<content fileName="main.css" type="css" mode="static" position="head" />' +
+                        '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                        '</output>' +
+                        '<output id="second" masterPage="second.html">' +
+                        '<description><![CDATA[Second output]]></description>' +
+                        '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                        '<content fileName="second.css" type="css" mode="static" position="head" />' +
+                        '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                        '</output>' +
+                        '<output id="third" masterPage="third.html">' +
+                        '<description><![CDATA[Third output]]></description>' +
+                        '<content fileName="third.css" type="css" mode="static" position="head" >' +
+                        ' <attribute name="rel">' +
+                        '<value>alternate</value>' +
+                        '</attribute>' +
+                        '<attribute name="media">' +
+                        '<value>print</value>' +
+                        '</attribute>' +
+                        '</content>' +
+                        '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                        '<yield>' +
+                        '<![CDATA[' +
+                        '<!--[if lte IE 9]>' +
+                        '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
+                        '<![endif]-->' +
+                        ']]>' +
+                        '</yield>' +
+                        '</content>'+
+                        '</output>' +
+                        '</outputs>' +
+                        '</page>');
+                }
+
             });
         });
 
+        describe("#defaultOutput", function () {
+
+            ['adc', 'adp'].forEach(function (projectType) {
+                it("should return the id of the default " + projectType.toUpperCase() + " output", function () {
+
+                    runSync(function (done) {
+                        var configurator = new ADXConfigurator(projectType + "/path");
+                        configurator.load(function () {
+                            var result = configurator.outputs.defaultOutput();
+                            expect(result ).toEqual('main');
+                            done();
+                        });
+                    });
+                });
+
+                it("should set the id of the default " + projectType.toUpperCase() + " output", function () {
+                    runSync(function (done) {
+                        var configurator = new ADXConfigurator(projectType + "/path");
+                        configurator.load(function () {
+                            configurator.outputs.defaultOutput('second');
+                            var result = configurator.outputs.defaultOutput();
+                            expect(result ).toEqual('second');
+                            done();
+                        });
+                    });
+                });
+
+                it("should create the " + projectType.toUpperCase() + " outputs when it's not defined in the xml", function () {
+                    spies.fs.readFile.andCallFake(function (p, cb) {
+                        if (projectType === 'adc') {
+                            cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
+                                '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                                '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                                '<helpURL>the-helpURL</helpURL>' +
+                                '<categories><category>cat-1</category><category>cat-2</category></categories>' +
+                                '<style width="200" height="400" />' +
+                                '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
+                                '<constraint on="controls" label="true" responseblock="true" />' +
+                                '<constraint on="responses" min="2" max="*" />' +
+                                '</constraints>' +
+                                '</info>' +
+                                '</control>');
+                        }
+                        else if (projectType === 'adp') {
+                            cb(null, '<page><info><name>the-name</name><guid>the-guid</guid>' +
+                                '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                                '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                                '<helpURL>the-helpURL</helpURL>' +
+                                '</info>' +
+                                '</page>');
+                        }
+
+                    });
+                    runSync(function (done) {
+                        var configurator = new ADXConfigurator(projectType + "/path");
+                        configurator.load(function () {
+                            configurator.outputs.defaultOutput('second');
+                            var result = configurator.outputs.defaultOutput();
+                            expect(result ).toEqual('second');
+                            done();
+                        });
+                    });
+                });
+            });
+
+        });
+
         describe('#get', function () {
-            it("should return an object with the keys: `defaultOutput` (a string) and `outputs` (an array)", function () {
 
-                runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
-                    configurator.load(function () {
-                        var result = configurator.outputs.get();
-                        expect(typeof result.defaultOutput).toEqual('string');
-                        expect(Array.isArray(result.outputs)).toBe(true);
-                        done();
+            ['adc', 'adp'].forEach(function (projectType) {
+
+                it("should return an " + projectType.toUpperCase() + " object with the keys: `defaultOutput` (a string) and `outputs` (an array)", function () {
+
+                    runSync(function (done) {
+                        var configurator = new ADXConfigurator(projectType + "/path");
+                        configurator.load(function () {
+                            var result = configurator.outputs.get();
+                            expect(typeof result.defaultOutput).toEqual('string');
+                            expect(Array.isArray(result.outputs)).toBe(true);
+                            done();
+                        });
+                    });
+                });
+
+                it("should return an " + projectType.toUpperCase() + " object with the keys: `defaultOutput` set with the id of the default output", function () {
+
+                    runSync(function (done) {
+                        var configurator = new ADXConfigurator(projectType + "/path");
+                        configurator.load(function () {
+                            var result = configurator.outputs.get();
+                            expect(result.defaultOutput).toEqual('main');
+                            done();
+                        });
                     });
                 });
             });
 
-            it("should return an object with the keys: `defaultOutput` set with the id of the default output", function () {
+            it("should return an ADC object with the keys: `outputs` which contains an array of output object", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
-                    configurator.load(function () {
-                        var result = configurator.outputs.get();
-                        expect(result.defaultOutput).toEqual('main');
-                        done();
-                    });
-                });
-            });
-
-            it("should return an object with the keys: `outputs` which contains an array of output object", function () {
-
-                runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         var result = configurator.outputs.get();
                         expect(result.outputs).toEqual([
@@ -3429,13 +3489,96 @@ describe('ADXConfigurator', function () {
                     });
                 });
             });
+
+            it("should return an ADP object with the keys: `outputs` which contains an array of output object", function () {
+
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adp/path");
+                    configurator.load(function () {
+                        var result = configurator.outputs.get();
+                        expect(result.outputs).toEqual([
+                            {
+                                id : "main",
+                                masterPage : "main.html",
+                                description : "Main output",
+                                contents : [
+                                    {
+                                        fileName : 'main.css',
+                                        type : 'css',
+                                        mode : 'static',
+                                        position : 'head'
+                                    },
+                                    {
+                                        fileName : 'main.js',
+                                        type : 'javascript',
+                                        mode : 'static',
+                                        position: 'foot'
+                                    }
+                                ]
+                            },
+                            {
+                                id : "second",
+                                masterPage : "second.html",
+                                description : "Second output",
+                                condition : "Browser.Support(\"javascript\")",
+                                contents : [
+                                    {
+                                        fileName : 'second.css',
+                                        type : 'css',
+                                        mode : 'static',
+                                        position : 'head'
+                                    },
+                                    {
+                                        fileName : 'second.js',
+                                        type : 'javascript',
+                                        mode : 'static',
+                                        position : 'foot'
+                                    }
+                                ]
+                            },
+                            {
+                                id : "third",
+                                masterPage : "third.html",
+                                description : "Third output",
+                                contents : [
+                                    {
+                                        fileName : "third.css",
+                                        type  : "css",
+                                        mode : "static",
+                                        position : "head",
+                                        attributes : [
+                                            {
+                                                name : "rel",
+                                                value : "alternate"
+                                            },
+                                            {
+                                                name : "media",
+                                                value : "print"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        fileName : 'HTML5Shim.js',
+                                        type : 'javascript',
+                                        mode : 'static',
+                                        position : 'head',
+                                        yieldValue : '<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->'
+                                    }
+                                ]
+                            }
+                        ]);
+                        done();
+                    });
+                });
+            });
+
         });
 
         describe("#set", function () {
             it("should set the ADC outputs with plain object", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         configurator.outputs.set({
                             defaultOutput : "new-second",
@@ -3630,7 +3773,362 @@ describe('ADXConfigurator', function () {
                         '</control>');
                 });
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
+                    configurator.load(function () {
+                        configurator.outputs.set({
+                            defaultOutput : "new-second",
+                            outputs : [
+                                {
+                                    id : "new-main",
+                                    description : "New Main output",
+                                    contents : [
+                                        {
+                                            fileName : 'new-main.css',
+                                            type : 'css',
+                                            mode : 'dynamic',
+                                            position : 'none'
+                                        },
+                                        {
+                                            fileName : 'new-main.html',
+                                            type : 'html',
+                                            mode : 'dynamic',
+                                            position : 'placeholder'
+                                        },
+                                        {
+                                            fileName : 'new-main.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position: 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-second",
+                                    description : "New Second output",
+                                    condition : "Browser.Support(\"javascript\") and true",
+                                    contents : [
+                                        {
+                                            fileName : 'new-second.css',
+                                            type : 'css',
+                                            mode : 'static',
+                                            position : 'head'
+                                        },
+                                        {
+                                            fileName : 'new-second.html',
+                                            type : 'html',
+                                            mode : 'dynamic',
+                                            position : 'placeholder'
+                                        },
+                                        {
+                                            fileName : 'new-second.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-third",
+                                    description : "New Third output",
+                                    maxIterations : 50,
+                                    defaultGeneration : true,
+                                    contents : [
+                                        {
+                                            fileName : "new-third.css",
+                                            type  : "css",
+                                            mode : "static",
+                                            position : "head",
+                                            attributes : [
+                                                {
+                                                    name : "new-rel",
+                                                    value : "new-alternate"
+                                                },
+                                                {
+                                                    name : "new-media",
+                                                    value : "new-print"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            fileName : 'new-HTML5Shim.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'head',
+                                            yieldValue :'<!--New-->\n<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->'
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+                        var result = configurator.outputs.get();
+                        expect(result ).toEqual({
+                            defaultOutput : "new-second",
+                            outputs : [
+                                {
+                                    id : "new-main",
+                                    description : "New Main output",
+                                    contents : [
+                                        {
+                                            fileName : 'new-main.css',
+                                            type : 'css',
+                                            mode : 'dynamic',
+                                            position : 'none'
+                                        },
+                                        {
+                                            fileName : 'new-main.html',
+                                            type : 'html',
+                                            mode : 'dynamic',
+                                            position : 'placeholder'
+                                        },
+                                        {
+                                            fileName : 'new-main.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position: 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-second",
+                                    description : "New Second output",
+                                    condition : "Browser.Support(\"javascript\") and true",
+                                    contents : [
+                                        {
+                                            fileName : 'new-second.css',
+                                            type : 'css',
+                                            mode : 'static',
+                                            position : 'head'
+                                        },
+                                        {
+                                            fileName : 'new-second.html',
+                                            type : 'html',
+                                            mode : 'dynamic',
+                                            position : 'placeholder'
+                                        },
+                                        {
+                                            fileName : 'new-second.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-third",
+                                    description : "New Third output",
+                                    maxIterations : 50,
+                                    defaultGeneration : true,
+                                    contents : [
+                                        {
+                                            fileName : "new-third.css",
+                                            type  : "css",
+                                            mode : "static",
+                                            position : "head",
+                                            attributes : [
+                                                {
+                                                    name : "new-rel",
+                                                    value : "new-alternate"
+                                                },
+                                                {
+                                                    name : "new-media",
+                                                    value : "new-print"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            fileName : 'new-HTML5Shim.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'head',
+                                            yieldValue :'<!--New-->\n<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->'
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+
+                        done();
+                    });
+                });
+            });
+
+            it("should set the ADP outputs with plain object", function () {
+
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adp/path");
+                    configurator.load(function () {
+                        configurator.outputs.set({
+                            defaultOutput : "new-second",
+                            outputs : [
+                                {
+                                    id : "new-main",
+                                    masterPage : "new_main.html",
+                                    description : "New Main output",
+                                    contents : [
+                                        {
+                                            fileName : 'new-main.css',
+                                            type : 'css',
+                                            mode : 'dynamic',
+                                            position : 'none'
+                                        },
+                                        {
+                                            fileName : 'new-main.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position: 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-second",
+                                    masterPage : "new_second.html",
+                                    description : "New Second output",
+                                    condition : "Browser.Support(\"javascript\") and true",
+                                    contents : [
+                                        {
+                                            fileName : 'new-second.css',
+                                            type : 'css',
+                                            mode : 'static',
+                                            position : 'head'
+                                        },
+                                        {
+                                            fileName : 'new-second.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-third",
+                                    masterPage : "new_third.html",
+                                    description : "New Third output",
+                                    contents : [
+                                        {
+                                            fileName : "new-third.css",
+                                            type  : "css",
+                                            mode : "static",
+                                            position : "head",
+                                            attributes : [
+                                                {
+                                                    name : "new-rel",
+                                                    value : "new-alternate"
+                                                },
+                                                {
+                                                    name : "new-media",
+                                                    value : "new-print"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            fileName : 'new-HTML5Shim.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'head',
+                                            yieldValue :'<!--New-->\n<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->'
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+                        var result = configurator.outputs.get();
+                        expect(result ).toEqual({
+                            defaultOutput : "new-second",
+                            outputs : [
+                                {
+                                    id : "new-main",
+                                    masterPage : "new_main.html",
+                                    description : "New Main output",
+                                    contents : [
+                                        {
+                                            fileName : 'new-main.css',
+                                            type : 'css',
+                                            mode : 'dynamic',
+                                            position : 'none'
+                                        },
+                                        {
+                                            fileName : 'new-main.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position: 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-second",
+                                    masterPage : "new_second.html",
+                                    description : "New Second output",
+                                    condition : "Browser.Support(\"javascript\") and true",
+                                    contents : [
+                                        {
+                                            fileName : 'new-second.css',
+                                            type : 'css',
+                                            mode : 'static',
+                                            position : 'head'
+                                        },
+                                        {
+                                            fileName : 'new-second.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-third",
+                                    masterPage : "new_third.html",
+                                    description : "New Third output",
+                                    contents : [
+                                        {
+                                            fileName : "new-third.css",
+                                            type  : "css",
+                                            mode : "static",
+                                            position : "head",
+                                            attributes : [
+                                                {
+                                                    name : "new-rel",
+                                                    value : "new-alternate"
+                                                },
+                                                {
+                                                    name : "new-media",
+                                                    value : "new-print"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            fileName : 'new-HTML5Shim.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'head',
+                                            yieldValue :'<!--New-->\n<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->'
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+
+                        done();
+                    });
+                });
+            });
+
+            it("should create the ADP outputs if it's not defined in the xml", function () {
+                spies.fs.readFile.andCallFake(function (p, cb) {
+                    cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
+                        '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                        '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                        '<helpURL>the-helpURL</helpURL>' +
+                        '<categories><category>cat-1</category><category>cat-2</category></categories>' +
+                        '<style width="200" height="400" />' +
+                        '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
+                        '<constraint on="controls" label="true" responseblock="true" />' +
+                        '<constraint on="responses" min="2" max="*" />' +
+                        '</constraints>' +
+                        '</info>' +
+                        '</control>');
+                });
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adp/path");
                     configurator.load(function () {
                         configurator.outputs.set({
                             defaultOutput : "new-second",
@@ -3814,7 +4312,7 @@ describe('ADXConfigurator', function () {
             it("should return the ADC outputs as Xml String", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         var result = configurator.outputs.toXml();
                         expect(result).toEqual('  <outputs defaultOutput="main">' +
@@ -3853,7 +4351,49 @@ describe('ADXConfigurator', function () {
                 });
             });
         });
+
+        it("should return the ADP outputs as Xml String", function () {
+
+            runSync(function (done) {
+                var configurator = new ADXConfigurator("adp/path");
+                configurator.load(function () {
+                    var result = configurator.outputs.toXml();
+                    expect(result).toEqual('  <outputs defaultOutput="main">' +
+                        '\n    <output id="main" masterPage="main.html">' +
+                        '\n      <description><![CDATA[Main output]]></description>' +
+                        '\n      <content fileName="main.css" type="css" mode="static" position="head" />' +
+                        '\n      <content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                        '\n    </output>' +
+                        '\n    <output id="second" masterPage="second.html">' +
+                        '\n      <description><![CDATA[Second output]]></description>' +
+                        '\n      <condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                        '\n      <content fileName="second.css" type="css" mode="static" position="head" />' +
+                        '\n      <content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                        '\n    </output>' +
+                        '\n    <output id="third" masterPage="third.html">' +
+                        '\n      <description><![CDATA[Third output]]></description>' +
+                        '\n      <content fileName="third.css" type="css" mode="static" position="head">' +
+                        '\n        <attribute name="rel">' +
+                        '\n          <value><![CDATA[alternate]]></value>' +
+                        '\n        </attribute>' +
+                        '\n        <attribute name="media">' +
+                        '\n          <value><![CDATA[print]]></value>' +
+                        '\n        </attribute>' +
+                        '\n      </content>' +
+                        '\n      <content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                        '\n        <yield>' +
+                        '<![CDATA[<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->]]>' +
+                        '</yield>' +
+                        '\n      </content>' +
+                        '\n    </output>' +
+                        '\n  </outputs>');
+                    done();
+                });
+            });
+        });
     });
+
+    return;
 
     describe('#properties', function () {
         beforeEach(function () {

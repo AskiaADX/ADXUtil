@@ -1435,7 +1435,8 @@ ADXOutputs.prototype.set = function set(data) {
  */
 ADXOutputs.prototype.toXml = function toXml() {
     var xml = [],
-        data = this.get();
+        data = this.get(),
+        projectType = this.configurator.projectType;
 
     if (!data) {
         return '';
@@ -1444,11 +1445,21 @@ ADXOutputs.prototype.toXml = function toXml() {
     if (Array.isArray(data.outputs)) {
         data.outputs.forEach(function (output) {
             var outputAttr = '';
-            if (typeof output.defaultGeneration === 'boolean') {
-                outputAttr += ' defaultGeneration="' + output.defaultGeneration.toString() + '"';
+
+            // ADC Only
+            if (projectType === 'adc') {
+                if (typeof output.defaultGeneration === 'boolean') {
+                    outputAttr += ' defaultGeneration="' + output.defaultGeneration.toString() + '"';
+                }
+                if (output.maxIterations) {
+                    outputAttr += ' maxIterations="' + output.maxIterations + '"';
+                }
             }
-            if (output.maxIterations) {
-                outputAttr += ' maxIterations="' + output.maxIterations + '"';
+            // ADP Only
+            else if (projectType ==='adp') {
+                if (output.masterPage) {
+                    outputAttr += ' masterPage="' + output.masterPage + '"';
+                }
             }
 
             xml.push('    <output id="' + output.id + '"' + outputAttr + '>');
@@ -1461,6 +1472,10 @@ ADXOutputs.prototype.toXml = function toXml() {
 
             if (Array.isArray(output.contents)) {
                 output.contents.forEach(function (content) {
+                    // ADC Only
+                    if (projectType === 'adp' && content.position === 'placeholder'){
+                        return;
+                    }
                     var xmlContent = [];
                     xmlContent.push('      <content');
                     xmlContent.push(' fileName="', content.fileName || "", '"');
