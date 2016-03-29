@@ -1,7 +1,7 @@
-describe('ADCPreferences', function () {
+describe('ADXPreferences', function () {
     var fs = require('fs');
     var path = require('path');
-    var adcPreferences,
+    var adxPreferences,
         msg,
         errMsg,
         spies = {},
@@ -20,10 +20,10 @@ describe('ADCPreferences', function () {
     }
 
     beforeEach(function () {
-        adcPreferencesKey = require.resolve('../../app/preferences/ADCPreferences.js');
+        var adxPreferencesKey = require.resolve('../../app/preferences/ADXPreferences.js');
 
-        delete require.cache[adcPreferencesKey];
-        adcPreferences = require('../../app/preferences/ADCPreferences.js');
+        delete require.cache[adxPreferencesKey];
+        adxPreferences = require('../../app/preferences/ADXPreferences.js');
 
         common = require('../../app/common/common.js');
         msg = common.messages.message;
@@ -50,14 +50,14 @@ describe('ADCPreferences', function () {
             spies.fs.readFile.andCallFake(function (filePath) {
                 fileRead = filePath;
             });
-            adcPreferences.read();
+            adxPreferences.read();
             expect(fileRead).toEqual(path.join(process.env.APPDATA, common.APP_NAME, common.PREFERENCES_FILE_NAME));
         });
         it("should output the `No preferences defined` when the `preferences.json` file is not found", function () {
             spies.fs.readFile.andCallFake(function (filePath, cb) {
                 cb(new Error('AN ERROR'));
             });
-            adcPreferences.read();
+            adxPreferences.read();
             expect(spies.writeMessage).toHaveBeenCalledWith(msg.noPreferences);
         });
         it("should output the user preferences from preferences.json", function () {
@@ -72,7 +72,7 @@ describe('ADCPreferences', function () {
             spies.fs.readFile.andCallFake(function (f, cb) {
                 cb(null, JSON.stringify(obj));
             });
-            adcPreferences.read();
+            adxPreferences.read();
             expect(spies.writeMessage).toHaveBeenCalledWith(JSON.stringify(obj, null, 2));
         });
         it("should return the preferences in the callback when it's defined", function () {
@@ -88,7 +88,7 @@ describe('ADCPreferences', function () {
                 cb(null, JSON.stringify(obj));
             });
             runSync(function (done) {
-                adcPreferences.read(function (preferences) {
+                adxPreferences.read(function (preferences) {
                     expect(preferences).toEqual(obj);
                     done();
                 });
@@ -98,7 +98,7 @@ describe('ADCPreferences', function () {
             spies.fs.readFile.andCallFake(function (filePath, cb) {
                 cb(new Error('AN ERROR'));
             });
-            adcPreferences.read({silent : true});
+            adxPreferences.read({silent : true});
             expect(spies.writeMessage).not.toHaveBeenCalled();
         });
         it("should not output at all when the `options.silent` is true and the file is found", function () {
@@ -113,7 +113,7 @@ describe('ADCPreferences', function () {
             spies.fs.readFile.andCallFake(function (f, cb) {
                 cb(null, JSON.stringify(obj));
             });
-            adcPreferences.read({silent : true});
+            adxPreferences.read({silent : true});
             expect(spies.writeMessage).not.toHaveBeenCalled();
         });
     });
@@ -124,7 +124,7 @@ describe('ADCPreferences', function () {
                 spies.fs.readFile.andCallFake(function (filePath, cb) {
                     cb(new Error('AN ERROR'));
                 });
-                adcPreferences.write(null, function () {
+                adxPreferences.write(null, function () {
                     expect(spies.fs.writeFile).not.toHaveBeenCalled();
                     done();
                 });
@@ -152,7 +152,7 @@ describe('ADCPreferences', function () {
                     expect(content).toEqual(JSON.stringify(obj));
                     done();
                 });
-                adcPreferences.write(obj);
+                adxPreferences.write(obj);
             });
         });
 
@@ -189,7 +189,7 @@ describe('ADCPreferences', function () {
                     expect(content).toEqual(JSON.stringify(expectedObj));
                     done();
                 });
-                adcPreferences.write(obj);
+                adxPreferences.write(obj);
             });
         });
 
@@ -228,7 +228,7 @@ describe('ADCPreferences', function () {
                 cbbWrite();
             });
             runSync(function (done) {
-                adcPreferences.write(obj, function (result) {
+                adxPreferences.write(obj, function (result) {
                     expect(result).toEqual(expectedObj);
                     done();
                 });

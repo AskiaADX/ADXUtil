@@ -5,14 +5,14 @@ var msg     = common.messages.message;
 /**
  * Manage the user preferences
  *
- * @class ADC.Preferences
+ * @class ADX.Preferences
  * @singleton
  */
 function Preferences(){}
 
 
 /**
- * Create a new instance of ADC Preferences
+ * Create a new instance of ADX Preferences
  *
  * @constructor
  */
@@ -57,11 +57,11 @@ Preferences.prototype.writeMessage = function writeMessage(text) {
  * @param {Boolean} [options.silent=false] By pass the output
  * @param {Function} [callback] Callback
  * @param {Object|null} [callback.preferences]
- * @param {Object} [callback.preferences.author] Default ADC author
- * @param {String} [callback.preferences.author.name] Default Name of the ADC author
- * @param {String} [callback.preferences.author.email] Default Email of the ADC author
- * @param {String} [callback.preferences.author.company] Default Company of the ADC author
- * @param {String} [callback.preferences.author.webSite] Default WebSite of the ADC author
+ * @param {Object} [callback.preferences.author] Default ADX author
+ * @param {String} [callback.preferences.author.name] Default Name of the ADX author
+ * @param {String} [callback.preferences.author.email] Default Email of the ADX author
+ * @param {String} [callback.preferences.author.company] Default Company of the ADX author
+ * @param {String} [callback.preferences.author.webSite] Default WebSite of the ADX author
  */
 Preferences.prototype.read = function read(options, callback) {
     // Swap arguments
@@ -97,18 +97,18 @@ Preferences.prototype.read = function read(options, callback) {
  * Write the preferences
  *
  * @param {Object} preferences
- * @param {Object} [preferences.author] Default ADC author
- * @param {String} [preferences.author.name] Default Name of the ADC author
- * @param {String} [preferences.author.email] Default Email of the ADC author
- * @param {String} [preferences.author.company] Default Company of the ADC author
- * @param {String} [preferences.author.webSite] Default WebSite of the ADC author
+ * @param {Object} [preferences.author] Default ADX author
+ * @param {String} [preferences.author.name] Default Name of the ADX author
+ * @param {String} [preferences.author.email] Default Email of the ADX author
+ * @param {String} [preferences.author.company] Default Company of the ADX author
+ * @param {String} [preferences.author.webSite] Default WebSite of the ADX author
  * @param {Function} [callback] Callback
  * @param {Object|null} [callback.preferences]
- * @param {Object} [callback.preferences.author] Default ADC author
- * @param {String} [callback.preferences.author.name] Default Name of the ADC author
- * @param {String} [callback.preferences.author.email] Default Email of the ADC author
- * @param {String} [callback.preferences.author.company] Default Company of the ADC author
- * @param {String} [callback.preferences.author.website] Default Website of the ADC author
+ * @param {Object} [callback.preferences.author] Default ADX author
+ * @param {String} [callback.preferences.author.name] Default Name of the ADX author
+ * @param {String} [callback.preferences.author.email] Default Email of the ADX author
+ * @param {String} [callback.preferences.author.company] Default Company of the ADX author
+ * @param {String} [callback.preferences.author.website] Default Website of the ADX author
  */
 Preferences.prototype.write = function write(preferences, callback) {
     if (!preferences || !preferences.author) {
@@ -157,7 +157,7 @@ Preferences.getInstance = function getInstance() {
 
 /**
  * Single instance of the preferences object
- * @type {ADC.Preferences}
+ * @type {ADX.Preferences}
  */
 exports.preferences = Preferences.getInstance();
 
@@ -168,11 +168,11 @@ exports.preferences = Preferences.getInstance();
  * @param {Boolean} [options.silent=false] By pass the output
  * @param {Function} [callback] Callback
  * @param {Object|null} [callback.preferences]
- * @param {Object} [callback.preferences.author] Default ADC author
- * @param {String} [callback.preferences.author.name] Default Name of the ADC author
- * @param {String} [callback.preferences.author.email] Default Email of the ADC author
- * @param {String} [callback.preferences.author.company] Default Company of the ADC author
- * @param {String} [callback.preferences.author.website] Default Website of the ADC author
+ * @param {Object} [callback.preferences.author] Default ADX author
+ * @param {String} [callback.preferences.author.name] Default Name of the ADX author
+ * @param {String} [callback.preferences.author.email] Default Email of the ADX author
+ * @param {String} [callback.preferences.author.company] Default Company of the ADX author
+ * @param {String} [callback.preferences.author.website] Default Website of the ADX author
  */
 exports.read = function read(options, callback) {
     exports.preferences.read(options, callback);
@@ -183,18 +183,18 @@ exports.read = function read(options, callback) {
  * Write the preferences
  *
  * @param {Object} preferences
- * @param {Object} [preferences.author] Default ADC author
- * @param {String} [preferences.author.name] Default Name of the ADC author
- * @param {String} [preferences.author.email] Default Email of the ADC author
- * @param {String} [preferences.author.company] Default Company of the ADC author
- * @param {String} [preferences.author.webSite] Default WebSite of the ADC author
+ * @param {Object} [preferences.author] Default ADX author
+ * @param {String} [preferences.author.name] Default Name of the ADX author
+ * @param {String} [preferences.author.email] Default Email of the ADX author
+ * @param {String} [preferences.author.company] Default Company of the ADX author
+ * @param {String} [preferences.author.webSite] Default WebSite of the ADX author
  * @param {Function} [callback] Callback
  * @param {Object|null} [callback.preferences]
- * @param {Object} [callback.preferences.author] Default ADC author
- * @param {String} [callback.preferences.author.name] Default Name of the ADC author
- * @param {String} [callback.preferences.author.email] Default Email of the ADC author
- * @param {String} [callback.preferences.author.company] Default Company of the ADC author
- * @param {String} [callback.preferences.author.webSite] Default WebSite of the ADC author
+ * @param {Object} [callback.preferences.author] Default ADX author
+ * @param {String} [callback.preferences.author.name] Default Name of the ADX author
+ * @param {String} [callback.preferences.author.email] Default Email of the ADX author
+ * @param {String} [callback.preferences.author.company] Default Company of the ADX author
+ * @param {String} [callback.preferences.author.webSite] Default WebSite of the ADX author
  */
 exports.write = function write(preferences, callback) {
     exports.preferences.write(preferences, callback);
