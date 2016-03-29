@@ -767,6 +767,10 @@ Validator.prototype.initConfigXMLDoc = function initConfigXMLDoc() {
             self.resume(err);
             return;
         }
+        if (self.adxConfigurator.projectType === 'adp') {
+            self.removeOnSequence(['validateADXInfoConstraints']);
+            self.report.total = self.validators.sequence.length;
+        }
         self.writeSuccess(successMsg.xmlInitialize);
         self.resume(null);
 

@@ -3,9 +3,6 @@ describe('ADXValidator', function () {
     var fs              = require('fs'),
         spies           = {},
         format          = require('util').format,
-        clc             = require('cli-color'),
-        et              = require('elementtree'),
-        subElement      = et.SubElement,
         common,
         adxValidator,
         Validator,
@@ -727,6 +724,17 @@ describe('ADXValidator', function () {
             adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeError).not.toHaveBeenCalled();
+        });
+
+        it("should remove the validateADXInfoConstraints in the sequence while using an ADP", function () {
+            Configurator.prototype.load.andCallFake(function (cb) {
+                this.fromXml('<page></page>');
+                cb(null);
+            });
+            spies.sequence = ['initConfigXMLDoc', 'validateADXInfoConstraints'];
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(validatorInstance.validators.sequence).toEqual(['initConfigXMLDoc']);
+            expect(validatorInstance.report.total).toEqual(1);
         });
     });
 
