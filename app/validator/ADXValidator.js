@@ -239,7 +239,7 @@ var constraintAttributeRules = {
 };
 
 /*
- * Build a new error messag
+ * Build a new error message
  * @param {String} message Error message
  * @return {Error} New error
  */
@@ -248,28 +248,28 @@ function newError(message) {
 }
 
 /**
- * Validate the ADC files structure, configuration and logical
+ * Validate the ADX files structure, configuration and logical
  *
- * @class ADC.Validator
+ * @class ADX.Validator
  * @private
  */
-function Validator(adcDirPath) {
+function Validator(adxDirPath) {
     /**
-     * Root dir of the current ADCUtil
+     * Root dir of the current ADXUtil
      */
     this.rootdir    = pathHelper.resolve(__dirname, "../../");
 
     /**
-     * Name of the ADC
+     * Name of the ADX
      * @type {string}
      */
-    this.adcName    = '';
+    this.adxName    = '';
 
     /**
-     * Path to the ADC directory
+     * Path to the ADX directory
      * @type {string}
      */
-    this.adcDirectoryPath = adcDirPath ? pathHelper.normalize(adcDirPath) : process.cwd();
+    this.adxDirectoryPath = adxDirPath ? pathHelper.normalize(adxDirPath) : process.cwd();
 
     /**
      * Validators
@@ -280,16 +280,16 @@ function Validator(adcDirPath) {
         current  : -1,
         sequence : [
             'validatePathArg',
-            'validateADCDirectoryStructure',
+            'validateADXDirectoryStructure',
             'validateFileExtensions',
             'validateXMLAgainstXSD',
             'initConfigXMLDoc',
-            'validateADCInfo',
-            'validateADCInfoConstraints',
-            'validateADCOutputs',
-            'validateADCProperties',
+            'validateADXInfo',
+            'validateADXInfoConstraints',
+            'validateADXOutputs',
+            'validateADXProperties',
             'runAutoTests',
-            'runADCUnitTests'
+            'runADXUnitTests'
         ]
     };
 
@@ -339,15 +339,15 @@ function Validator(adcDirPath) {
 }
 
 /**
- * Create a new instance of ADC validator
+ * Create a new instance of ADX validator
  *
  * @constructor
- * @param {String} adcDirPath Path of the ADC directory
+ * @param {String} adxDirPath Path of the ADX directory
  */
 Validator.prototype.constructor = Validator;
 
 /**
- * Validate the current ADC instance
+ * Validate the current ADX instance
  *
  * @param {Object} [options] Options of validation
  * @param {Boolean} [options.test=true] Run unit tests
@@ -402,7 +402,7 @@ Validator.prototype.validate = function validate(options, callback) {
 
         // --no-test
         if (options.test === false) { // Check bool value not falsy
-            this.removeOnSequence(['runADCUnitTests']);
+            this.removeOnSequence(['runADXUnitTests']);
         }
 
         // --no-xml
@@ -410,10 +410,10 @@ Validator.prototype.validate = function validate(options, callback) {
             this.removeOnSequence([
                 'validateXMLAgainstXSD',
                 'initConfigXMLDoc',
-                'validateADCInfo',
-                'validateADCInfoConstraints',
-                'validateADCOutputs',
-                'validateADCProperties'
+                'validateADXInfo',
+                'validateADXInfoConstraints',
+                'validateADXOutputs',
+                'validateADXProperties'
             ]);
         }
 
@@ -481,7 +481,7 @@ Validator.prototype.done  = function done(err) {
 /**
  * Execute the next validation
  *
- * @param {Error|void} err Error which occured during the previous validation
+ * @param {Error|void} err Error which occurred during the previous validation
  */
 Validator.prototype.resume = function resume(err) {
     if (err) {
@@ -555,7 +555,7 @@ Validator.prototype.writeSuccess = function writeSuccess(text) {
 };
 
 /**
- * Write an arbitrary message in the console  or in the logger without specific prefix or in the  logger
+ * Write an arbitrary message in the console  or in the logger without specific prefix or in the logger
  * @param {String} text Text to write in the console
  */
 Validator.prototype.writeMessage = function writeMessage(text) {
@@ -571,17 +571,17 @@ Validator.prototype.writeMessage = function writeMessage(text) {
 * Validate that the `path` argument is correct
 */
 Validator.prototype.validatePathArg = function validatePathArg() {
-    if (!this.adcDirectoryPath) {
+    if (!this.adxDirectoryPath) {
         this.resume(newError(errMsg.missingArgPath));
         return;
     }
 
-    // Validate the existence of the specify ADC directory
+    // Validate the existence of the specify ADX directory
     var self = this;
-    common.dirExists(self.adcDirectoryPath, function verifyADCDirectory(err, exists) {
+    common.dirExists(self.adxDirectoryPath, function verifyADXDirectory(err, exists) {
         var er;
         if (!exists) {
-            er = newError(errMsg.noSuchFileOrDirectory, pathHelper.normalize(self.adcDirectoryPath));
+            er = newError(errMsg.noSuchFileOrDirectory, pathHelper.normalize(self.adxDirectoryPath));
         } else {
             self.writeSuccess(successMsg.pathValidate);
         }
@@ -591,13 +591,13 @@ Validator.prototype.validatePathArg = function validatePathArg() {
 
 
 /**
- * Validate the structure of the ADC directory
+ * Validate the structure of the ADX directory
  */
-Validator.prototype.validateADCDirectoryStructure = function validateADCDirectoryStructure() {
+Validator.prototype.validateADXDirectoryStructure = function validateADXDirectoryStructure() {
     // Verify if the config.xml exists
     var self = this;
-    fs.exists(pathHelper.join(self.adcDirectoryPath, common.CONFIG_FILE_NAME), function verifyConfigFileExist(exists) {
-        var resourcesPath = pathHelper.join(self.adcDirectoryPath, common.RESOURCES_DIR_NAME),
+    fs.exists(pathHelper.join(self.adxDirectoryPath, common.CONFIG_FILE_NAME), function verifyConfigFileExist(exists) {
+        var resourcesPath = pathHelper.join(self.adxDirectoryPath, common.RESOURCES_DIR_NAME),
             dirResources  = self.dirResources;
 
         // Check  the resources directory
@@ -692,7 +692,7 @@ Validator.prototype.validateADCDirectoryStructure = function validateADCDirector
 
 
 /**
- * Validate all file extension against the while list and the black list
+ * Validate all file extension against the white list and the black list
  */
 Validator.prototype.validateFileExtensions = function validateFileExtensions() {
     var dirResources = this.dirResources,
@@ -732,13 +732,13 @@ Validator.prototype.validateFileExtensions = function validateFileExtensions() {
 
 
 /**
- * Validate the config.xml file of the ADC against the XSD schema
+ * Validate the config.xml file of the ADX against the XSD schema
  */
 Validator.prototype.validateXMLAgainstXSD = function validateXMLAgainstXSD() {
     var exec            = require('child_process').exec,
         xmlLintPath     = pathHelper.join(this.rootdir, common.XML_LINT_PATH),
         xmlSchemaPath   = pathHelper.join(this.rootdir, common.SCHEMA_PATH, common.SCHEMA_CONFIG),
-        xmlPath         = pathHelper.join(this.adcDirectoryPath, common.CONFIG_FILE_NAME),
+        xmlPath         = pathHelper.join(this.adxDirectoryPath, common.CONFIG_FILE_NAME),
 
         self = this,
 
@@ -758,7 +758,7 @@ Validator.prototype.validateXMLAgainstXSD = function validateXMLAgainstXSD() {
  */
 Validator.prototype.initConfigXMLDoc = function initConfigXMLDoc() {
     var self = this;
-    fs.readFile(pathHelper.join(self.adcDirectoryPath, common.CONFIG_FILE_NAME), 'utf8', function readConfigXMLFile(err, data) {
+    fs.readFile(pathHelper.join(self.adxDirectoryPath, common.CONFIG_FILE_NAME), 'utf8', function readConfigXMLFile(err, data) {
         if (err) {
             self.resume(err);
             return;
@@ -777,9 +777,9 @@ Validator.prototype.initConfigXMLDoc = function initConfigXMLDoc() {
 
 
 /**
- * Validate the info of the ADC config file
+ * Validate the info of the ADX config file
  */
-Validator.prototype.validateADCInfo = function validateADCInfo() {
+Validator.prototype.validateADXInfo = function validateADXInfo() {
     var infosEl = this.configXmlDoc.control.info && this.configXmlDoc.control.info[0],
         nameEl  = infosEl && infosEl.name && infosEl.name[0];
 
@@ -793,16 +793,16 @@ Validator.prototype.validateADCInfo = function validateADCInfo() {
         return;
     }
 
-    this.adcName = nameEl;
+    this.adxName = nameEl;
     this.writeSuccess(successMsg.xmlInfoValidate);
     this.resume(null);
 };
 
 
 /**
- * Validate the info/constraints of the ADC config file
+ * Validate the info/constraints of the ADX config file
  */
-Validator.prototype.validateADCInfoConstraints = function validateADCInfoConstraints() {
+Validator.prototype.validateADXInfoConstraints = function validateADXInfoConstraints() {
     var constraintsEl           = this.configXmlDoc.control.info[0].constraints[0],
         constraints             = constraintsEl.constraint || [],
         constraintsOn           = {
@@ -865,9 +865,9 @@ Validator.prototype.validateADCInfoConstraints = function validateADCInfoConstra
 
 
 /**
- * Validate the outputs of the ADC config file
+ * Validate the outputs of the ADX config file
  */
-Validator.prototype.validateADCOutputs = function validateADCOutputs() {
+Validator.prototype.validateADXOutputs = function validateADXOutputs() {
     var outputsEl               = this.configXmlDoc.control.outputs[0],
         outputs                 = outputsEl.output,
         conditions              = {},
@@ -901,7 +901,7 @@ Validator.prototype.validateADCOutputs = function validateADCOutputs() {
             flashContentCount       : 0
         };
 
-        err = this.validateADCContents(lastOutput);
+        err = this.validateADXContents(lastOutput);
 
         if (defaultGeneration || !lastOutput.javascriptContentCount) {
             htmlFallBackCount++;
@@ -930,12 +930,12 @@ Validator.prototype.validateADCOutputs = function validateADCOutputs() {
 
 
 /**
- * Validate the contents of an ADC output
+ * Validate the contents of an ADX output
  *
  * @param {Object} output Helper output object
  * @return {Error|void} Return the error or null when no error.
  */
-Validator.prototype.validateADCContents = function validateADCContents(output) {
+Validator.prototype.validateADXContents = function validateADXContents(output) {
     var contents = output.contents,
         i, l,
         err = null,
@@ -946,7 +946,7 @@ Validator.prototype.validateADCContents = function validateADCContents(output) {
     }
 
     for (i = 0, l = contents.length; i < l; i++) {
-        err = this.validateADCContent(output, contents[i]);
+        err = this.validateADXContent(output, contents[i]);
         if (err) {
             return err;
         }
@@ -971,13 +971,13 @@ Validator.prototype.validateADCContents = function validateADCContents(output) {
 
 
 /**
- * Validate the content of an ADC output
+ * Validate the content of an ADX output
  *
  * @param {Object} output Helper output object
  * @param {Object} content Content node
  * @return {Error|void} Return the error or null when no error.
  */
-Validator.prototype.validateADCContent = function validateADCContent(output, content) {
+Validator.prototype.validateADXContent = function validateADXContent(output, content) {
     var atts        = content.$,
         type        = atts.type,
         position    = atts.position,
@@ -1023,7 +1023,7 @@ Validator.prototype.validateADCContent = function validateADCContent(output, con
     }
 
     // Validate attribute
-    return this.validateADCContentAttribute(output, content);
+    return this.validateADXContentAttribute(output, content);
 };
 
 
@@ -1034,7 +1034,7 @@ Validator.prototype.validateADCContent = function validateADCContent(output, con
  * @param {Object} content Content node
  * @return {Error|void} Return error or null when no error
  */
-Validator.prototype.validateADCContentAttribute = function validateADCContentAttribute(output, content) {
+Validator.prototype.validateADXContentAttribute = function validateADXContentAttribute(output, content) {
     if (!content.attribute || !content.attribute.length) {
         return null;
     }
@@ -1086,9 +1086,9 @@ Validator.prototype.validateADCContentAttribute = function validateADCContentAtt
 };
 
 /**
- * Validate the ADC properties node
+ * Validate the ADX properties node
  */
-Validator.prototype.validateADCProperties = function validateADCProperties() {
+Validator.prototype.validateADXProperties = function validateADXProperties() {
     var propertiesEl           = (this.configXmlDoc.control.properties && this.configXmlDoc.control.properties[0]) || {},
         categories             = propertiesEl.category || [],
         properties             = propertiesEl.property || [];
@@ -1102,14 +1102,14 @@ Validator.prototype.validateADCProperties = function validateADCProperties() {
 };
 
 /**
- * Run the ADC Unit tests process with specify arguments
+ * Run the ADX Unit tests process with specify arguments
  * @param {Array} args
  * @param {String} message
  */
 Validator.prototype.runTests = function runTests(args, message) {
     var self = this;
     // Validate the existence of the specify unit test directory
-    common.dirExists(pathHelper.join(self.adcDirectoryPath, common.UNIT_TEST_DIR_PATH), function verifyUnitTestDirectory(err, exists) {
+    common.dirExists(pathHelper.join(self.adxDirectoryPath, common.UNIT_TEST_DIR_PATH), function verifyUnitTestDirectory(err, exists) {
         if (!exists) {
             self.resume(null);
             return ;
@@ -1127,7 +1127,7 @@ Validator.prototype.runTests = function runTests(args, message) {
                 }
             } else {
                 self.writeMessage(data);
-                self.writeSuccess(successMsg.adcUnitSucceed);
+                self.writeSuccess(successMsg.adxUnitSucceed);
             }
             self.resume(null);
         }
@@ -1149,27 +1149,27 @@ Validator.prototype.runTests = function runTests(args, message) {
 };
 
 /**
- * Run the ADC unit tests auto-generated
+ * Run the ADX unit tests auto-generated
  */
 Validator.prototype.runAutoTests = function runAutoTests() {
-    this.runTests(['--auto', this.adcDirectoryPath], msg.runningAutoUnit);
+    this.runTests(['--auto', this.adxDirectoryPath], msg.runningAutoUnit);
 };
 
 /**
- * Run the ADC unit tests
+ * Run the ADX unit tests
  */
-Validator.prototype.runADCUnitTests  = function runADCUnitTests() {
-    this.runTests([this.adcDirectoryPath], msg.runningADCUnit);
+Validator.prototype.runADXUnitTests  = function runADXUnitTests() {
+    this.runTests([this.adxDirectoryPath], msg.runningADXUnit);
 };
 
 // Export the Validator object
 exports.Validator = Validator;
 
 /*
- * Validate an ADC (CLI)
+ * Validate an ADX (CLI)
  *
  * @param {Command} program Commander object which hold the arguments pass to the program
- * @param {String} path Path to the ADC directory
+ * @param {String} path Path to the ADX directory
  * @param {Function} callback Callback function to run at the end it take a single Error argument
  */
 exports.validate = function validate(program, path, callback) {

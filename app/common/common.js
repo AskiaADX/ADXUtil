@@ -139,7 +139,7 @@ exports.messages = {
         xmlInfoConstraintsValidate : "Config#info#constraints validation done",
         xmlOutputsValidate         : "Config#outputs validation done",
         xmlPropertiesValidate      : "Config#properties validation done",
-        adcUnitSucceed             : "ADX Unit tests succeeded",
+        adxUnitSucceed             : "ADX Unit tests succeeded",
 
         // Generator
         adxStructureGenerated : "Project structure\r\n\r\n%s\r\n\r\nADX `%s` was successfully generated in `%s`\r\n",
@@ -150,7 +150,7 @@ exports.messages = {
     },
     message : {
         // Validator
-        runningADCUnit   : 'Running ADX Unit tests',
+        runningADXUnit   : 'Running ADX Unit tests',
         runningAutoUnit  : 'Running the auto-generated ADX Unit tests',
         validationFinishedIn       : "\r\nValidations finished in %d milliseconds",
         validationReport : "\r\n%d/%d validations runs, %d success, %d warnings, %d failures, %d skipped",

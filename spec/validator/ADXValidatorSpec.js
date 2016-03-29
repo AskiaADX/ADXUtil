@@ -1,11 +1,11 @@
-describe('ADCValidator', function () {
+describe('ADXValidator', function () {
 
     var fs              = require('fs'),
         spies           = {},
         format          = require('util').format,
         clc             = require('cli-color'),
         common,
-        adcValidator,
+        adxValidator,
         Validator,
         errMsg,
         warnMsg,
@@ -13,17 +13,17 @@ describe('ADCValidator', function () {
         msg;
 
     beforeEach(function () {
-        // Clean the cache, obtain a fresh instance of the ADCValidator each time
-        var adcValidatorKey = require.resolve('../../app/validator/ADCValidator.js'),
+        // Clean the cache, obtain a fresh instance of the ADXValidator each time
+        var adxValidatorKey = require.resolve('../../app/validator/ADXValidator.js'),
             commonKey = require.resolve('../../app/common/common.js');
 
         delete require.cache[commonKey];
         common = require('../../app/common/common.js');
 
-        delete require.cache[adcValidatorKey];
-        adcValidator = require('../../app/validator/ADCValidator.js');
+        delete require.cache[adxValidatorKey];
+        adxValidator = require('../../app/validator/ADXValidator.js');
 
-        Validator = adcValidator.Validator;
+        Validator = adxValidator.Validator;
 
         var oldValidate = Validator.prototype.validate;
 
@@ -110,7 +110,7 @@ describe('ADCValidator', function () {
             spyOn(Validator.prototype, 'writeMessage');
         });
 
-        it("should call each function in the ADCValidator.validators.sequence", function () {
+        it("should call each function in the ADXValidator.validators.sequence", function () {
             var seqLen, callCount = 0;
             function increment() {
                 callCount++;
@@ -122,7 +122,7 @@ describe('ADCValidator', function () {
                     this[seq[i]] = increment;
                 }
             };
-            adcValidator.validate(null, 'adc/path/dir');
+            adxValidator.validate(null, 'adx/path/dir');
             expect(callCount).toBe(seqLen);
         });
 
@@ -142,7 +142,7 @@ describe('ADCValidator', function () {
                     this[seq[i]] = increment;
                 }
             };
-            adcValidator.validate(null, 'adc/path/dir');
+            adxValidator.validate(null, 'adx/path/dir');
             expect(callCount).toBe(3);
         });
 
@@ -157,7 +157,7 @@ describe('ADCValidator', function () {
                     this[seq[i]] = fakeValidation;
                 }
             };
-            adcValidator.validate(null, 'adc/path/dir', function () {
+            adxValidator.validate(null, 'adx/path/dir', function () {
                 wasCalled = true;
             });
             expect(wasCalled).toBe(true);
@@ -171,7 +171,7 @@ describe('ADCValidator', function () {
                 };
             };
 
-            adcValidator.validate(null, 'adc/path/dir');
+            adxValidator.validate(null, 'adx/path/dir');
 
             expect(Validator.prototype.writeError).toHaveBeenCalledWith("An error occurred");
         });
@@ -184,11 +184,11 @@ describe('ADCValidator', function () {
                 };
             };
 
-            adcValidator.validate({
+            adxValidator.validate({
                 test : true
-            }, 'adc/path/dir');
+            }, 'adx/path/dir');
 
-            expect(seq).toContains(['runADCUnitTests']);
+            expect(seq).toContains(['runADXUnitTests']);
         });
 
         it("should not run the unit tests when called with the `program#test=false`", function () {
@@ -199,11 +199,11 @@ describe('ADCValidator', function () {
                 };
             };
 
-            adcValidator.validate({
+            adxValidator.validate({
                 test : false
             }, 'adc/path/dir');
 
-            expect(seq).not.toContains(['runADCUnitTests']);
+            expect(seq).not.toContains(['runADXUnitTests']);
         });
 
         it("should run the auto unit tests when called with the `program#autoTest=true`", function () {
@@ -214,9 +214,9 @@ describe('ADCValidator', function () {
                 };
             };
 
-            adcValidator.validate({
+            adxValidator.validate({
                 autoTest : true
-            }, 'adc/path/dir');
+            }, 'adx/path/dir');
 
             expect(seq).toContains(['runAutoTests']);
         });
@@ -230,9 +230,9 @@ describe('ADCValidator', function () {
             };
 
 
-            adcValidator.validate({
+            adxValidator.validate({
                 autoTest : false
-            }, 'adc/path/dir');
+            }, 'adx/path/dir');
 
             expect(seq).not.toContains(['runAutoTests']);
         });
@@ -245,17 +245,17 @@ describe('ADCValidator', function () {
                 };
             };
 
-            adcValidator.validate({
+            adxValidator.validate({
                 xml : true
-            }, 'adc/path/dir');
+            }, 'adx/path/dir');
 
             expect(seq).toContains([
                 'validateXMLAgainstXSD',
                 'initConfigXMLDoc',
-                'validateADCInfo',
-                'validateADCInfoConstraints',
-                'validateADCOutputs',
-                'validateADCProperties'
+                'validateADXInfo',
+                'validateADXInfoConstraints',
+                'validateADXOutputs',
+                'validateADXProperties'
             ]);
         });
 
@@ -267,17 +267,17 @@ describe('ADCValidator', function () {
                 };
             };
 
-            adcValidator.validate({
+            adxValidator.validate({
                 xml : false
-            }, 'adc/path/dir');
+            }, 'adx/path/dir');
 
             expect(seq).not.toContains([
                 'validateXMLAgainstXSD',
                 'initConfigXMLDoc',
-                'validateADCInfo',
-                'validateADCInfoConstraints',
-                'validateADCOutputs',
-                'validateADCProperties'
+                'validateADXInfo',
+                'validateADXInfoConstraints',
+                'validateADXOutputs',
+                'validateADXProperties'
             ]);
         });
 
@@ -285,7 +285,7 @@ describe('ADCValidator', function () {
             spies.validateHook = function () {
                 this.validators.sequence = [];
             };
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
             expect(Validator.prototype.writeMessage).toHaveBeenCalledWith(msg.validationFinishedIn, 0);
         });
 
@@ -299,7 +299,7 @@ describe('ADCValidator', function () {
                 this.report.errors    = 3;
             };
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
             expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(msg.validationReport,6, 8, 1, 2, 3, 2));
         });
 
@@ -313,7 +313,7 @@ describe('ADCValidator', function () {
                 this.report.errors    = 0;
             };
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
             expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(format(msg.validationReport, 6, 6, 1, 2, 0, 0));
         });
 
@@ -327,7 +327,7 @@ describe('ADCValidator', function () {
                 this.report.errors    = 0;
             };
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
             expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(format(msg.validationReport,6, 6, 1, 0, 0, 0));
         });
 
@@ -340,9 +340,9 @@ describe('ADCValidator', function () {
             var logger = {
                 key : "val"
             };
-            adcValidator.validate({
+            adxValidator.validate({
                 logger : logger
-            }, '/adc/path/dir');
+            }, '/adx/path/dir');
             expect(instance.logger).toBe(logger);
         });
     });
@@ -362,8 +362,8 @@ describe('ADCValidator', function () {
                 callback(new Error("No such file or directory"));
             });
 
-            adcValidator.validate(null, '/adc/path/dir');
-            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.noSuchFileOrDirectory, "\\adc\\path\\dir"));
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.noSuchFileOrDirectory, "\\adx\\path\\dir"));
         });
 
         it("should not output an error when the path specified exist", function () {
@@ -371,7 +371,7 @@ describe('ADCValidator', function () {
                 callback(null);
             });
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeError).not.toHaveBeenCalled();
         });
@@ -380,18 +380,18 @@ describe('ADCValidator', function () {
             spyOn(process, 'cwd').andReturn('/cwd/');
             var dir;
             spies.validateHook = function () {
-                dir = this.adcDirectoryPath;
+                dir = this.adxDirectoryPath;
             };
-            adcValidator.validate(null);
+            adxValidator.validate(null);
 
             expect(dir).toBe('/cwd/');
         });
     });
 
-    describe('#validateADCDirectoryStructure', function () {
+    describe('#validateADXDirectoryStructure', function () {
         beforeEach(function () {
-            // Modify the sequence of the validation to only call the validateADCDirectoryStructure method
-            spies.sequence = ['validateADCDirectoryStructure'];
+            // Modify the sequence of the validation to only call the validateADXDirectoryStructure method
+            spies.sequence = ['validateADXDirectoryStructure'];
             spyOn(Validator.prototype, 'writeError');
             spyOn(Validator.prototype, 'writeWarning');
             spyOn(Validator.prototype, 'writeSuccess');
@@ -403,7 +403,7 @@ describe('ADCValidator', function () {
                 callback(false);
             });
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeError).toHaveBeenCalledWith(errMsg.noConfigFile);
         });
@@ -413,7 +413,7 @@ describe('ADCValidator', function () {
                 callback(true);
             });
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeError).not.toHaveBeenCalled();
         });
@@ -423,7 +423,7 @@ describe('ADCValidator', function () {
                 callback(true);
             });
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeSuccess).toHaveBeenCalled();
         });
@@ -435,12 +435,12 @@ describe('ADCValidator', function () {
             });
 
             spies.fs.stat.andCallFake(function (path) {
-                if (path === '\\adc\\path\\dir\\resources') {
+                if (path === '\\adx\\path\\dir\\resources') {
                     searchResourcesDirectory = true;
                 }
             });
 
-            adcValidator.validate('null', '/adc/path/dir');
+            adxValidator.validate('null', '/adx/path/dir');
 
             expect(searchResourcesDirectory).toBe(true);
         });
@@ -453,16 +453,16 @@ describe('ADCValidator', function () {
                 });
 
                 spies.fs.stat.andCallFake(function (path, callback) {
-                    if (path === '\\adc\\path\\dir\\resources') {
+                    if (path === '\\adx\\path\\dir\\resources') {
                         callback(null, true);
-                    } else if (path === '\\adc\\path\\dir\\resources\\' + mode) {
+                    } else if (path === '\\adx\\path\\dir\\resources\\' + mode) {
                         searchResources = true;
                     } else {
                         callback(null, false);
                     }
                 });
 
-                adcValidator.validate('null', '/adc/path/dir');
+                adxValidator.validate('null', '/adx/path/dir');
 
                 expect(searchResources).toBe(true);
             });
@@ -479,9 +479,9 @@ describe('ADCValidator', function () {
                 };
 
                 spies.fs.stat.andCallFake(function (path, callback) {
-                    if (path === '\\adc\\path\\dir\\resources') {
+                    if (path === '\\adx\\path\\dir\\resources') {
                         callback(null, true);
-                    } else if (path === '\\adc\\path\\dir\\resources\\' + mode) {
+                    } else if (path === '\\adx\\path\\dir\\resources\\' + mode) {
                         callback(null, true);
                     } else {
                         callback(null, false);
@@ -492,7 +492,7 @@ describe('ADCValidator', function () {
 
                 spyOn(common, 'isIgnoreFile').andReturn(false);
 
-                adcValidator.validate(null, '/adc/path/dir');
+                adxValidator.validate(null, '/adx/path/dir');
 
 
                 expect(instance.dirResources[key]).toEqual({
@@ -517,9 +517,9 @@ describe('ADCValidator', function () {
                 };
 
                 spies.fs.stat.andCallFake(function (path, callback) {
-                    if (path === '\\adc\\path\\dir\\resources') {
+                    if (path === '\\adx\\path\\dir\\resources') {
                         callback(null, true);
-                    } else if (path === '\\adc\\path\\dir\\resources\\' + mode) {
+                    } else if (path === '\\adx\\path\\dir\\resources\\' + mode) {
                         callback(null, true);
                     } else {
                         callback(null, false);
@@ -532,7 +532,7 @@ describe('ADCValidator', function () {
                    return (f === 'Thumbs.db');
                 });
 
-                adcValidator.validate('null', '/adc/path/dir');
+                adxValidator.validate('null', '/adx/path/dir');
 
 
                 expect(instance.dirResources[key]).toEqual({
@@ -570,7 +570,7 @@ describe('ADCValidator', function () {
                         dirResources[directoryName]['filewithforbiddenextension.exe'] = 'filewithforbiddenextension.exe';
                     };
 
-                    adcValidator.validate(null, '/adc/path/dir');
+                    adxValidator.validate(null, '/adx/path/dir');
 
                     expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.fileExtensionForbidden, ".exe"));
                 });
@@ -586,7 +586,7 @@ describe('ADCValidator', function () {
                     dirResources[directoryName]['trustfileextension.html'] = 'trustfileextension.html';
                 };
 
-                adcValidator.validate(null, '/adc/path/dir');
+                adxValidator.validate(null, '/adx/path/dir');
 
                 expect(Validator.prototype.writeError).not.toHaveBeenCalled();
             });
@@ -599,7 +599,7 @@ describe('ADCValidator', function () {
                         dirResources[directoryName]['trustfileextension.html'] = 'trustfileextension.html';
                     };
 
-                    adcValidator.validate(null, '/adc/path/dir');
+                    adxValidator.validate(null, '/adx/path/dir');
 
                     expect(Validator.prototype.writeWarning).not.toHaveBeenCalled();
                 });
@@ -615,7 +615,7 @@ describe('ADCValidator', function () {
                     dirResources[directoryName]['unknownextension.unknown'] = 'unknownextension.unknown';
                 };
 
-                adcValidator.validate(null, '/adc/path/dir');
+                adxValidator.validate(null, '/adx/path/dir');
 
                 expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.untrustExtension, 'unknownextension.unknown');
             });
@@ -646,11 +646,11 @@ describe('ADCValidator', function () {
                 };
             })
             it('should not output an error', function () {
-                adcValidator.validate(null, '/adc/path/dir');
+                adxValidator.validate(null, '/adx/path/dir');
                 expect(Validator.prototype.writeError).not.toHaveBeenCalled();
             });
             it('should output a success message', function () {
-                adcValidator.validate(null, '/adc/path/dir');
+                adxValidator.validate(null, '/adx/path/dir');
                 expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(successMsg.fileExtensionValidate);
             });
         });
@@ -670,7 +670,7 @@ describe('ADCValidator', function () {
                     dirResources.share['valid.css'] = 'valid.css';
                 };
 
-                adcValidator.validate(null, '/adc/path/dir');
+                adxValidator.validate(null, '/adx/path/dir');
 
                 expect(Validator.prototype.writeError).toHaveBeenCalled();
             });
@@ -691,9 +691,9 @@ describe('ADCValidator', function () {
         it('should run the xmllint process with the config.xsd and the config.xml file', function () {
             var childProc = require('child_process');
             spyOn(childProc, 'exec').andCallFake(function (command) {
-                expect(command).toBe('"\\root\\lib\\libxml\\xmllint.exe" --noout --schema "\\root\\schema\\config.xsd" "\\adc\\path\\dir\\config.xml"');
+                expect(command).toBe('"\\root\\lib\\libxml\\xmllint.exe" --noout --schema "\\root\\schema\\config.xsd" "\\adx\\path\\dir\\config.xml"');
             });
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(childProc.exec).toHaveBeenCalled();
         });
@@ -703,7 +703,7 @@ describe('ADCValidator', function () {
             spyOn(childProc, 'exec').andCallFake(function (command, callback) {
                 callback(new Error('Fake validation error'));
             });
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeError).toHaveBeenCalled();
         });
@@ -713,7 +713,7 @@ describe('ADCValidator', function () {
             spyOn(childProc, 'exec').andCallFake(function (command, callback) {
                 callback(null);
             });
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeError).not.toHaveBeenCalled();
         });
@@ -723,7 +723,7 @@ describe('ADCValidator', function () {
             spyOn(childProc, 'exec').andCallFake(function (command, callback) {
                 callback(null);
             });
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(successMsg.xsdValidate);
         });
@@ -744,7 +744,7 @@ describe('ADCValidator', function () {
                 callback(new Error("Fake error"));
             });
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeError).toHaveBeenCalled();
         });
@@ -754,7 +754,7 @@ describe('ADCValidator', function () {
                 callback(null, '');
             });
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeError).not.toHaveBeenCalled();
         });
@@ -775,17 +775,17 @@ describe('ADCValidator', function () {
                 callback(null, obj);
             });
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(instance.configXmlDoc).toBe(obj);
         });
 
     });
 
-    describe("#validateADCInfo", function () {
+    describe("#validateADXInfo", function () {
         beforeEach(function () {
-            // Modify the sequence of the validation to only call the validateADCInfo method
-            spies.sequence = ['validateADCInfo'];
+            // Modify the sequence of the validation to only call the validateADXInfo method
+            spies.sequence = ['validateADXInfo'];
             spyOn(Validator.prototype, 'writeError');
             spyOn(Validator.prototype, 'writeWarning');
             spyOn(Validator.prototype, 'writeSuccess');
@@ -798,7 +798,7 @@ describe('ADCValidator', function () {
                     control : {}
                 };
             };
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeError).toHaveBeenCalledWith(errMsg.missingInfoNode);
         });
@@ -811,7 +811,7 @@ describe('ADCValidator', function () {
                     }
                 }
             };
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeError).toHaveBeenCalledWith(errMsg.missingOrEmptyNameNode);
         });
@@ -828,7 +828,7 @@ describe('ADCValidator', function () {
                     }
                 };
             };
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeError).toHaveBeenCalledWith(errMsg.missingOrEmptyNameNode);
         });
@@ -848,12 +848,12 @@ describe('ADCValidator', function () {
                 };
             };
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeError).not.toHaveBeenCalled();
         });
 
-        it("should initialize the adcName property with the name of the ADC", function () {
+        it("should initialize the adxName property with the name of the ADX", function () {
             var instance;
             spies.validateHook = function () {
                 instance = this;
@@ -869,16 +869,16 @@ describe('ADCValidator', function () {
                     }
                 };
             };
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
-            expect(instance.adcName).toBe('test');
+            expect(instance.adxName).toBe('test');
         });
     });
 
-    describe('#validateADCInfoConstraints', function () {
+    describe('#validateADXInfoConstraints', function () {
         beforeEach(function () {
-           // Modify the sequence of the validation to only call the validateADCInfoConstraints method
-           spies.sequence = ['validateADCInfoConstraints'];
+           // Modify the sequence of the validation to only call the validateADXInfoConstraints method
+           spies.sequence = ['validateADXInfoConstraints'];
             spyOn(Validator.prototype, 'writeError');
             spyOn(Validator.prototype, 'writeWarning');
             spyOn(Validator.prototype, 'writeSuccess');
@@ -987,7 +987,7 @@ describe('ADCValidator', function () {
 
                 };
 
-                adcValidator.validate(null, '/adc/path/dir');
+                adxValidator.validate(null, '/adx/path/dir');
 
                 expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.duplicateConstraints, element));
             });
@@ -1021,7 +1021,7 @@ describe('ADCValidator', function () {
 
                     this.configXmlDoc.control.info[0].constraints[0].constraint[0].$[fakeAttr[oppositeElement]] = 1;
                 };
-                adcValidator.validate(null, '/adc/path/dir');
+                adxValidator.validate(null, '/adx/path/dir');
                 expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.requireConstraintOn, element));
             });
         }
@@ -1056,7 +1056,7 @@ describe('ADCValidator', function () {
                 };
             };
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
             expect(Validator.prototype.writeError).not.toHaveBeenCalled();
         });
 
@@ -1089,7 +1089,7 @@ describe('ADCValidator', function () {
 
                             this.configXmlDoc.control.info[0].constraints[0].constraint[0].$[attribute.name] = true;
                         };
-                        adcValidator.validate(null, '/adc/path/dir');
+                        adxValidator.validate(null, '/adx/path/dir');
                         if (attribute.on === element) {
                             expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.invalidConstraintAttribute, element, attribute.name));
                         } else {
@@ -1120,7 +1120,7 @@ describe('ADCValidator', function () {
                             }
                         };
                     };
-                    adcValidator.validate(null, '/adc/path/dir');
+                    adxValidator.validate(null, '/adx/path/dir');
                     expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.noRuleOnConstraint, element));
                 });
 
@@ -1150,7 +1150,7 @@ describe('ADCValidator', function () {
                             this.configXmlDoc.control.info[0].constraints[0].constraint[0].$[fakeAttr[element]] = false;
                         };
 
-                        adcValidator.validate(null, '/adc/path/dir');
+                        adxValidator.validate(null, '/adx/path/dir');
                         expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.noRuleOnConstraint, element));
                     });
                 }
@@ -1162,10 +1162,10 @@ describe('ADCValidator', function () {
 
     });
 
-    describe('#validateADCOutputs', function () {
+    describe('#validateADXOutputs', function () {
         beforeEach(function () {
-            // Modify the sequence of the validation to only call the validateADCOutputs method
-            spies.sequence = ['validateADCOutputs'];
+            // Modify the sequence of the validation to only call the validateADXOutputs method
+            spies.sequence = ['validateADXOutputs'];
             spyOn(Validator.prototype, 'writeError');
             spyOn(Validator.prototype, 'writeWarning');
             spyOn(Validator.prototype, 'writeSuccess');
@@ -1204,7 +1204,7 @@ describe('ADCValidator', function () {
                 };
             };
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.duplicateOutputCondition, "first", "second");
         });
@@ -1228,7 +1228,7 @@ describe('ADCValidator', function () {
                     }
                 };
             };
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeError).not.toHaveBeenCalled();
         });
@@ -1261,7 +1261,7 @@ describe('ADCValidator', function () {
                     }
                 };
             };
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.tooManyEmptyCondition, "first, second"));
         });
@@ -1301,7 +1301,7 @@ describe('ADCValidator', function () {
                 };
             };
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.noHTMLFallBack);
         });
@@ -1326,11 +1326,11 @@ describe('ADCValidator', function () {
                 };
             };
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
             expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(successMsg.xmlOutputsValidate);
         });
 
-        describe("#validateADCContents", function () {
+        describe("#validateADXContents", function () {
 
             it("should output an error when the resources directory doesn't exist", function () {
                 spies.validateHook = function () {
@@ -1355,7 +1355,7 @@ describe('ADCValidator', function () {
                     };
                 };
 
-                adcValidator.validate(null, '/adc/path/dir');
+                adxValidator.validate(null, '/adx/path/dir');
                 expect(Validator.prototype.writeError).toHaveBeenCalledWith(errMsg.noResourcesDirectory);
             });
 
@@ -1425,11 +1425,11 @@ describe('ADCValidator', function () {
                     extraHook(function () {
                         delete this.configXmlDoc.control.outputs[0].output[0].content;
                     });
-                    adcValidator.validate(null, '/adc/path/dir');
+                    adxValidator.validate(null, '/adx/path/dir');
                     expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should output an error when there is no dynamic html or javascript content", function () {
-                    adcValidator.validate(null, '/adc/path/dir');
+                    adxValidator.validate(null, '/adx/path/dir');
                     expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should output an error when there is a dynamic html content but with position=none", function () {
@@ -1437,21 +1437,21 @@ describe('ADCValidator', function () {
                         htmlContent.$.mode = 'dynamic';
                         htmlContent.$.position = 'none';
                     });
-                    adcValidator.validate(null, '/adc/path/dir');
+                    adxValidator.validate(null, '/adx/path/dir');
                     expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should not output an error when there is a dynamic html content", function () {
                     extraHook(function () {
                         htmlContent.$.mode = 'dynamic';
                     });
-                    adcValidator.validate(null, '/adc/path/dir');
+                    adxValidator.validate(null, '/adx/path/dir');
                     expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should not output an error when there is a dynamic javascript content", function () {
                     extraHook(function () {
                         jsContent.$.mode = 'dynamic';
                     });
-                    adcValidator.validate(null, '/adc/path/dir');
+                    adxValidator.validate(null, '/adx/path/dir');
                     expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should  output an error when there is a dynamic javascript content but with position=none", function () {
@@ -1459,7 +1459,7 @@ describe('ADCValidator', function () {
                         jsContent.$.mode = 'dynamic';
                         jsContent.$.position = 'none';
                     });
-                    adcValidator.validate(null, '/adc/path/dir');
+                    adxValidator.validate(null, '/adx/path/dir');
                     expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
             });
@@ -1497,7 +1497,7 @@ describe('ADCValidator', function () {
                         };
                     };
 
-                    adcValidator.validate(null, '/adc/path/dir');
+                    adxValidator.validate(null, '/adx/path/dir');
 
                     expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.javascriptUseWithoutBrowserCheck, "empty");
                 });
@@ -1536,7 +1536,7 @@ describe('ADCValidator', function () {
                             }
                         };
                     };
-                    adcValidator.validate(null, '/adc/path/dir');
+                    adxValidator.validate(null, '/adx/path/dir');
 
                     expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.javascriptUseWithoutBrowserCheck, "empty");
                 });
@@ -1573,7 +1573,7 @@ describe('ADCValidator', function () {
                             }
                         };
                     };
-                    adcValidator.validate(null, '/adc/path/dir');
+                    adxValidator.validate(null, '/adx/path/dir');
 
                     expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.javascriptUseWithoutBrowserCheck, "empty");
                 });
@@ -1620,7 +1620,7 @@ describe('ADCValidator', function () {
                         };
                     };
 
-                    adcValidator.validate(null, '/adc/path/dir');
+                    adxValidator.validate(null, '/adx/path/dir');
 
                     expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.flashUseWithoutBrowserCheck, "empty");
                 });
@@ -1670,7 +1670,7 @@ describe('ADCValidator', function () {
                         };
                     };
 
-                    adcValidator.validate(null, '/adc/path/dir');
+                    adxValidator.validate(null, '/adx/path/dir');
 
                     expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.flashUseWithoutBrowserCheck, "empty");
                 });
@@ -1718,14 +1718,14 @@ describe('ADCValidator', function () {
                         };
                     };
 
-                    adcValidator.validate(null, '/adc/path/dir');
+                    adxValidator.validate(null, '/adx/path/dir');
 
                     expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.flashUseWithoutBrowserCheck, "empty");
                 });
 
             });
 
-            describe("#validateADCContent", function () {
+            describe("#validateADXContent", function () {
                 var directories = ['dynamic', 'static', 'share'];
 
                 it("should output a warning when using the attribute and yield nodes in the same content", function () {
@@ -1770,7 +1770,7 @@ describe('ADCValidator', function () {
                         };
                     };
 
-                    adcValidator.validate(null, '/adc/path/dir');
+                    adxValidator.validate(null, '/adx/path/dir');
 
                     expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.attributeNodeAndYieldNode, "empty", 'test.js');
                 });
@@ -1814,7 +1814,7 @@ describe('ADCValidator', function () {
                     });
 
                     it("should output an error when binary content doesn't have a yield or position=none", function () {
-                        adcValidator.validate(null, '/adc/path/dir');
+                        adxValidator.validate(null, '/adx/path/dir');
                         expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.yieldRequireForBinary, "empty", 'test.js'));
                     });
 
@@ -1822,7 +1822,7 @@ describe('ADCValidator', function () {
                         extraHook(function () {
                             content.yield = ['test'];
                         });
-                        adcValidator.validate(null, '/adc/path/dir');
+                        adxValidator.validate(null, '/adx/path/dir');
                         expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.yieldRequireForBinary, "empty", 'test.js'));
                     });
 
@@ -1830,7 +1830,7 @@ describe('ADCValidator', function () {
                         extraHook(function () {
                             content.$.position = 'none';
                         });
-                        adcValidator.validate(null, '/adc/path/dir');
+                        adxValidator.validate(null, '/adx/path/dir');
                         expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.yieldRequireForBinary, "empty", 'test.js'));
                     });
                 });
@@ -1876,7 +1876,7 @@ describe('ADCValidator', function () {
                             extraHook(function () {
                                 instance.dirResources[key].isExist = false;
                             });
-                            adcValidator.validate(null, '/adc/path/dir');
+                            adxValidator.validate(null, '/adx/path/dir');
                             expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.cannotFindDirectory, mode));
                         });
 
@@ -1884,7 +1884,7 @@ describe('ADCValidator', function () {
                             extraHook(function () {
                                 instance.dirResources[key].isExist = true;
                             });
-                            adcValidator.validate(null, '/adc/path/dir');
+                            adxValidator.validate(null, '/adx/path/dir');
                             expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.cannotFindFileInDirectory, "empty", "test.html", mode));
                         });
 
@@ -1895,7 +1895,7 @@ describe('ADCValidator', function () {
                                     instance.dirResources[key].isExist = true;
                                     instance.dirResources[key]['test.html'] = 'test.html';
                                 });
-                                adcValidator.validate(null, '/adc/path/dir');
+                                adxValidator.validate(null, '/adx/path/dir');
                                 expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.typeCouldNotBeDynamic, "empty", type , "test.html"));
                             });
                         }
@@ -1907,7 +1907,7 @@ describe('ADCValidator', function () {
                                     instance.dirResources[key].isExist = true;
                                     instance.dirResources[key]['test.html'] = 'test.html';
                                 });
-                                adcValidator.validate(null, '/adc/path/dir');
+                                adxValidator.validate(null, '/adx/path/dir');
                                 expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.typeCouldNotBeDynamic, "empty", type , "test.html"));
                             });
                         }
@@ -1922,7 +1922,7 @@ describe('ADCValidator', function () {
 
                 directories.forEach(testMode);
 
-                describe("#validateADCContentAttribute", function () {
+                describe("#validateADXContentAttribute", function () {
                     var content;
                     beforeEach(function () {
                         spies.validateHook = function () {
@@ -1967,7 +1967,7 @@ describe('ADCValidator', function () {
                     });
 
                     it("should not output an error when there is no attributes node", function () {
-                        adcValidator.validate(null, '/adc/path/dir');
+                        adxValidator.validate(null, '/adx/path/dir');
                         expect(Validator.prototype.writeError).not.toHaveBeenCalled();
                     });
 
@@ -1986,7 +1986,7 @@ describe('ADCValidator', function () {
                                 }
                             ];
                         });
-                        adcValidator.validate(null, '/adc/path/dir');
+                        adxValidator.validate(null, '/adx/path/dir');
                         expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.duplicateAttributeNode, 'empty', 'test', 'test.js'));
                     });
 
@@ -1998,7 +1998,7 @@ describe('ADCValidator', function () {
                                     {}
                                 ];
                             });
-                            adcValidator.validate(null, 'adc/path/dir');
+                            adxValidator.validate(null, 'adx/path/dir');
                             expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.attributeNodeWillBeIgnored, "empty", type, "test.js");
                         });
                     }
@@ -2013,7 +2013,7 @@ describe('ADCValidator', function () {
                                     {}
                                 ];
                             });
-                            adcValidator.validate(null, 'adc/path/dir');
+                            adxValidator.validate(null, 'adx/path/dir');
                             expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.attributeNodeAndDynamicContent, "empty", "test.js");
                         });
                     });
@@ -2034,7 +2034,7 @@ describe('ADCValidator', function () {
                                 ];
                             });
 
-                           adcValidator.validate(null, 'adc/path/dir');
+                           adxValidator.validate(null, 'adx/path/dir');
                            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.attributeNotOverridable, "empty", attrName, "test.js"));
                         });
                     }
@@ -2073,10 +2073,10 @@ describe('ADCValidator', function () {
 
     });
 
-    describe('#validateADCProperties', function () {
+    describe('#validateADXProperties', function () {
         beforeEach(function () {
-            // Modify the sequence of the validation to only call the validateADCProperties method
-            spies.sequence = ['validateADCProperties'];
+            // Modify the sequence of the validation to only call the validateADXProperties method
+            spies.sequence = ['validateADXProperties'];
             spyOn(Validator.prototype, 'writeError');
             spyOn(Validator.prototype, 'writeWarning');
             spyOn(Validator.prototype, 'writeSuccess');
@@ -2095,7 +2095,7 @@ describe('ADCValidator', function () {
             };
 
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.noProperties);
         });
@@ -2112,7 +2112,7 @@ describe('ADCValidator', function () {
                     }
                 };
             };
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.noProperties);
         });
@@ -2133,7 +2133,7 @@ describe('ADCValidator', function () {
                     }
                 };
             };
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.noProperties);
         });
@@ -2170,9 +2170,9 @@ describe('ADCValidator', function () {
             });
             spyExec.andCallFake(function (file, args) {
                 expect(file).toBe('.\\ADXShell.exe');
-                expect(args).toEqual(['--auto', '\\adc\\path\\dir']);
+                expect(args).toEqual(['--auto', '\\adx\\path\\dir']);
             });
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(childProc.execFile).toHaveBeenCalled();
         });
@@ -2184,7 +2184,7 @@ describe('ADCValidator', function () {
             spyExec.andCallFake(function (file, args, options, callback) {
                 callback(new Error('Fake validation error'), '', 'Fake validation error');
             });
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeWarning).toHaveBeenCalledWith('\r\nFake validation error');
         });
@@ -2196,7 +2196,7 @@ describe('ADCValidator', function () {
             spyExec.andCallFake(function (file, args, options, callback) {
                 callback(null, 'Fake stdout');
             });
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeMessage).toHaveBeenCalledWith('Fake stdout');
         });
@@ -2208,9 +2208,9 @@ describe('ADCValidator', function () {
             spyExec.andCallFake(function (file, args, options, callback) {
                 callback(null);
             });
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
-            expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(successMsg.adcUnitSucceed);
+            expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(successMsg.adxUnitSucceed);
         });
 
         it("should run the ADXShell process using the InteractiveADXShell when it's defined in the options", function () {
@@ -2221,23 +2221,23 @@ describe('ADCValidator', function () {
             spyInteractiveExec.andCallFake(function (command) {
                 mockCommand = command;
             });
-            adcValidator.validate({
+            adxValidator.validate({
                 test     : false,
                 autoTest : true,
                 xml      : false,
                 adxShell : new InteractiveADXShell()
-            }, 'adc/path/dir');
-            expect(mockCommand).toBe('test "--auto" "adc\\path\\dir"');
+            }, 'adx/path/dir');
+            expect(mockCommand).toBe('test "--auto" "adx\\path\\dir"');
         });
     });
 
-    describe('#runADCUnitTests', function () {
+    describe('#runADXUnitTests', function () {
         var spyExec,
             childProc;
 
         beforeEach(function () {
-            // Modify the sequence of the validation to only call the runADCUnitTests method
-            spies.sequence = ['runADCUnitTests'];
+            // Modify the sequence of the validation to only call the runADXUnitTests method
+            spies.sequence = ['runADXUnitTests'];
 
             childProc = require('child_process');
             spyOn(process, 'cwd').andReturn('');
@@ -2253,12 +2253,12 @@ describe('ADCValidator', function () {
             var searchUnitsTests = false;
 
             spies.fs.stat.andCallFake(function (path) {
-                if (path === '\\adc\\path\\dir\\tests\\units') {
+                if (path === '\\adx\\path\\dir\\tests\\units') {
                     searchUnitsTests = true;
                 }
             });
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(searchUnitsTests).toBe(true);
         });
@@ -2268,19 +2268,19 @@ describe('ADCValidator', function () {
                 callback(new Error("No such file or directory"));
             });
 
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
             expect(Validator.prototype.writeWarning).not.toHaveBeenCalled();
         });
 
-        it('should run the ADXShell process with the path of the ADC directory in arguments', function () {
+        it('should run the ADXShell process with the path of the ADX directory in arguments', function () {
             spies.fs.stat.andCallFake(function (path, callback) {
                 callback(null);
             });
             spyExec.andCallFake(function (file, args) {
                 expect(file).toBe('.\\ADXShell.exe');
-                expect(args).toEqual(['\\adc\\path\\dir']);
+                expect(args).toEqual(['\\adx\\path\\dir']);
             });
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(childProc.execFile).toHaveBeenCalled();
         });
@@ -2292,7 +2292,7 @@ describe('ADCValidator', function () {
             spyExec.andCallFake(function (file, args, options, callback) {
                 callback(new Error('Fake validation error'), '', 'Fake validation error');
             });
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeWarning).toHaveBeenCalledWith('\r\nFake validation error');
         });
@@ -2304,7 +2304,7 @@ describe('ADCValidator', function () {
             spyExec.andCallFake(function (file, args, options, callback) {
                 callback(null, 'Fake stdout');
             });
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeMessage).toHaveBeenCalledWith('Fake stdout');
         });
@@ -2316,9 +2316,9 @@ describe('ADCValidator', function () {
             spyExec.andCallFake(function (file, args, options, callback) {
                 callback(null);
             });
-            adcValidator.validate(null, '/adc/path/dir');
+            adxValidator.validate(null, '/adx/path/dir');
 
-            expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(successMsg.adcUnitSucceed);
+            expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(successMsg.adxUnitSucceed);
         });
     });
 
