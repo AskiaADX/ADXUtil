@@ -1652,8 +1652,6 @@ describe('ADXValidator', function () {
 
     });
 
-    return;
-
     describe('#validateADXProperties', function () {
         beforeEach(function () {
             // Modify the sequence of the validation to only call the validateADXProperties method
@@ -1666,13 +1664,8 @@ describe('ADXValidator', function () {
 
         it("should output a warning when no property", function () {
             spies.validateHook = function () {
-                this.configXmlDoc = {
-                    control : {
-                        properties : [
-                            {}
-                        ]
-                    }
-                };
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control><properties></properties></control>');
             };
 
 
@@ -1683,15 +1676,8 @@ describe('ADXValidator', function () {
 
         it("should not output a warning when there is at least one property", function () {
             spies.validateHook = function () {
-                this.configXmlDoc = {
-                    control: {
-                        properties: [
-                            {
-                                property: [{}]
-                            }
-                        ]
-                    }
-                };
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control><properties><property></property></properties></control>');
             };
             adxValidator.validate(null, '/adx/path/dir');
 
@@ -1700,25 +1686,13 @@ describe('ADXValidator', function () {
 
         it("should not output a warning when there is at least one property inside category", function () {
             spies.validateHook = function () {
-                this.configXmlDoc = {
-                    control: {
-                        properties: [
-                            {
-                                category: [
-                                    {
-                                        property: [{}]
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                };
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control><properties><category><property></property></category></properties></control>');
             };
             adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.noProperties);
         });
-
 
     });
 

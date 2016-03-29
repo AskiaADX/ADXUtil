@@ -328,11 +328,6 @@ function Validator(adxDirPath) {
     };
 
     /**
-     * Config xml document in json format
-     */
-    this.configXmlDoc  = null;
-
-    /**
      * Instance of configurator
      * @type {ADX.Configurator}
      */
@@ -1118,11 +1113,12 @@ Validator.prototype.validateADXContentAttribute = function validateADXContentAtt
  * Validate the ADX properties node
  */
 Validator.prototype.validateADXProperties = function validateADXProperties() {
-    var propertiesEl           = (this.configXmlDoc.control.properties && this.configXmlDoc.control.properties[0]) || {},
-        categories             = propertiesEl.category || [],
-        properties             = propertiesEl.property || [];
+    var xmldoc = this.adxConfigurator.xmldoc;
+    var elProperties = xmldoc.find("properties");
+    var categories = elProperties.findall('category');
+    var properties = elProperties.findall('property');
 
-    if (!properties.length && !categories.length) {
+    if ((!properties || !properties.length) && (!categories || !categories.length)) {
         this.report.warnings++;
         this.writeWarning(warnMsg.noProperties);
     }
