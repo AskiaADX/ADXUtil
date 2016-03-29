@@ -224,9 +224,9 @@ describe('ADXConfigurator', function () {
                         '\n  </info></control>');
                     var result = configurator.toXml();
                     expect(result ).toEqual('<?xml version="1.0" encoding="utf-8"?>'+
-                        '\n<control  xmlns="http://www.askia.com/ADCSchema"' +
+                        '\n<control  xmlns="http://www.askia.com/2.0.0/ADCSchema"' +
                         '\n          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
-                        '\n          xsi:schemaLocation="http://www.askia.com/ADCSchema http://www.askia.com/Downloads/dev/schemas/adc2.0/Config.xsd"' +
+                        '\n          xsi:schemaLocation="http://www.askia.com/2.0.0/ADCSchema https://raw.githubusercontent.com/AskiaADX/ADXSchema/2.0.0/ADCSchema.xsd"' +
                         '\n          version="2.0.0"' +
                         '\n          askiaCompat="5.3.3">' +
                         '\n  <info>' +
@@ -265,53 +265,56 @@ describe('ADXConfigurator', function () {
             spies.dirExists.andCallFake(function (p, cb) {
                 cb(null, true);
             });
+        });
+
+        it("should return the configuration of ADC 2.0 as XML", function () {
             spies.fs.readFile.andCallFake(function (p, cb) {
                 cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
-                '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
-                '<company>the-company</company><author>the-author</author><site>the-site</site>' +
-                '<helpURL>the-helpURL</helpURL>' +
-                '<categories><category>cat-1</category><category>cat-2</category></categories>' +
-                '<style width="200" height="400" />' +
-                '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
-                '<constraint on="controls" label="true" responseblock="true" />' +
-                '<constraint on="responses" min="2" max="*" />' +
-                '</constraints>' +
-                '</info>' +
-                '<outputs defaultOutput="main">' +
-                '<output id="main">' +
-                '<description><![CDATA[Main output]]></description>' +
-                '<content fileName="main.css" type="css" mode="static" position="head" />' +
-                '<content fileName="main.html" type="html" mode="dynamic" position="placeholder" />' +
-                '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
-                '</output>' +
-                '<output id="second">' +
-                '<description><![CDATA[Second output]]></description>' +
-                '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
-                '<content fileName="second.css" type="css" mode="static" position="head" />' +
-                '<content fileName="second.html" type="html" mode="dynamic" position="placeholder" />' +
-                '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
-                '</output>' +
-                '<output id="third" defaultGeneration="false" maxIterations="12">' +
-                '<description><![CDATA[Third output]]></description>' +
-                '<content fileName="third.css" type="css" mode="static" position="head" >' +
-                ' <attribute name="rel">' +
-                '<value>alternate</value>' +
-                '</attribute>' +
-                '<attribute name="media">' +
-                '<value>print</value>' +
-                '</attribute>' +
-                '</content>' +
-                '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
-                '<yield>' +
-                '<![CDATA[' +
-                '<!--[if lte IE 9]>' +
-                '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
-                '<![endif]-->' +
-                ']]>' +
-                '</yield>' +
-                '</content>'+
-                '</output>' +
-                '</outputs>' +
+                    '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                    '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                    '<helpURL>the-helpURL</helpURL>' +
+                    '<categories><category>cat-1</category><category>cat-2</category></categories>' +
+                    '<style width="200" height="400" />' +
+                    '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
+                    '<constraint on="controls" label="true" responseblock="true" />' +
+                    '<constraint on="responses" min="2" max="*" />' +
+                    '</constraints>' +
+                    '</info>' +
+                    '<outputs defaultOutput="main">' +
+                    '<output id="main">' +
+                    '<description><![CDATA[Main output]]></description>' +
+                    '<content fileName="main.css" type="css" mode="static" position="head" />' +
+                    '<content fileName="main.html" type="html" mode="dynamic" position="placeholder" />' +
+                    '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                    '</output>' +
+                    '<output id="second">' +
+                    '<description><![CDATA[Second output]]></description>' +
+                    '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                    '<content fileName="second.css" type="css" mode="static" position="head" />' +
+                    '<content fileName="second.html" type="html" mode="dynamic" position="placeholder" />' +
+                    '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                    '</output>' +
+                    '<output id="third" defaultGeneration="false" maxIterations="12">' +
+                    '<description><![CDATA[Third output]]></description>' +
+                    '<content fileName="third.css" type="css" mode="static" position="head" >' +
+                    ' <attribute name="rel">' +
+                    '<value>alternate</value>' +
+                    '</attribute>' +
+                    '<attribute name="media">' +
+                    '<value>print</value>' +
+                    '</attribute>' +
+                    '</content>' +
+                    '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                    '<yield>' +
+                    '<![CDATA[' +
+                    '<!--[if lte IE 9]>' +
+                    '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
+                    '<![endif]-->' +
+                    ']]>' +
+                    '</yield>' +
+                    '</content>'+
+                    '</output>' +
+                    '</outputs>' +
                     '<properties>' +
                     '<category id="general" name="General">' +
                     '<property xsi:type="askiaProperty" id="askia-theme">' +
@@ -369,19 +372,16 @@ describe('ADXConfigurator', function () {
                     '</property>' +
                     '</category>' +
                     '</properties>' +
-                '</control>');
+                    '</control>');
             });
-        });
-
-        it("should return the configuration as XML", function () {
             runSync(function (done) {
                 var configurator = new ADXConfigurator("an/valid/path");
                 configurator.load(function () {
                     var result = configurator.toXml();
                     expect(result ).toEqual('<?xml version="1.0" encoding="utf-8"?>'+
-                        '\n<control  xmlns="http://www.askia.com/ADCSchema"' +
+                        '\n<control  xmlns="http://www.askia.com/2.0.0/ADCSchema"' +
                         '\n          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
-                        '\n          xsi:schemaLocation="http://www.askia.com/ADCSchema http://www.askia.com/Downloads/dev/schemas/adc2.0/Config.xsd"' +
+                        '\n          xsi:schemaLocation="http://www.askia.com/2.0.0/ADCSchema https://raw.githubusercontent.com/AskiaADX/ADXSchema/2.0.0/ADCSchema.xsd"' +
                         '\n          version="2.0.0"' +
                         '\n          askiaCompat="5.3.3">' +
                         '\n  <info>' +
@@ -484,6 +484,406 @@ describe('ADXConfigurator', function () {
                         '\n    </category>' +
                         '\n  </properties>' +
                         '\n</control>');
+                    done();
+                });
+            });
+        });
+
+        it("should return the configuration of ADC 2.1 as XML", function () {
+            spies.fs.readFile.andCallFake(function (p, cb) {
+                cb(null, '<control version="2.1.0"><info><name>the-name</name><guid>the-guid</guid>' +
+                    '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                    '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                    '<helpURL>the-helpURL</helpURL>' +
+                    '<categories><category>cat-1</category><category>cat-2</category></categories>' +
+                    '<style width="200" height="400" />' +
+                    '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
+                    '<constraint on="controls" label="true" responseblock="true" />' +
+                    '<constraint on="responses" min="2" max="*" />' +
+                    '</constraints>' +
+                    '</info>' +
+                    '<outputs defaultOutput="main">' +
+                    '<output id="main">' +
+                    '<description><![CDATA[Main output]]></description>' +
+                    '<content fileName="main.css" type="css" mode="static" position="head" />' +
+                    '<content fileName="main.html" type="html" mode="dynamic" position="placeholder" />' +
+                    '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                    '</output>' +
+                    '<output id="second">' +
+                    '<description><![CDATA[Second output]]></description>' +
+                    '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                    '<content fileName="second.css" type="css" mode="static" position="head" />' +
+                    '<content fileName="second.html" type="html" mode="dynamic" position="placeholder" />' +
+                    '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                    '</output>' +
+                    '<output id="third" defaultGeneration="false" maxIterations="12">' +
+                    '<description><![CDATA[Third output]]></description>' +
+                    '<content fileName="third.css" type="css" mode="static" position="head" >' +
+                    ' <attribute name="rel">' +
+                    '<value>alternate</value>' +
+                    '</attribute>' +
+                    '<attribute name="media">' +
+                    '<value>print</value>' +
+                    '</attribute>' +
+                    '</content>' +
+                    '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                    '<yield>' +
+                    '<![CDATA[' +
+                    '<!--[if lte IE 9]>' +
+                    '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
+                    '<![endif]-->' +
+                    ']]>' +
+                    '</yield>' +
+                    '</content>'+
+                    '</output>' +
+                    '</outputs>' +
+                    '<properties>' +
+                    '<category id="general" name="General">' +
+                    '<property xsi:type="askiaProperty" id="askia-theme">' +
+                    '<options>' +
+                    '<option value="red-theme" text="Red" />' +
+                    '<option value="blue-theme" text="Blue" />' +
+                    '</options>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="renderingType" name="Rendering type" type="string">' +
+                    '<description>Type of rendering</description>' +
+                    '<value>classic</value>' +
+                    '<options>' +
+                    '<option value="classic" text="Classic"/>' +
+                    '<option value="image" text="Image"/>' +
+                    '</options>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="other" name="Open-ended question for semi-open" type="question" open="true" numeric="true">' +
+                    '<description>Additional open-ended question that could be use to emulate semi-open</description>' +
+                    '</property>' +
+                    '</category>' +
+                    '<category id="images" name="Rendering type images">' +
+                    '<property xsi:type="standardProperty" id="singleImage" name="Image for single question" type="file" fileExtension=".png, .gif, .jpg">' +
+                    '<description>Image of single question when the rendering type is image</description>' +
+                    '<value>Single.png</value>' +
+                    '<value theme="red-theme">SingleRed.png</value>' +
+                    '<value theme="blue-theme">SingleBlue.png</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="multipleImage" name="Image for multiple question" type="file" fileExtension=".png, .gif, .jpg">' +
+                    '<description>Image of multiple question when the rendering type is image</description>' +
+                    '<value>Multiple.png</value>' +
+                    '<value theme="red-theme">MultipleRed.png</value>' +
+                    '<value theme="blue-theme">MultipleBlue.png</value>' +
+                    '</property>' +
+                    '</category>' +
+                    '<category id="fake" name="Fake for test">' +
+                    '<property xsi:type="standardProperty" id="testNumber" name="TEST" type="number" min="12" max="100.5" decimal="3" mode="dynamic" visible="false" require="true">' +
+                    '<description>Test number properties</description>' +
+                    '<value>13</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testColor" name="TEST" type="color" colorFormat="rgb">' +
+                    '<description>Test color properties</description>' +
+                    '<value>255,255,255</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testQuestion" name="TEST" type="question" chapter="false" single="true" multiple="true" numeric="false" open="false" date="false">' +
+                    '<description>Test question properties</description>' +
+                    '<value></value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testFile" name="TEST" type="file" fileExtension=".test, .test2">' +
+                    '<description>Test file properties</description>' +
+                    '<value>file.test</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testString" name="TEST" type="string" pattern=".+@.+">' +
+                    '<description>Test string properties</description>' +
+                    '<value>test@test.com</value>' +
+                    '</property>' +
+                    '</category>' +
+                    '</properties>' +
+                    '</control>');
+            });
+            runSync(function (done) {
+                var configurator = new ADXConfigurator("an/valid/path");
+                configurator.load(function () {
+                    var result = configurator.toXml();
+                    expect(result ).toEqual('<?xml version="1.0" encoding="utf-8"?>'+
+                        '\n<control  xmlns="http://www.askia.com/2.1.0/ADCSchema"' +
+                        '\n          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
+                        '\n          xsi:schemaLocation="http://www.askia.com/2.1.0/ADCSchema https://raw.githubusercontent.com/AskiaADX/ADXSchema/2.1.0/ADCSchema.xsd"' +
+                        '\n          version="2.1.0"' +
+                        '\n          askiaCompat="5.4.2">' +
+                        '\n  <info>' +
+                        '\n    <name>the-name</name>' +
+                        '\n    <guid>the-guid</guid>' +
+                        '\n    <version>the-version</version>' +
+                        '\n    <date>the-date</date>' +
+                        '\n    <description><![CDATA[the-description]]></description>' +
+                        '\n    <company>the-company</company>' +
+                        '\n    <author><![CDATA[the-author]]></author>' +
+                        '\n    <site>the-site</site>' +
+                        '\n    <helpURL>the-helpURL</helpURL>' +
+                        '\n    <categories>' +
+                        '\n      <category>cat-1</category>' +
+                        '\n      <category>cat-2</category>' +
+                        '\n    </categories>' +
+                        '\n    <constraints>' +
+                        '\n      <constraint on="questions" single="true" multiple="true" open="false" />' +
+                        '\n      <constraint on="controls" label="true" responseblock="true" />' +
+                        '\n      <constraint on="responses" min="2" max="*" />' +
+                        '\n    </constraints>' +
+                        '\n  </info>' +
+                        '\n  <outputs defaultOutput="main">' +
+                        '\n    <output id="main">' +
+                        '\n      <description><![CDATA[Main output]]></description>' +
+                        '\n      <content fileName="main.css" type="css" mode="static" position="head" />' +
+                        '\n      <content fileName="main.html" type="html" mode="dynamic" position="placeholder" />' +
+                        '\n      <content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                        '\n    </output>' +
+                        '\n    <output id="second">' +
+                        '\n      <description><![CDATA[Second output]]></description>' +
+                        '\n      <condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                        '\n      <content fileName="second.css" type="css" mode="static" position="head" />' +
+                        '\n      <content fileName="second.html" type="html" mode="dynamic" position="placeholder" />' +
+                        '\n      <content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                        '\n    </output>' +
+                        '\n    <output id="third" defaultGeneration="false" maxIterations="12">' +
+                        '\n      <description><![CDATA[Third output]]></description>' +
+                        '\n      <content fileName="third.css" type="css" mode="static" position="head">' +
+                        '\n        <attribute name="rel">' +
+                        '\n          <value><![CDATA[alternate]]></value>' +
+                        '\n        </attribute>' +
+                        '\n        <attribute name="media">' +
+                        '\n          <value><![CDATA[print]]></value>' +
+                        '\n        </attribute>' +
+                        '\n      </content>' +
+                        '\n      <content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                        '\n        <yield>' +
+                        '<![CDATA[<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->]]>' +
+                        '</yield>' +
+                        '\n      </content>' +
+                        '\n    </output>' +
+                        '\n  </outputs>' +
+                        '\n  <properties>' +
+                        '\n    <category id="general" name="General">' +
+                        '\n      <property xsi:type="standardProperty" id="renderingType" name="Rendering type" type="string">' +
+                        '\n        <description><![CDATA[Type of rendering]]></description>' +
+                        '\n        <value><![CDATA[classic]]></value>' +
+                        '\n        <options>' +
+                        '\n          <option value="classic" text="Classic" />' +
+                        '\n          <option value="image" text="Image" />' +
+                        '\n        </options>' +
+                        '\n      </property>' +
+                        '\n      <property xsi:type="standardProperty" id="other" name="Open-ended question for semi-open" type="question" numeric="true" open="true">' +
+                        '\n        <description><![CDATA[Additional open-ended question that could be use to emulate semi-open]]></description>' +
+                        '\n      </property>' +
+                        '\n    </category>' +
+                        '\n    <category id="images" name="Rendering type images">' +
+                        '\n      <property xsi:type="standardProperty" id="singleImage" name="Image for single question" type="file" fileExtension=".png, .gif, .jpg">' +
+                        '\n        <description><![CDATA[Image of single question when the rendering type is image]]></description>' +
+                        '\n        <value><![CDATA[Single.png]]></value>' +
+                        '\n      </property>' +
+                        '\n      <property xsi:type="standardProperty" id="multipleImage" name="Image for multiple question" type="file" fileExtension=".png, .gif, .jpg">' +
+                        '\n        <description><![CDATA[Image of multiple question when the rendering type is image]]></description>' +
+                        '\n        <value><![CDATA[Multiple.png]]></value>' +
+                        '\n      </property>' +
+                        '\n    </category>' +
+                        '\n    <category id="fake" name="Fake for test">' +
+                        '\n      <property xsi:type="standardProperty" id="testNumber" name="TEST" type="number" mode="dynamic" require="true" visible="false" min="12" max="100.5" decimal="3">' +
+                        '\n        <description><![CDATA[Test number properties]]></description>' +
+                        '\n        <value><![CDATA[13]]></value>' +
+                        '\n      </property>' +
+                        '\n      <property xsi:type="standardProperty" id="testColor" name="TEST" type="color" colorFormat="rgb">' +
+                        '\n        <description><![CDATA[Test color properties]]></description>' +
+                        '\n        <value><![CDATA[255,255,255]]></value>' +
+                        '\n      </property>' +
+                        '\n      <property xsi:type="standardProperty" id="testQuestion" name="TEST" type="question" chapter="false" single="true" multiple="true" numeric="false" open="false" date="false">' +
+                        '\n        <description><![CDATA[Test question properties]]></description>' +
+                        '\n        <value></value>' +
+                        '\n      </property>' +
+                        '\n      <property xsi:type="standardProperty" id="testFile" name="TEST" type="file" fileExtension=".test, .test2">' +
+                        '\n        <description><![CDATA[Test file properties]]></description>' +
+                        '\n        <value><![CDATA[file.test]]></value>' +
+                        '\n      </property>' +
+                        '\n      <property xsi:type="standardProperty" id="testString" name="TEST" type="string" pattern=".+@.+">' +
+                        '\n        <description><![CDATA[Test string properties]]></description>' +
+                        '\n        <value><![CDATA[test@test.com]]></value>' +
+                        '\n      </property>' +
+                        '\n    </category>' +
+                        '\n  </properties>' +
+                        '\n</control>');
+                    done();
+                });
+            });
+        });
+
+        it("should return the configuration of ADP 2.1 as XML", function () {
+
+            spies.fs.readFile.andCallFake(function (p, cb) {
+                cb(null, '<page><info><name>the-name</name><guid>the-guid</guid>' +
+                    '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                    '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                    '<helpURL>the-helpURL</helpURL>' +
+                    '</info>' +
+                    '<outputs defaultOutput="main">' +
+                    '<output id="main" masterPage="main.html">' +
+                    '<description><![CDATA[Main output]]></description>' +
+                    '<content fileName="main.css" type="css" mode="static" position="head" />' +
+                    '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                    '</output>' +
+                    '<output id="second" masterPage="second.html">' +
+                    '<description><![CDATA[Second output]]></description>' +
+                    '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                    '<content fileName="second.css" type="css" mode="static" position="head" />' +
+                    '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                    '</output>' +
+                    '<output id="third" masterPage="third.html">' +
+                    '<description><![CDATA[Third output]]></description>' +
+                    '<content fileName="third.css" type="css" mode="static" position="head" >' +
+                    ' <attribute name="rel">' +
+                    '<value>alternate</value>' +
+                    '</attribute>' +
+                    '<attribute name="media">' +
+                    '<value>print</value>' +
+                    '</attribute>' +
+                    '</content>' +
+                    '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                    '<yield>' +
+                    '<![CDATA[' +
+                    '<!--[if lte IE 9]>' +
+                    '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
+                    '<![endif]-->' +
+                    ']]>' +
+                    '</yield>' +
+                    '</content>'+
+                    '</output>' +
+                    '</outputs>' +
+                    '<properties>' +
+                    '<category id="general" name="General">' +
+                    '<property xsi:type="standardProperty" id="renderingType" name="Rendering type" type="string">' +
+                    '<description>Type of rendering</description>' +
+                    '<value>classic</value>' +
+                    '<options>' +
+                    '<option value="classic" text="Classic"/>' +
+                    '<option value="image" text="Image"/>' +
+                    '</options>' +
+                    '</property>' +
+                    '</category>' +
+                    '<category id="images" name="Rendering type images">' +
+                    '<property xsi:type="standardProperty" id="singleImage" name="Image for single question" type="file" fileExtension=".png, .gif, .jpg">' +
+                    '<description>Image of single question when the rendering type is image</description>' +
+                    '<value>Single.png</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="multipleImage" name="Image for multiple question" type="file" fileExtension=".png, .gif, .jpg">' +
+                    '<description>Image of multiple question when the rendering type is image</description>' +
+                    '<value>Multiple.png</value>' +
+                    '</property>' +
+                    '</category>' +
+                    '<category id="fake" name="Fake for test">' +
+                    '<property xsi:type="standardProperty" id="testNumber" name="TEST" type="number" min="12" max="100.5" decimal="3" mode="dynamic" visible="false" require="true">' +
+                    '<description>Test number properties</description>' +
+                    '<value>13</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testColor" name="TEST" type="color" colorFormat="rgb">' +
+                    '<description>Test color properties</description>' +
+                    '<value>255,255,255</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testFile" name="TEST" type="file" fileExtension=".test, .test2">' +
+                    '<description>Test file properties</description>' +
+                    '<value>file.test</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testString" name="TEST" type="string" pattern=".+@.+">' +
+                    '<description>Test string properties</description>' +
+                    '<value>test@test.com</value>' +
+                    '</property>' +
+                    '</category>' +
+                    '</properties>' +
+                    '</page>');
+            });
+            runSync(function (done) {
+                var configurator = new ADXConfigurator("an/valid/path");
+                configurator.load(function () {
+                    var result = configurator.toXml();
+                    expect(result ).toEqual('<?xml version="1.0" encoding="utf-8"?>'+
+                        '\n<page  xmlns="http://www.askia.com/2.1.0/ADPSchema"' +
+                        '\n          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
+                        '\n          xsi:schemaLocation="http://www.askia.com/2.1.0/ADPSchema https://raw.githubusercontent.com/AskiaADX/ADXSchema/2.1.0/ADPSchema.xsd"' +
+                        '\n          version="2.1.0"' +
+                        '\n          askiaCompat="5.4.2">' +
+                        '\n  <info>' +
+                        '\n    <name>the-name</name>' +
+                        '\n    <guid>the-guid</guid>' +
+                        '\n    <version>the-version</version>' +
+                        '\n    <date>the-date</date>' +
+                        '\n    <description><![CDATA[the-description]]></description>' +
+                        '\n    <company>the-company</company>' +
+                        '\n    <author><![CDATA[the-author]]></author>' +
+                        '\n    <site>the-site</site>' +
+                        '\n    <helpURL>the-helpURL</helpURL>' +
+                        '\n  </info>' +
+                        '\n  <outputs defaultOutput="main">' +
+                        '\n    <output id="main" masterPage="main.html">' +
+                        '\n      <description><![CDATA[Main output]]></description>' +
+                        '\n      <content fileName="main.css" type="css" mode="static" position="head" />' +
+                        '\n      <content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                        '\n    </output>' +
+                        '\n    <output id="second" masterPage="second.html">' +
+                        '\n      <description><![CDATA[Second output]]></description>' +
+                        '\n      <condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                        '\n      <content fileName="second.css" type="css" mode="static" position="head" />' +
+                        '\n      <content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                        '\n    </output>' +
+                        '\n    <output id="third" masterPage="third.html">' +
+                        '\n      <description><![CDATA[Third output]]></description>' +
+                        '\n      <content fileName="third.css" type="css" mode="static" position="head">' +
+                        '\n        <attribute name="rel">' +
+                        '\n          <value><![CDATA[alternate]]></value>' +
+                        '\n        </attribute>' +
+                        '\n        <attribute name="media">' +
+                        '\n          <value><![CDATA[print]]></value>' +
+                        '\n        </attribute>' +
+                        '\n      </content>' +
+                        '\n      <content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                        '\n        <yield>' +
+                        '<![CDATA[<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->]]>' +
+                        '</yield>' +
+                        '\n      </content>' +
+                        '\n    </output>' +
+                        '\n  </outputs>' +
+                        '\n  <properties>' +
+                        '\n    <category id="general" name="General">' +
+                        '\n      <property xsi:type="standardProperty" id="renderingType" name="Rendering type" type="string">' +
+                        '\n        <description><![CDATA[Type of rendering]]></description>' +
+                        '\n        <value><![CDATA[classic]]></value>' +
+                        '\n        <options>' +
+                        '\n          <option value="classic" text="Classic" />' +
+                        '\n          <option value="image" text="Image" />' +
+                        '\n        </options>' +
+                        '\n      </property>' +
+                        '\n    </category>' +
+                        '\n    <category id="images" name="Rendering type images">' +
+                        '\n      <property xsi:type="standardProperty" id="singleImage" name="Image for single question" type="file" fileExtension=".png, .gif, .jpg">' +
+                        '\n        <description><![CDATA[Image of single question when the rendering type is image]]></description>' +
+                        '\n        <value><![CDATA[Single.png]]></value>' +
+                        '\n      </property>' +
+                        '\n      <property xsi:type="standardProperty" id="multipleImage" name="Image for multiple question" type="file" fileExtension=".png, .gif, .jpg">' +
+                        '\n        <description><![CDATA[Image of multiple question when the rendering type is image]]></description>' +
+                        '\n        <value><![CDATA[Multiple.png]]></value>' +
+                        '\n      </property>' +
+                        '\n    </category>' +
+                        '\n    <category id="fake" name="Fake for test">' +
+                        '\n      <property xsi:type="standardProperty" id="testNumber" name="TEST" type="number" mode="dynamic" require="true" visible="false" min="12" max="100.5" decimal="3">' +
+                        '\n        <description><![CDATA[Test number properties]]></description>' +
+                        '\n        <value><![CDATA[13]]></value>' +
+                        '\n      </property>' +
+                        '\n      <property xsi:type="standardProperty" id="testColor" name="TEST" type="color" colorFormat="rgb">' +
+                        '\n        <description><![CDATA[Test color properties]]></description>' +
+                        '\n        <value><![CDATA[255,255,255]]></value>' +
+                        '\n      </property>' +
+                        '\n      <property xsi:type="standardProperty" id="testFile" name="TEST" type="file" fileExtension=".test, .test2">' +
+                        '\n        <description><![CDATA[Test file properties]]></description>' +
+                        '\n        <value><![CDATA[file.test]]></value>' +
+                        '\n      </property>' +
+                        '\n      <property xsi:type="standardProperty" id="testString" name="TEST" type="string" pattern=".+@.+">' +
+                        '\n        <description><![CDATA[Test string properties]]></description>' +
+                        '\n        <value><![CDATA[test@test.com]]></value>' +
+                        '\n      </property>' +
+                        '\n    </category>' +
+                        '\n  </properties>' +
+                        '\n</page>');
                     done();
                 });
             });
@@ -1062,14 +1462,6 @@ describe('ADXConfigurator', function () {
                                                 text: "Image"
                                             }
                                         ]
-                                    },
-                                    {
-                                        id: "other",
-                                        name: "Open-ended question for semi-open",
-                                        type: "question",
-                                        numeric : true,
-                                        open : true,
-                                        description: "Additional open-ended question that could be use to emulate semi-open"
                                     }
                                 ]
                             },
@@ -1119,19 +1511,6 @@ describe('ADXConfigurator', function () {
                                             colorFormat  :"rgb",
                                             description : "Test color properties",
                                             value : "255,255,255"
-                                        },
-                                        {
-                                            id : "testQuestion",
-                                            name : "TEST",
-                                            type : "question",
-                                            chapter : false,
-                                            single : true,
-                                            multiple : true,
-                                            numeric : false,
-                                            open : false,
-                                            date : false,
-                                            description : "Test question properties",
-                                            value : ""
                                         },
                                         {
                                             id : "testFile",
@@ -2222,16 +2601,6 @@ describe('ADXConfigurator', function () {
                                                 text: "New Image"
                                             }
                                         ]
-                                    },
-                                    {
-                                        id: "new-other",
-                                        name: "Open-ended question for semi-open",
-                                        type: "question",
-                                        single : true,
-                                        multiple : true,
-                                        numeric : false,
-                                        open : false,
-                                        description: "Additional open-ended question that could be use to emulate semi-open"
                                     }
                                 ]
                             },
@@ -2281,19 +2650,6 @@ describe('ADXConfigurator', function () {
                                             colorFormat  :"rgba",
                                             description : "Test color properties",
                                             value : "255,255,255,.9"
-                                        },
-                                        {
-                                            id : "testQuestion",
-                                            name : "Question value",
-                                            type : "question",
-                                            chapter : true,
-                                            single : false,
-                                            multiple : false,
-                                            numeric : true,
-                                            open : true,
-                                            date : true,
-                                            description : "Test question properties",
-                                            value : "CurrentQuestion"
                                         },
                                         {
                                             id : "testFile",
@@ -4393,126 +4749,211 @@ describe('ADXConfigurator', function () {
         });
     });
 
-    return;
-
     describe('#properties', function () {
         beforeEach(function () {
             spies.dirExists.andCallFake(function (p, cb) {
                 cb(null, true);
             });
             spies.fs.readFile.andCallFake(function (p, cb) {
-                cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
-                    '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
-                    '<company>the-company</company><author>the-author</author><site>the-site</site>' +
-                    '<helpURL>the-helpURL</helpURL>' +
-                    '<categories><category>cat-1</category><category>cat-2</category></categories>' +
-                    '<style width="200" height="400" />' +
-                    '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
-                    '<constraint on="controls" label="true" responseblock="true" />' +
-                    '<constraint on="responses" min="2" max="*" />' +
-                    '</constraints>' +
-                    '</info>' +
-                    '<outputs defaultOutput="main">' +
-                    '<output id="main">' +
-                    '<description><![CDATA[Main output]]></description>' +
-                    '<content fileName="main.css" type="css" mode="static" position="head" />' +
-                    '<content fileName="main.html" type="html" mode="dynamic" position="placeholder" />' +
-                    '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
-                    '</output>' +
-                    '<output id="second">' +
-                    '<description><![CDATA[Second output]]></description>' +
-                    '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
-                    '<content fileName="second.css" type="css" mode="static" position="head" />' +
-                    '<content fileName="second.html" type="html" mode="dynamic" position="placeholder" />' +
-                    '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
-                    '</output>' +
-                    '<output id="third" defaultGeneration="false" maxIterations="12">' +
-                    '<description><![CDATA[Third output]]></description>' +
-                    '<content fileName="third.css" type="css" mode="static" position="head" >' +
-                    ' <attribute name="rel">' +
-                    '<value>alternate</value>' +
-                    '</attribute>' +
-                    '<attribute name="media">' +
-                    '<value>print</value>' +
-                    '</attribute>' +
-                    '</content>' +
-                    '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
-                    '<yield>' +
-                    '<![CDATA[' +
-                    '<!--[if lte IE 9]>' +
-                    '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
-                    '<![endif]-->' +
-                    ']]>' +
-                    '</yield>' +
-                    '</content>'+
-                    '</output>' +
-                    '</outputs>' +
-                    '<properties>' +
-                    '<category id="general" name="General">' +
-                    '<property xsi:type="askiaProperty" id="askia-theme">' +
-                    '<options>' +
-                    '<option value="red-theme" text="Red" />' +
-                    '<option value="blue-theme" text="Blue" />' +
-                    '</options>' +
-                    '</property>' +
-                    '<property xsi:type="standardProperty" id="renderingType" name="Rendering type" type="string">' +
-                    '<description>Type of rendering</description>' +
-                    '<value>classic</value>' +
-                    '<options>' +
-                    '<option value="classic" text="Classic"/>' +
-                    '<option value="image" text="Image"/>' +
-                    '</options>' +
-                    '</property>' +
-                    '<property xsi:type="standardProperty" id="other" name="Open-ended question for semi-open" type="question" open="true" numeric="true">' +
-                    '<description>Additional open-ended question that could be use to emulate semi-open</description>' +
-                    '</property>' +
-                    '</category>' +
-                    '<category id="images" name="Rendering type images">' +
-                    '<property xsi:type="standardProperty" id="singleImage" name="Image for single question" type="file" fileExtension=".png, .gif, .jpg">' +
-                    '<description>Image of single question when the rendering type is image</description>' +
-                    '<value>Single.png</value>' +
-                    '<value theme="red-theme">SingleRed.png</value>' +
-                    '<value theme="blue-theme">SingleBlue.png</value>' +
-                    '</property>' +
-                    '<property xsi:type="standardProperty" id="multipleImage" name="Image for multiple question" type="file" fileExtension=".png, .gif, .jpg">' +
-                    '<description>Image of multiple question when the rendering type is image</description>' +
-                    '<value>Multiple.png</value>' +
-                    '<value theme="red-theme">MultipleRed.png</value>' +
-                    '<value theme="blue-theme">MultipleBlue.png</value>' +
-                    '</property>' +
-                    '</category>' +
-                    '<category id="fake" name="Fake for test">' +
-                    '<property xsi:type="standardProperty" id="testNumber" name="TEST" type="number" min="12" max="100.5" decimal="3" mode="dynamic" visible="false" require="true">' +
-                    '<description>Test number properties</description>' +
-                    '<value>13</value>' +
-                    '</property>' +
-                    '<property xsi:type="standardProperty" id="testColor" name="TEST" type="color" colorFormat="rgb">' +
-                    '<description>Test color properties</description>' +
-                    '<value>255,255,255</value>' +
-                    '</property>' +
-                    '<property xsi:type="standardProperty" id="testQuestion" name="TEST" type="question" chapter="false" single="true" multiple="true" numeric="false" open="false" date="false">' +
-                    '<description>Test question properties</description>' +
-                    '<value></value>' +
-                    '</property>' +
-                    '<property xsi:type="standardProperty" id="testFile" name="TEST" type="file" fileExtension=".test, .test2">' +
-                    '<description>Test file properties</description>' +
-                    '<value>file.test</value>' +
-                    '</property>' +
-                    '<property xsi:type="standardProperty" id="testString" name="TEST" type="string" pattern=".+@.+">' +
-                    '<description>Test string properties</description>' +
-                    '<value>test@test.com</value>' +
-                    '</property>' +
-                    '</category>' +
-                    '</properties>' +
-                    '</control>');
+                if (p === 'adc\\path\\config.xml') {
+                    cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
+                        '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                        '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                        '<helpURL>the-helpURL</helpURL>' +
+                        '<categories><category>cat-1</category><category>cat-2</category></categories>' +
+                        '<style width="200" height="400" />' +
+                        '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
+                        '<constraint on="controls" label="true" responseblock="true" />' +
+                        '<constraint on="responses" min="2" max="*" />' +
+                        '</constraints>' +
+                        '</info>' +
+                        '<outputs defaultOutput="main">' +
+                        '<output id="main">' +
+                        '<description><![CDATA[Main output]]></description>' +
+                        '<content fileName="main.css" type="css" mode="static" position="head" />' +
+                        '<content fileName="main.html" type="html" mode="dynamic" position="placeholder" />' +
+                        '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                        '</output>' +
+                        '<output id="second">' +
+                        '<description><![CDATA[Second output]]></description>' +
+                        '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                        '<content fileName="second.css" type="css" mode="static" position="head" />' +
+                        '<content fileName="second.html" type="html" mode="dynamic" position="placeholder" />' +
+                        '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                        '</output>' +
+                        '<output id="third" defaultGeneration="false" maxIterations="12">' +
+                        '<description><![CDATA[Third output]]></description>' +
+                        '<content fileName="third.css" type="css" mode="static" position="head" >' +
+                        ' <attribute name="rel">' +
+                        '<value>alternate</value>' +
+                        '</attribute>' +
+                        '<attribute name="media">' +
+                        '<value>print</value>' +
+                        '</attribute>' +
+                        '</content>' +
+                        '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                        '<yield>' +
+                        '<![CDATA[' +
+                        '<!--[if lte IE 9]>' +
+                        '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
+                        '<![endif]-->' +
+                        ']]>' +
+                        '</yield>' +
+                        '</content>'+
+                        '</output>' +
+                        '</outputs>' +
+                        '<properties>' +
+                        '<category id="general" name="General">' +
+                        '<property xsi:type="askiaProperty" id="askia-theme">' +
+                        '<options>' +
+                        '<option value="red-theme" text="Red" />' +
+                        '<option value="blue-theme" text="Blue" />' +
+                        '</options>' +
+                        '</property>' +
+                        '<property xsi:type="standardProperty" id="renderingType" name="Rendering type" type="string">' +
+                        '<description>Type of rendering</description>' +
+                        '<value>classic</value>' +
+                        '<options>' +
+                        '<option value="classic" text="Classic"/>' +
+                        '<option value="image" text="Image"/>' +
+                        '</options>' +
+                        '</property>' +
+                        '<property xsi:type="standardProperty" id="other" name="Open-ended question for semi-open" type="question" open="true" numeric="true">' +
+                        '<description>Additional open-ended question that could be use to emulate semi-open</description>' +
+                        '</property>' +
+                        '</category>' +
+                        '<category id="images" name="Rendering type images">' +
+                        '<property xsi:type="standardProperty" id="singleImage" name="Image for single question" type="file" fileExtension=".png, .gif, .jpg">' +
+                        '<description>Image of single question when the rendering type is image</description>' +
+                        '<value>Single.png</value>' +
+                        '<value theme="red-theme">SingleRed.png</value>' +
+                        '<value theme="blue-theme">SingleBlue.png</value>' +
+                        '</property>' +
+                        '<property xsi:type="standardProperty" id="multipleImage" name="Image for multiple question" type="file" fileExtension=".png, .gif, .jpg">' +
+                        '<description>Image of multiple question when the rendering type is image</description>' +
+                        '<value>Multiple.png</value>' +
+                        '<value theme="red-theme">MultipleRed.png</value>' +
+                        '<value theme="blue-theme">MultipleBlue.png</value>' +
+                        '</property>' +
+                        '</category>' +
+                        '<category id="fake" name="Fake for test">' +
+                        '<property xsi:type="standardProperty" id="testNumber" name="TEST" type="number" min="12" max="100.5" decimal="3" mode="dynamic" visible="false" require="true">' +
+                        '<description>Test number properties</description>' +
+                        '<value>13</value>' +
+                        '</property>' +
+                        '<property xsi:type="standardProperty" id="testColor" name="TEST" type="color" colorFormat="rgb">' +
+                        '<description>Test color properties</description>' +
+                        '<value>255,255,255</value>' +
+                        '</property>' +
+                        '<property xsi:type="standardProperty" id="testQuestion" name="TEST" type="question" chapter="false" single="true" multiple="true" numeric="false" open="false" date="false">' +
+                        '<description>Test question properties</description>' +
+                        '<value></value>' +
+                        '</property>' +
+                        '<property xsi:type="standardProperty" id="testFile" name="TEST" type="file" fileExtension=".test, .test2">' +
+                        '<description>Test file properties</description>' +
+                        '<value>file.test</value>' +
+                        '</property>' +
+                        '<property xsi:type="standardProperty" id="testString" name="TEST" type="string" pattern=".+@.+">' +
+                        '<description>Test string properties</description>' +
+                        '<value>test@test.com</value>' +
+                        '</property>' +
+                        '</category>' +
+                        '</properties>' +
+                        '</control>');
+
+                } else if (p === 'adp\\path\\config.xml') {
+                    cb(null, '<page><info><name>the-name</name><guid>the-guid</guid>' +
+                        '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                        '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                        '<helpURL>the-helpURL</helpURL>' +
+                        '</info>' +
+                        '<outputs defaultOutput="main">' +
+                        '<output id="main" masterPage="main.html">' +
+                        '<description><![CDATA[Main output]]></description>' +
+                        '<content fileName="main.css" type="css" mode="static" position="head" />' +
+                        '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                        '</output>' +
+                        '<output id="second" masterPage="second.html">' +
+                        '<description><![CDATA[Second output]]></description>' +
+                        '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                        '<content fileName="second.css" type="css" mode="static" position="head" />' +
+                        '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                        '</output>' +
+                        '<output id="third" masterPage="third.html">' +
+                        '<description><![CDATA[Third output]]></description>' +
+                        '<content fileName="third.css" type="css" mode="static" position="head" >' +
+                        ' <attribute name="rel">' +
+                        '<value>alternate</value>' +
+                        '</attribute>' +
+                        '<attribute name="media">' +
+                        '<value>print</value>' +
+                        '</attribute>' +
+                        '</content>' +
+                        '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                        '<yield>' +
+                        '<![CDATA[' +
+                        '<!--[if lte IE 9]>' +
+                        '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
+                        '<![endif]-->' +
+                        ']]>' +
+                        '</yield>' +
+                        '</content>'+
+                        '</output>' +
+                        '</outputs>' +
+                        '<properties>' +
+                        '<category id="general" name="General">' +
+                        '<property xsi:type="standardProperty" id="renderingType" name="Rendering type" type="string">' +
+                        '<description>Type of rendering</description>' +
+                        '<value>classic</value>' +
+                        '<options>' +
+                        '<option value="classic" text="Classic"/>' +
+                        '<option value="image" text="Image"/>' +
+                        '</options>' +
+                        '</property>' +
+                        '<property xsi:type="standardProperty" id="other" name="Open-ended question for semi-open" type="question" open="true" numeric="true">' +
+                        '<description>Additional open-ended question that could be use to emulate semi-open</description>' +
+                        '</property>' +
+                        '</category>' +
+                        '<category id="images" name="Rendering type images">' +
+                        '<property xsi:type="standardProperty" id="singleImage" name="Image for single question" type="file" fileExtension=".png, .gif, .jpg">' +
+                        '<description>Image of single question when the rendering type is image</description>' +
+                        '<value>Single.png</value>' +
+                        '</property>' +
+                        '<property xsi:type="standardProperty" id="multipleImage" name="Image for multiple question" type="file" fileExtension=".png, .gif, .jpg">' +
+                        '<description>Image of multiple question when the rendering type is image</description>' +
+                        '<value>Multiple.png</value>' +
+                        '</property>' +
+                        '</category>' +
+                        '<category id="fake" name="Fake for test">' +
+                        '<property xsi:type="standardProperty" id="testNumber" name="TEST" type="number" min="12" max="100.5" decimal="3" mode="dynamic" visible="false" require="true">' +
+                        '<description>Test number properties</description>' +
+                        '<value>13</value>' +
+                        '</property>' +
+                        '<property xsi:type="standardProperty" id="testColor" name="TEST" type="color" colorFormat="rgb">' +
+                        '<description>Test color properties</description>' +
+                        '<value>255,255,255</value>' +
+                        '</property>' +
+                        '<property xsi:type="standardProperty" id="testFile" name="TEST" type="file" fileExtension=".test, .test2">' +
+                        '<description>Test file properties</description>' +
+                        '<value>file.test</value>' +
+                        '</property>' +
+                        '<property xsi:type="standardProperty" id="testString" name="TEST" type="string" pattern=".+@.+">' +
+                        '<description>Test string properties</description>' +
+                        '<value>test@test.com</value>' +
+                        '</property>' +
+                        '</category>' +
+                        '</properties>' +
+                        '</page>');
+                }
+
             });
         });
 
         describe('#get', function () {
-            it("should return an object with the keys: `categories` (an array)", function () {
+            it("should return an ADC object with the keys: `categories` (an array)", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         var result = configurator.properties.get();
                         expect(Array.isArray(result.categories)).toBe(true);
@@ -4521,9 +4962,9 @@ describe('ADXConfigurator', function () {
                 });
             });
 
-            it("should return an object which contains the definition of the categories / properties", function () {
+            it("should return an ADC object which contains the definition of the categories / properties", function () {
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         var result = configurator.properties.get();
                         expect(result).toEqual({
@@ -4558,84 +4999,197 @@ describe('ADXConfigurator', function () {
                                     }
                                 ]
                             },
-                            {
-                                id : "images",
-                                name : "Rendering type images",
-                                properties : [
+                                {
+                                    id : "images",
+                                    name : "Rendering type images",
+                                    properties : [
+                                        {
+                                            id : "singleImage",
+                                            name : "Image for single question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of single question when the rendering type is image",
+                                            value : "Single.png"
+                                        },
+                                        {
+                                            id : "multipleImage",
+                                            name : "Image for multiple question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of multiple question when the rendering type is image",
+                                            value : "Multiple.png"
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "fake",
+                                    name : "Fake for test",
+                                    properties : [
+                                        {
+                                            id : "testNumber",
+                                            name : "TEST",
+                                            type : "number",
+                                            mode : "dynamic",
+                                            visible : false,
+                                            require : true,
+                                            min  :12,
+                                            max : 100.5,
+                                            decimal : 3,
+                                            description : "Test number properties",
+                                            value : "13"
+                                        },
+                                        {
+                                            id : "testColor",
+                                            name : "TEST",
+                                            type : "color",
+                                            colorFormat  :"rgb",
+                                            description : "Test color properties",
+                                            value : "255,255,255"
+                                        },
+                                        {
+                                            id : "testQuestion",
+                                            name : "TEST",
+                                            type : "question",
+                                            chapter : false,
+                                            single : true,
+                                            multiple : true,
+                                            numeric : false,
+                                            open : false,
+                                            date : false,
+                                            description : "Test question properties",
+                                            value : ""
+                                        },
+                                        {
+                                            id : "testFile",
+                                            name : "TEST",
+                                            type : "file",
+                                            fileExtension : ".test, .test2",
+                                            description : "Test file properties",
+                                            value : "file.test"
+                                        },
+                                        {
+                                            id : "testString",
+                                            name : "TEST",
+                                            type : "string",
+                                            pattern : ".+@.+",
+                                            description : "Test string properties",
+                                            value : "test@test.com"
+                                        }
+                                    ]
+                                }]
+                        });
+
+                        done();
+                    });
+                });
+            });
+
+            it("should return an ADP object with the keys: `categories` (an array)", function () {
+
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adp/path");
+                    configurator.load(function () {
+                        var result = configurator.properties.get();
+                        expect(Array.isArray(result.categories)).toBe(true);
+                        done();
+                    });
+                });
+            });
+
+            it("should return an ADP object which contains the definition of the categories / properties", function () {
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adp/path");
+                    configurator.load(function () {
+                        var result = configurator.properties.get();
+                        expect(result).toEqual({
+                            categories : [{
+                                id: "general",
+                                name: "General",
+                                properties: [
                                     {
-                                        id : "singleImage",
-                                        name : "Image for single question",
-                                        type : "file",
-                                        fileExtension : ".png, .gif, .jpg",
-                                        description : "Image of single question when the rendering type is image",
-                                        value : "Single.png"
-                                    },
-                                    {
-                                        id : "multipleImage",
-                                        name : "Image for multiple question",
-                                        type : "file",
-                                        fileExtension : ".png, .gif, .jpg",
-                                        description : "Image of multiple question when the rendering type is image",
-                                        value : "Multiple.png"
+                                        id: "renderingType",
+                                        name: "Rendering type",
+                                        type: "string",
+                                        description: "Type of rendering",
+                                        value: "classic",
+                                        options: [
+                                            {
+                                                value: "classic",
+                                                text: "Classic"
+                                            },
+                                            {
+                                                value: "image",
+                                                text: "Image"
+                                            }
+                                        ]
                                     }
                                 ]
                             },
-                            {
-                                id : "fake",
-                                name : "Fake for test",
-                                properties : [
-                                    {
-                                        id : "testNumber",
-                                        name : "TEST",
-                                        type : "number",
-                                        mode : "dynamic",
-                                        visible : false,
-                                        require : true,
-                                        min  :12,
-                                        max : 100.5,
-                                        decimal : 3,
-                                        description : "Test number properties",
-                                        value : "13"
-                                    },
-                                    {
-                                        id : "testColor",
-                                        name : "TEST",
-                                        type : "color",
-                                        colorFormat  :"rgb",
-                                        description : "Test color properties",
-                                        value : "255,255,255"
-                                    },
-                                    {
-                                        id : "testQuestion",
-                                        name : "TEST",
-                                        type : "question",
-                                        chapter : false,
-                                        single : true,
-                                        multiple : true,
-                                        numeric : false,
-                                        open : false,
-                                        date : false,
-                                        description : "Test question properties",
-                                        value : ""
-                                    },
-                                    {
-                                        id : "testFile",
-                                        name : "TEST",
-                                        type : "file",
-                                        fileExtension : ".test, .test2",
-                                        description : "Test file properties",
-                                        value : "file.test"
-                                    },
-                                    {
-                                        id : "testString",
-                                        name : "TEST",
-                                        type : "string",
-                                        pattern : ".+@.+",
-                                        description : "Test string properties",
-                                        value : "test@test.com"
-                                    }
-                                ]
-                            }]
+                                {
+                                    id : "images",
+                                    name : "Rendering type images",
+                                    properties : [
+                                        {
+                                            id : "singleImage",
+                                            name : "Image for single question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of single question when the rendering type is image",
+                                            value : "Single.png"
+                                        },
+                                        {
+                                            id : "multipleImage",
+                                            name : "Image for multiple question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of multiple question when the rendering type is image",
+                                            value : "Multiple.png"
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "fake",
+                                    name : "Fake for test",
+                                    properties : [
+                                        {
+                                            id : "testNumber",
+                                            name : "TEST",
+                                            type : "number",
+                                            mode : "dynamic",
+                                            visible : false,
+                                            require : true,
+                                            min  :12,
+                                            max : 100.5,
+                                            decimal : 3,
+                                            description : "Test number properties",
+                                            value : "13"
+                                        },
+                                        {
+                                            id : "testColor",
+                                            name : "TEST",
+                                            type : "color",
+                                            colorFormat  :"rgb",
+                                            description : "Test color properties",
+                                            value : "255,255,255"
+                                        },
+                                        {
+                                            id : "testFile",
+                                            name : "TEST",
+                                            type : "file",
+                                            fileExtension : ".test, .test2",
+                                            description : "Test file properties",
+                                            value : "file.test"
+                                        },
+                                        {
+                                            id : "testString",
+                                            name : "TEST",
+                                            type : "string",
+                                            pattern : ".+@.+",
+                                            description : "Test string properties",
+                                            value : "test@test.com"
+                                        }
+                                    ]
+                                }]
                         });
 
                         done();
@@ -4648,27 +5202,13 @@ describe('ADXConfigurator', function () {
             it("should set the ADC properties with plain object", function () {
 
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         configurator.properties.set({
                             categories : [{
                                 id: "new-general",
                                 name: "New General",
                                 properties: [
-                                    {
-                                        xsiType: "askiaProperty",
-                                        id: "new-askia-theme",
-                                        options: [
-                                            {
-                                                value: "new-red-theme",
-                                                text: "New Red"
-                                            },
-                                            {
-                                                value: "new-blue-theme",
-                                                text: "New Blue"
-                                            }
-                                        ]
-                                    },
                                     {
                                         id: "newRenderingType",
                                         name: "New rendering type",
@@ -4708,11 +5248,7 @@ describe('ADXConfigurator', function () {
                                             type : "file",
                                             fileExtension : ".png, .gif, .jpg",
                                             description : "Image of single question when the rendering type is image",
-                                            value : "Single.png",
-                                            valueTheme : {
-                                                "new-red-theme" : "SingleRed.png",
-                                                "new-blue-theme" : "SingleBlue.png"
-                                            }
+                                            value : "Single.png"
                                         },
                                         {
                                             id : "multipleImage",
@@ -4720,11 +5256,7 @@ describe('ADXConfigurator', function () {
                                             type : "file",
                                             fileExtension : ".png, .gif, .jpg",
                                             description : "Image of multiple question when the rendering type is image",
-                                            value : "Multiple.png",
-                                            valueTheme : {
-                                                "red-theme" : "MultipleRed.png",
-                                                "blue-theme" : "MultipleBlue.png"
-                                            }
+                                            value : "Multiple.png"
                                         }
                                     ]
                                 },
@@ -4907,6 +5439,7 @@ describe('ADXConfigurator', function () {
 
             it("should create ADC properties if it's not defined in the xml", function () {
                 spies.fs.readFile.andCallFake(function (p, cb) {
+
                     cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
                         '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
                         '<company>the-company</company><author>the-author</author><site>the-site</site>' +
@@ -4954,29 +5487,16 @@ describe('ADXConfigurator', function () {
                         '</output>' +
                         '</outputs>' +
                         '</control>');
+
                 });
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         configurator.properties.set({
                             categories : [{
                                 id: "new-general",
                                 name: "New General",
                                 properties: [
-                                    {
-                                        xsiType: "askiaProperty",
-                                        id: "new-askia-theme",
-                                        options: [
-                                            {
-                                                value: "new-red-theme",
-                                                text: "New Red"
-                                            },
-                                            {
-                                                value: "new-blue-theme",
-                                                text: "New Blue"
-                                            }
-                                        ]
-                                    },
                                     {
                                         id: "newRenderingType",
                                         name: "New rendering type",
@@ -5016,11 +5536,7 @@ describe('ADXConfigurator', function () {
                                             type : "file",
                                             fileExtension : ".png, .gif, .jpg",
                                             description : "Image of single question when the rendering type is image",
-                                            value : "Single.png",
-                                            valueTheme : {
-                                                "new-red-theme" : "SingleRed.png",
-                                                "new-blue-theme" : "SingleBlue.png"
-                                            }
+                                            value : "Single.png"
                                         },
                                         {
                                             id : "multipleImage",
@@ -5028,11 +5544,7 @@ describe('ADXConfigurator', function () {
                                             type : "file",
                                             fileExtension : ".png, .gif, .jpg",
                                             description : "Image of multiple question when the rendering type is image",
-                                            value : "Multiple.png",
-                                            valueTheme : {
-                                                "red-theme" : "MultipleRed.png",
-                                                "blue-theme" : "MultipleBlue.png"
-                                            }
+                                            value : "Multiple.png"
                                         }
                                     ]
                                 },
@@ -5212,22 +5724,487 @@ describe('ADXConfigurator', function () {
                     });
                 });
             });
+
+            it("should set the ADP properties with plain object", function () {
+
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adp/path");
+                    configurator.load(function () {
+                        configurator.properties.set({
+                            categories : [{
+                                id: "new-general",
+                                name: "New General",
+                                properties: [
+                                    {
+                                        id: "newRenderingType",
+                                        name: "New rendering type",
+                                        type: "string",
+                                        description: "New Type of rendering",
+                                        value: "new-classic",
+                                        options: [
+                                            {
+                                                value: "new-classic",
+                                                text: "New Classic"
+                                            },
+                                            {
+                                                value: "new-image",
+                                                text: "New Image"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        id: "new-other",
+                                        name: "Open-ended question for semi-open",
+                                        type: "question",
+                                        single : true,
+                                        multiple : true,
+                                        numeric : false,
+                                        open : false,
+                                        description: "Additional open-ended question that could be use to emulate semi-open"
+                                    }
+                                ]
+                            },
+                                {
+                                    id : "images",
+                                    name : "Rendering type images",
+                                    properties : [
+                                        {
+                                            id : "singleImage",
+                                            name : "Image for single question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of single question when the rendering type is image",
+                                            value : "Single.png"
+                                        },
+                                        {
+                                            id : "multipleImage",
+                                            name : "Image for multiple question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of multiple question when the rendering type is image",
+                                            value : "Multiple.png"
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "newFake",
+                                    name : "New Fake for test",
+                                    properties : [
+                                        {
+                                            id : "testNumber",
+                                            name : "Number value",
+                                            type : "number",
+                                            mode : "static",
+                                            visible : true,
+                                            require : false,
+                                            min  :25,
+                                            max : 200,
+                                            decimal : 1,
+                                            description : "New Test number properties",
+                                            value : "26"
+                                        },
+                                        {
+                                            id : "testColor",
+                                            name : "Color value",
+                                            type : "color",
+                                            colorFormat  :"rgba",
+                                            description : "Test color properties",
+                                            value : "255,255,255,.9"
+                                        },
+                                        {
+                                            id : "testQuestion",
+                                            name : "Question value",
+                                            type : "question",
+                                            chapter : true,
+                                            single : false,
+                                            multiple : false,
+                                            numeric : true,
+                                            open : true,
+                                            date : true,
+                                            description : "Test question properties",
+                                            value : "CurrentQuestion"
+                                        },
+                                        {
+                                            id : "testFile",
+                                            name : "File value",
+                                            type : "file",
+                                            fileExtension : ".doc, .docx",
+                                            description : "Test file properties",
+                                            value : "file.docs"
+                                        },
+                                        {
+                                            id : "testString",
+                                            name : "String value",
+                                            type : "string",
+                                            pattern : "\w@\w",
+                                            description : "Test string properties",
+                                            value : "foo@bar.com"
+                                        }
+                                    ]
+                                }]
+                        });
+                        var result = configurator.properties.get();
+                        expect(result ).toEqual({
+                            categories : [{
+                                id: "new-general",
+                                name: "New General",
+                                properties: [
+                                    {
+                                        id: "newRenderingType",
+                                        name: "New rendering type",
+                                        type: "string",
+                                        description: "New Type of rendering",
+                                        value: "new-classic",
+                                        options: [
+                                            {
+                                                value: "new-classic",
+                                                text: "New Classic"
+                                            },
+                                            {
+                                                value: "new-image",
+                                                text: "New Image"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                                {
+                                    id : "images",
+                                    name : "Rendering type images",
+                                    properties : [
+                                        {
+                                            id : "singleImage",
+                                            name : "Image for single question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of single question when the rendering type is image",
+                                            value : "Single.png"
+                                        },
+                                        {
+                                            id : "multipleImage",
+                                            name : "Image for multiple question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of multiple question when the rendering type is image",
+                                            value : "Multiple.png"
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "newFake",
+                                    name : "New Fake for test",
+                                    properties : [
+                                        {
+                                            id : "testNumber",
+                                            name : "Number value",
+                                            type : "number",
+                                            mode : "static",
+                                            visible : true,
+                                            require : false,
+                                            min  :25,
+                                            max : 200,
+                                            decimal : 1,
+                                            description : "New Test number properties",
+                                            value : "26"
+                                        },
+                                        {
+                                            id : "testColor",
+                                            name : "Color value",
+                                            type : "color",
+                                            colorFormat  :"rgba",
+                                            description : "Test color properties",
+                                            value : "255,255,255,.9"
+                                        },
+                                        {
+                                            id : "testFile",
+                                            name : "File value",
+                                            type : "file",
+                                            fileExtension : ".doc, .docx",
+                                            description : "Test file properties",
+                                            value : "file.docs"
+                                        },
+                                        {
+                                            id : "testString",
+                                            name : "String value",
+                                            type : "string",
+                                            pattern : "\w@\w",
+                                            description : "Test string properties",
+                                            value : "foo@bar.com"
+                                        }
+                                    ]
+                                }]
+                        });
+
+                        done();
+                    });
+                });
+            });
+
+            it("should create ADP properties if it's not defined in the xml", function () {
+                spies.fs.readFile.andCallFake(function (p, cb) {
+                    cb(null, '<page><info><name>the-name</name><guid>the-guid</guid>' +
+                        '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                        '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                        '<helpURL>the-helpURL</helpURL>' +
+                        '</info>' +
+                        '<outputs defaultOutput="main">' +
+                        '<output id="main" masterPage="main.html">' +
+                        '<description><![CDATA[Main output]]></description>' +
+                        '<content fileName="main.css" type="css" mode="static" position="head" />' +
+                        '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                        '</output>' +
+                        '<output id="second" masterPage="second.html">' +
+                        '<description><![CDATA[Second output]]></description>' +
+                        '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                        '<content fileName="second.css" type="css" mode="static" position="head" />' +
+                        '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                        '</output>' +
+                        '<output id="third" masterPage="third.html">' +
+                        '<description><![CDATA[Third output]]></description>' +
+                        '<content fileName="third.css" type="css" mode="static" position="head" >' +
+                        ' <attribute name="rel">' +
+                        '<value>alternate</value>' +
+                        '</attribute>' +
+                        '<attribute name="media">' +
+                        '<value>print</value>' +
+                        '</attribute>' +
+                        '</content>' +
+                        '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                        '<yield>' +
+                        '<![CDATA[' +
+                        '<!--[if lte IE 9]>' +
+                        '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
+                        '<![endif]-->' +
+                        ']]>' +
+                        '</yield>' +
+                        '</content>'+
+                        '</output>' +
+                        '</outputs>' +
+                        '</page>');
+
+                });
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adp/path");
+                    configurator.load(function () {
+                        configurator.properties.set({
+                            categories : [{
+                                id: "new-general",
+                                name: "New General",
+                                properties: [
+                                    {
+                                        id: "newRenderingType",
+                                        name: "New rendering type",
+                                        type: "string",
+                                        description: "New Type of rendering",
+                                        value: "new-classic",
+                                        options: [
+                                            {
+                                                value: "new-classic",
+                                                text: "New Classic"
+                                            },
+                                            {
+                                                value: "new-image",
+                                                text: "New Image"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        id: "new-other",
+                                        name: "Open-ended question for semi-open",
+                                        type: "question",
+                                        single : true,
+                                        multiple : true,
+                                        numeric : false,
+                                        open : false,
+                                        description: "Additional open-ended question that could be use to emulate semi-open"
+                                    }
+                                ]
+                            },
+                                {
+                                    id : "images",
+                                    name : "Rendering type images",
+                                    properties : [
+                                        {
+                                            id : "singleImage",
+                                            name : "Image for single question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of single question when the rendering type is image",
+                                            value : "Single.png"
+                                        },
+                                        {
+                                            id : "multipleImage",
+                                            name : "Image for multiple question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of multiple question when the rendering type is image",
+                                            value : "Multiple.png"
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "newFake",
+                                    name : "New Fake for test",
+                                    properties : [
+                                        {
+                                            id : "testNumber",
+                                            name : "Number value",
+                                            type : "number",
+                                            mode : "static",
+                                            visible : true,
+                                            require : false,
+                                            min  :25,
+                                            max : 200,
+                                            decimal : 1,
+                                            description : "New Test number properties",
+                                            value : "26"
+                                        },
+                                        {
+                                            id : "testColor",
+                                            name : "Color value",
+                                            type : "color",
+                                            colorFormat  :"rgba",
+                                            description : "Test color properties",
+                                            value : "255,255,255,.9"
+                                        },
+                                        {
+                                            id : "testQuestion",
+                                            name : "Question value",
+                                            type : "question",
+                                            chapter : true,
+                                            single : false,
+                                            multiple : false,
+                                            numeric : true,
+                                            open : true,
+                                            date : true,
+                                            description : "Test question properties",
+                                            value : "CurrentQuestion"
+                                        },
+                                        {
+                                            id : "testFile",
+                                            name : "File value",
+                                            type : "file",
+                                            fileExtension : ".doc, .docx",
+                                            description : "Test file properties",
+                                            value : "file.docs"
+                                        },
+                                        {
+                                            id : "testString",
+                                            name : "String value",
+                                            type : "string",
+                                            pattern : "\w@\w",
+                                            description : "Test string properties",
+                                            value : "foo@bar.com"
+                                        }
+                                    ]
+                                }]
+                        });
+                        var result = configurator.properties.get();
+                        expect(result ).toEqual({
+                            categories : [{
+                                id: "new-general",
+                                name: "New General",
+                                properties: [
+                                    {
+                                        id: "newRenderingType",
+                                        name: "New rendering type",
+                                        type: "string",
+                                        description: "New Type of rendering",
+                                        value: "new-classic",
+                                        options: [
+                                            {
+                                                value: "new-classic",
+                                                text: "New Classic"
+                                            },
+                                            {
+                                                value: "new-image",
+                                                text: "New Image"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                                {
+                                    id : "images",
+                                    name : "Rendering type images",
+                                    properties : [
+                                        {
+                                            id : "singleImage",
+                                            name : "Image for single question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of single question when the rendering type is image",
+                                            value : "Single.png"
+                                        },
+                                        {
+                                            id : "multipleImage",
+                                            name : "Image for multiple question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of multiple question when the rendering type is image",
+                                            value : "Multiple.png"
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "newFake",
+                                    name : "New Fake for test",
+                                    properties : [
+                                        {
+                                            id : "testNumber",
+                                            name : "Number value",
+                                            type : "number",
+                                            mode : "static",
+                                            visible : true,
+                                            require : false,
+                                            min  :25,
+                                            max : 200,
+                                            decimal : 1,
+                                            description : "New Test number properties",
+                                            value : "26"
+                                        },
+                                        {
+                                            id : "testColor",
+                                            name : "Color value",
+                                            type : "color",
+                                            colorFormat  :"rgba",
+                                            description : "Test color properties",
+                                            value : "255,255,255,.9"
+                                        },
+                                        {
+                                            id : "testFile",
+                                            name : "File value",
+                                            type : "file",
+                                            fileExtension : ".doc, .docx",
+                                            description : "Test file properties",
+                                            value : "file.docs"
+                                        },
+                                        {
+                                            id : "testString",
+                                            name : "String value",
+                                            type : "string",
+                                            pattern : "\w@\w",
+                                            description : "Test string properties",
+                                            value : "foo@bar.com"
+                                        }
+                                    ]
+                                }]
+                        });
+
+                        done();
+                    });
+                });
+            });
         });
 
         describe("#toXml", function () {
             it("should return the ADC properties as Xml String", function () {
                 runSync(function (done) {
-                    var configurator = new ADXConfigurator("an/valid/path");
+                    var configurator = new ADXConfigurator("adc/path");
                     configurator.load(function () {
                         var result = configurator.properties.toXml();
                         expect(result).toEqual('  <properties>' +
                             '\n    <category id="general" name="General">' +
-                            '\n      <property xsi:type="askiaProperty" id="askia-theme">' +
-                            '\n        <options>' +
-                            '\n          <option value="red-theme" text="Red" />' +
-                            '\n          <option value="blue-theme" text="Blue" />' +
-                            '\n        </options>' +
-                            '\n      </property>' +
                             '\n      <property xsi:type="standardProperty" id="renderingType" name="Rendering type" type="string">' +
                             '\n        <description><![CDATA[Type of rendering]]></description>' +
                             '\n        <value><![CDATA[classic]]></value>' +
@@ -5244,14 +6221,10 @@ describe('ADXConfigurator', function () {
                             '\n      <property xsi:type="standardProperty" id="singleImage" name="Image for single question" type="file" fileExtension=".png, .gif, .jpg">' +
                             '\n        <description><![CDATA[Image of single question when the rendering type is image]]></description>' +
                             '\n        <value><![CDATA[Single.png]]></value>' +
-                            '\n        <value theme="red-theme"><![CDATA[SingleRed.png]]></value>' +
-                            '\n        <value theme="blue-theme"><![CDATA[SingleBlue.png]]></value>' +
                             '\n      </property>' +
                             '\n      <property xsi:type="standardProperty" id="multipleImage" name="Image for multiple question" type="file" fileExtension=".png, .gif, .jpg">' +
                             '\n        <description><![CDATA[Image of multiple question when the rendering type is image]]></description>' +
                             '\n        <value><![CDATA[Multiple.png]]></value>' +
-                            '\n        <value theme="red-theme"><![CDATA[MultipleRed.png]]></value>' +
-                            '\n        <value theme="blue-theme"><![CDATA[MultipleBlue.png]]></value>' +
                             '\n      </property>' +
                             '\n    </category>' +
                             '\n    <category id="fake" name="Fake for test">' +
@@ -5266,6 +6239,56 @@ describe('ADXConfigurator', function () {
                             '\n      <property xsi:type="standardProperty" id="testQuestion" name="TEST" type="question" chapter="false" single="true" multiple="true" numeric="false" open="false" date="false">' +
                             '\n        <description><![CDATA[Test question properties]]></description>' +
                             '\n        <value></value>' +
+                            '\n      </property>' +
+                            '\n      <property xsi:type="standardProperty" id="testFile" name="TEST" type="file" fileExtension=".test, .test2">' +
+                            '\n        <description><![CDATA[Test file properties]]></description>' +
+                            '\n        <value><![CDATA[file.test]]></value>' +
+                            '\n      </property>' +
+                            '\n      <property xsi:type="standardProperty" id="testString" name="TEST" type="string" pattern=".+@.+">' +
+                            '\n        <description><![CDATA[Test string properties]]></description>' +
+                            '\n        <value><![CDATA[test@test.com]]></value>' +
+                            '\n      </property>' +
+                            '\n    </category>' +
+                            '\n  </properties>');
+                        done();
+                    });
+                });
+            });
+
+            it("should return the ADP properties as Xml String", function () {
+                runSync(function (done) {
+                    var configurator = new ADXConfigurator("adp/path");
+                    configurator.load(function () {
+                        var result = configurator.properties.toXml();
+                        expect(result).toEqual('  <properties>' +
+                            '\n    <category id="general" name="General">' +
+                            '\n      <property xsi:type="standardProperty" id="renderingType" name="Rendering type" type="string">' +
+                            '\n        <description><![CDATA[Type of rendering]]></description>' +
+                            '\n        <value><![CDATA[classic]]></value>' +
+                            '\n        <options>' +
+                            '\n          <option value="classic" text="Classic" />' +
+                            '\n          <option value="image" text="Image" />' +
+                            '\n        </options>' +
+                            '\n      </property>' +
+                            '\n    </category>' +
+                            '\n    <category id="images" name="Rendering type images">' +
+                            '\n      <property xsi:type="standardProperty" id="singleImage" name="Image for single question" type="file" fileExtension=".png, .gif, .jpg">' +
+                            '\n        <description><![CDATA[Image of single question when the rendering type is image]]></description>' +
+                            '\n        <value><![CDATA[Single.png]]></value>' +
+                            '\n      </property>' +
+                            '\n      <property xsi:type="standardProperty" id="multipleImage" name="Image for multiple question" type="file" fileExtension=".png, .gif, .jpg">' +
+                            '\n        <description><![CDATA[Image of multiple question when the rendering type is image]]></description>' +
+                            '\n        <value><![CDATA[Multiple.png]]></value>' +
+                            '\n      </property>' +
+                            '\n    </category>' +
+                            '\n    <category id="fake" name="Fake for test">' +
+                            '\n      <property xsi:type="standardProperty" id="testNumber" name="TEST" type="number" mode="dynamic" require="true" visible="false" min="12" max="100.5" decimal="3">' +
+                            '\n        <description><![CDATA[Test number properties]]></description>' +
+                            '\n        <value><![CDATA[13]]></value>' +
+                            '\n      </property>' +
+                            '\n      <property xsi:type="standardProperty" id="testColor" name="TEST" type="color" colorFormat="rgb">' +
+                            '\n        <description><![CDATA[Test color properties]]></description>' +
+                            '\n        <value><![CDATA[255,255,255]]></value>' +
                             '\n      </property>' +
                             '\n      <property xsi:type="standardProperty" id="testFile" name="TEST" type="file" fileExtension=".test, .test2">' +
                             '\n        <description><![CDATA[Test file properties]]></description>' +
@@ -5427,7 +6450,6 @@ describe('ADXConfigurator', function () {
                 expect(spyLoad).toHaveBeenCalledWith(theCallback);
             });
         });
-
 
         it("should not reload the configurator when an error occurred while writing the the file", function () {
             var configurator = new ADXConfigurator("an/valid/path");

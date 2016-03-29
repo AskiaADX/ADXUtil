@@ -327,16 +327,33 @@ Configurator.prototype.set = function set(data) {
  */
 Configurator.prototype.toXml = function toXml() {
     var xml = [],
+        projectType = this.projectType,
+        projectVersion = this.projectVersion,
+        rootName = (projectType === 'adc') ? 'control' : 'page',
+        namespaceURI = 'http://www.askia.com/' + projectVersion + '/' + projectType.toUpperCase() + 'Schema',
+        schemaURI = 'https://raw.githubusercontent.com/AskiaADX/ADXSchema/' + projectVersion + '/' + projectType.toUpperCase() + 'Schema.xsd',
+        askiaCompat,
         infoXml = this.info.toXml(),
         outputsXml = this.outputs.toXml(),
         propertiesXml = this.properties.toXml();
 
+    switch(projectVersion) {
+        case '2.1.0':
+            askiaCompat = "5.4.2";
+            break;
+
+        case '2.0.0':
+        default:
+            askiaCompat = "5.3.3";
+            break;
+    }
+
     xml.push('<?xml version="1.0" encoding="utf-8"?>');
-    xml.push('<control  xmlns="http://www.askia.com/ADCSchema"' +
+    xml.push('<' + rootName + '  xmlns="' + namespaceURI + '"' +
             '\n          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
-            '\n          xsi:schemaLocation="http://www.askia.com/ADCSchema http://www.askia.com/Downloads/dev/schemas/adc2.0/Config.xsd"' +
-            '\n          version="2.0.0"' +
-            '\n          askiaCompat="5.3.3">');
+            '\n          xsi:schemaLocation="' + namespaceURI + ' ' + schemaURI + '"' +
+            '\n          version="' + projectVersion + '"' +
+            '\n          askiaCompat="' + askiaCompat + '">');
 
     if (infoXml) {
         xml.push(infoXml);
@@ -347,7 +364,7 @@ Configurator.prototype.toXml = function toXml() {
     if (propertiesXml) {
         xml.push(propertiesXml);
     }
-    xml.push('</control>');
+    xml.push('</' + rootName + '>');
 
     return xml.join('\n');
 };
@@ -1586,6 +1603,7 @@ ADXProperties.prototype.constructor = ADXProperties;
  */
 ADXProperties.prototype.get = function get() {
     var xmldoc = this.configurator.xmldoc;
+    var projectType = this.configurator.projectType;
     var el = xmldoc.find("properties");
     var categories = [];
 
@@ -1720,6 +1738,11 @@ ADXProperties.prototype.get = function get() {
                 return;
             }
 
+            // ADC only: property type=question is available for ADC only
+            if (projectType !== 'adc' && itemProperty.type === 'question') {
+                return;
+            }
+
             itemCategory.properties.push(itemProperty);
         });
 
@@ -1784,6 +1807,7 @@ ADXProperties.prototype.get = function get() {
  */
 ADXProperties.prototype.set = function set(data) {
     var xmldoc = this.configurator.xmldoc;
+    var projectType = this.configurator.projectType;
     var el = xmldoc.find("properties");
 
     if (!data || !data.categories || !Array.isArray(data.categories)) {
@@ -1802,6 +1826,10 @@ ADXProperties.prototype.set = function set(data) {
 
         if (category.properties && Array.isArray(category.properties)) {
             category.properties.forEach(function (property) {
+                // property question is available for the ADC only
+                if (projectType !== 'adc' && property.type === 'question') {
+                    return;
+                }
                 var itemProperty = subElement(itemCategory, 'property');
                 itemProperty.set('xsi:type', property.xsiType || "standardProperty");
                 itemProperty.set('id', property.id || "");
@@ -1820,17 +1848,6 @@ ADXProperties.prototype.set = function set(data) {
                 if ("value" in property) {
                     var itemValue = subElement(itemProperty, "value");
                     itemValue.text = property.value || "";
-                }
-
-                if (property.valueTheme) {
-                    var itemTheme;
-                    for (var theme in property.valueTheme) {
-                        if (property.valueTheme.hasOwnProperty(theme)) {
-                            itemTheme = subElement(itemProperty, "value");
-                            itemTheme.set("theme", theme);
-                            itemTheme.text = property.valueTheme[theme].toString();
-                        }
-                    }
                 }
 
                 if (property.options && Array.isArray(property.options)) {
@@ -1859,7 +1876,8 @@ ADXProperties.prototype.set = function set(data) {
  */
 ADXProperties.prototype.toXml = function toXml() {
     var xml = [],
-        data = this.get();
+        data = this.get(),
+        projectType = this.configurator.projectType;
 
     if (!data) {
         return '';
@@ -1870,6 +1888,10 @@ ADXProperties.prototype.toXml = function toXml() {
             xml.push('    <category id="' + (category.id || "") + '" name="' + (category.name || "")  + '">');
             if (Array.isArray(category.properties)) {
                 category.properties.forEach(function (property) {
+                    // The property question ia only available for the ADC
+                    if (projectType !== 'adc' && property.type === 'question') {
+                        return;
+                    }
                     var xmlProp = [], value;
                     xmlProp.push('      <property');
                     xmlProp.push(' xsi:type="', (property.xsiType || "standardProperty"), '"');
