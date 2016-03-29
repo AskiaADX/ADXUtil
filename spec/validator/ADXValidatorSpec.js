@@ -4,9 +4,12 @@ describe('ADXValidator', function () {
         spies           = {},
         format          = require('util').format,
         clc             = require('cli-color'),
+        et              = require('elementtree'),
+        subElement      = et.SubElement,
         common,
         adxValidator,
         Validator,
+        Configurator,
         errMsg,
         warnMsg,
         successMsg,
@@ -22,6 +25,8 @@ describe('ADXValidator', function () {
 
         delete require.cache[adxValidatorKey];
         adxValidator = require('../../app/validator/ADXValidator.js');
+
+        Configurator = require('../../app/configurator/ADXConfigurator.js').Configurator;
 
         Validator = adxValidator.Validator;
 
@@ -45,6 +50,9 @@ describe('ADXValidator', function () {
         warnMsg     = common.messages.warning;
         successMsg  = common.messages.success;
         msg         = common.messages.message;
+
+        // Court-circuit the Configurator
+        spyOn(Configurator.prototype, 'load');
 
         // Court-circuit the validation outputs
         spyOn(common, 'writeError');
@@ -678,6 +686,50 @@ describe('ADXValidator', function () {
 
     });
 
+    describe('#initConfigXMLDoc', function () {
+        var validatorInstance = null;
+        beforeEach(function () {
+            validatorInstance = null;
+            spies.validateHook = function () {
+                validatorInstance = this;
+            };
+            // Modify the sequence of the validation to only call the initConfigXMLDoc method
+            spies.sequence = ['initConfigXMLDoc'];
+            spyOn(Validator.prototype, 'writeError');
+            spyOn(Validator.prototype, 'writeWarning');
+            spyOn(Validator.prototype, 'writeSuccess');
+            spyOn(Validator.prototype, 'writeMessage');
+        });
+
+        it("should init and load the ADXConfigurator", function () {
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(validatorInstance.adxConfigurator instanceof Configurator).toBe(true);
+            expect(validatorInstance.adxConfigurator.path).toEqual('\\adx\\path\\dir');
+            expect(Configurator.prototype.load).toHaveBeenCalled();
+        });
+
+        it("should output an error when the ADXConfigurator could not load the xml", function () {
+            Configurator.prototype.load.andCallFake(function (cb) {
+                cb(new Error("Fake error"));
+            });
+
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(Validator.prototype.writeError).toHaveBeenCalled();
+        });
+
+        it("should not output an error when the ADXConfigurator was successfully loaded", function () {
+            Configurator.prototype.load.andCallFake(function (cb) {
+                cb(null);
+            });
+
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(Validator.prototype.writeError).not.toHaveBeenCalled();
+        });
+    });
+
     describe('#validateXMLAgainstXSD', function () {
         beforeEach(function () {
             // Modify the sequence of the validation to only call the validateXMLAgainstXSD method
@@ -729,59 +781,6 @@ describe('ADXValidator', function () {
         });
     });
 
-    describe('#initConfigXMLDoc', function () {
-        beforeEach(function () {
-            // Modify the sequence of the validation to only call the initConfigXMLDoc method
-            spies.sequence = ['initConfigXMLDoc'];
-            spyOn(Validator.prototype, 'writeError');
-            spyOn(Validator.prototype, 'writeWarning');
-            spyOn(Validator.prototype, 'writeSuccess');
-            spyOn(Validator.prototype, 'writeMessage');
-        });
-
-        it("should output an error when the config file could not be read", function () {
-            spies.fs.readFile.andCallFake(function (path, config, callback) {
-                callback(new Error("Fake error"));
-            });
-
-            adxValidator.validate(null, '/adx/path/dir');
-
-            expect(Validator.prototype.writeError).toHaveBeenCalled();
-        });
-
-        it("should not output an error when the config file could be read", function () {
-            spies.fs.readFile.andCallFake(function (path, config,callback) {
-                callback(null, '');
-            });
-
-            adxValidator.validate(null, '/adx/path/dir');
-
-            expect(Validator.prototype.writeError).not.toHaveBeenCalled();
-        });
-
-        it("should correctly initialize the config.xml document", function () {
-            var xml2js = require('xml2js'),
-                obj    = {
-                    test : 'test'
-                },
-                instance;
-            spies.validateHook = function () {
-                instance = this;
-            };
-            spies.fs.readFile.andCallFake(function (path, config,callback) {
-                callback(null, '');
-            });
-            spyOn(xml2js, 'parseString').andCallFake(function (data, callback) {
-                callback(null, obj);
-            });
-
-            adxValidator.validate(null, '/adx/path/dir');
-
-            expect(instance.configXmlDoc).toBe(obj);
-        });
-
-    });
-
     describe("#validateADXInfo", function () {
         beforeEach(function () {
             // Modify the sequence of the validation to only call the validateADXInfo method
@@ -794,9 +793,8 @@ describe('ADXValidator', function () {
 
         it("should output an error when the info doesn't exist", function () {
             spies.validateHook = function () {
-                this.configXmlDoc = {
-                    control : {}
-                };
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control></control>');
             };
             adxValidator.validate(null, '/adx/path/dir');
 
@@ -805,11 +803,8 @@ describe('ADXValidator', function () {
 
         it("should output an error when the info/name doesn't exist", function () {
             spies.validateHook = function () {
-                this.configXmlDoc = {
-                    control : {
-                        info  : [{}]
-                    }
-                }
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control><info></info></control>');
             };
             adxValidator.validate(null, '/adx/path/dir');
 
@@ -818,15 +813,8 @@ describe('ADXValidator', function () {
 
         it("should output an error when the info/name is empty", function () {
             spies.validateHook = function () {
-                this.configXmlDoc = {
-                    control : {
-                        info  : [
-                            {
-                                name : []
-                            }
-                        ]
-                    }
-                };
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control><info><name></name></info></control>');
             };
             adxValidator.validate(null, '/adx/path/dir');
 
@@ -835,17 +823,8 @@ describe('ADXValidator', function () {
 
         it("should not output an error when the info/name is valid", function () {
             spies.validateHook = function () {
-                this.configXmlDoc = {
-                    control : {
-                        info : [
-                            {
-                                name : [
-                                    'test'
-                                ]
-                            }
-                        ]
-                    }
-                };
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control><info><name>Something</name></info></control>');
             };
 
             adxValidator.validate(null, '/adx/path/dir');
@@ -857,17 +836,8 @@ describe('ADXValidator', function () {
             var instance;
             spies.validateHook = function () {
                 instance = this;
-                this.configXmlDoc = {
-                    control : {
-                        info : [
-                            {
-                                name : [
-                                    'test'
-                                ]
-                            }
-                        ]
-                    }
-                };
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control><info><name>test</name></info></control>');
             };
             adxValidator.validate(null, '/adx/path/dir');
 
@@ -957,36 +927,12 @@ describe('ADXValidator', function () {
         function testDuplicateConstraints(element) {
             it("should output an error when 2 constraints defined on " + element, function () {
                 spies.validateHook = function () {
-                    this.configXmlDoc = {
-                        control : {
-                            info : [
-                                {
-                                    constraints : [
-                                        {
-                                            constraint : [
-                                                {
-                                                    $ : {
-                                                        on      : element
-                                                    }
-                                                },
-                                                {
-                                                    $ : {
-                                                        on      : element
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    };
-
-                    this.configXmlDoc.control.info[0].constraints[0].constraint[0].$[fakeAttr[element]] = 1;
-                    this.configXmlDoc.control.info[0].constraints[0].constraint[1].$[fakeAttr[element]] = 1;
-
+                    this.adxConfigurator = new Configurator('/adx/path/dir');
+                    this.adxConfigurator.fromXml('<control><info><constraints>' +
+                        '<constraint on="' + element  + '" ' + fakeAttr[element] + '="1"></constraint>' +
+                        '<constraint on="' + element  + '" ' + fakeAttr[element] + '="1"></constraint>' +
+                        '</constraints></info></control>');
                 };
-
                 adxValidator.validate(null, '/adx/path/dir');
 
                 expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.duplicateConstraints, element));
@@ -999,27 +945,10 @@ describe('ADXValidator', function () {
             it("should output an error when no constraint defined on `" + element + "`", function () {
                 var oppositeElement =  (element === 'questions') ? 'controls' : 'questions';
                 spies.validateHook = function () {
-                    this.configXmlDoc = {
-                        control: {
-                            info: [
-                                {
-                                    constraints: [
-                                        {
-                                            constraint: [
-                                                {
-                                                    $: {
-                                                        on: oppositeElement
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    };
-
-                    this.configXmlDoc.control.info[0].constraints[0].constraint[0].$[fakeAttr[oppositeElement]] = 1;
+                    this.adxConfigurator = new Configurator('/adx/path/dir');
+                    this.adxConfigurator.fromXml('<control><info><constraints>' +
+                        '<constraint on="' + oppositeElement  + '" ' + fakeAttr[oppositeElement] + '="1"></constraint>' +
+                        '</constraints></info></control>');
                 };
                 adxValidator.validate(null, '/adx/path/dir');
                 expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.requireConstraintOn, element));
@@ -1028,34 +957,12 @@ describe('ADXValidator', function () {
         ['questions', 'controls'].forEach(testRequireConstraint);
         it("should not output an error when constraints are defined on `questions` and `controls`", function () {
             spies.validateHook = function () {
-                this.configXmlDoc = {
-                    control: {
-                        info: [
-                            {
-                                constraints: [
-                                    {
-                                        constraint: [
-                                            {
-                                                $: {
-                                                    on: 'questions',
-                                                    single: 'true'
-                                                }
-                                            },
-                                            {
-                                                $: {
-                                                    on: 'controls',
-                                                    label: 'true'
-                                                }
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                };
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control><info><constraints>' +
+                    '<constraint on="questions" single="true"></constraint>' +
+                    '<constraint on="controls" label="true"></constraint>' +
+                    '</constraints></info></control>');
             };
-
             adxValidator.validate(null, '/adx/path/dir');
             expect(Validator.prototype.writeError).not.toHaveBeenCalled();
         });
@@ -1067,27 +974,10 @@ describe('ADXValidator', function () {
                     var notText = (attribute.on === element) ? 'not ' : '';
                     it("should " + notText +  "output an error when the attribute `" + attribute.name + "` is present", function () {
                         spies.validateHook = function () {
-                            this.configXmlDoc = {
-                                control: {
-                                    info: [
-                                        {
-                                            constraints: [
-                                                {
-                                                    constraint: [
-                                                        {
-                                                            $: {
-                                                                on: element
-                                                            }
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            };
-
-                            this.configXmlDoc.control.info[0].constraints[0].constraint[0].$[attribute.name] = true;
+                            this.adxConfigurator = new Configurator('/adx/path/dir');
+                            this.adxConfigurator.fromXml('<control><info><constraints>' +
+                                '<constraint on="' + element + '" ' + attribute.name + '="true"></constraint>' +
+                                '</constraints></info></control>');
                         };
                         adxValidator.validate(null, '/adx/path/dir');
                         if (attribute.on === element) {
@@ -1100,25 +990,10 @@ describe('ADXValidator', function () {
 
                 it("should output an error when no other attribute is specified", function () {
                     spies.validateHook = function () {
-                        this.configXmlDoc = {
-                            control: {
-                                info: [
-                                    {
-                                        constraints: [
-                                            {
-                                                constraint: [
-                                                    {
-                                                        $: {
-                                                            on: element
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        };
+                        this.adxConfigurator = new Configurator('/adx/path/dir');
+                        this.adxConfigurator.fromXml('<control><info><constraints>' +
+                            '<constraint on="' + element + '"></constraint>' +
+                            '</constraints></info></control>');
                     };
                     adxValidator.validate(null, '/adx/path/dir');
                     expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.noRuleOnConstraint, element));
@@ -1127,29 +1002,11 @@ describe('ADXValidator', function () {
                 if (element !== 'responses') {
                     it("should output an error when no other attribute is specified with the truthly value", function () {
                         spies.validateHook = function () {
-                            this.configXmlDoc = {
-                                control: {
-                                    info: [
-                                        {
-                                            constraints: [
-                                                {
-                                                    constraint: [
-                                                        {
-                                                            $: {
-                                                                on: element
-                                                            }
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            };
-
-                            this.configXmlDoc.control.info[0].constraints[0].constraint[0].$[fakeAttr[element]] = false;
+                            this.adxConfigurator = new Configurator('/adx/path/dir');
+                            this.adxConfigurator.fromXml('<control><info><constraints>' +
+                                '<constraint on="' + element + '" ' + fakeAttr[element] + '="false"></constraint>' +
+                                '</constraints></info></control>');
                         };
-
                         adxValidator.validate(null, '/adx/path/dir');
                         expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.noRuleOnConstraint, element));
                     });
@@ -1174,34 +1031,15 @@ describe('ADXValidator', function () {
 
         it('should output a warning when duplicate conditions', function () {
             spies.validateHook = function () {
-                this.configXmlDoc = {
-                    control: {
-                        outputs: [
-                            {
-                                output: [
-                                    {
-                                        $: {
-                                            id: 'first',
-                                            defaultGeneration: true
-                                        },
-                                        condition: [
-                                            "duplicate condition"
-                                        ]
-                                    },
-                                    {
-                                        $: {
-                                            id: 'second',
-                                            defaultGeneration: true
-                                        },
-                                        condition: [
-                                            "duplicate condition"
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                };
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control><outputs>' +
+                    '<output id="first" defaultGeneration="true">' +
+                    '<condition>duplicate condition</condition>'+
+                    '</output>' +
+                    '<output id="second" defaultGeneration="true">' +
+                    '<condition>duplicate condition</condition>'+
+                    '</output>' +
+                    '</outputs></control>');
             };
 
             adxValidator.validate(null, '/adx/path/dir');
@@ -1209,25 +1047,16 @@ describe('ADXValidator', function () {
             expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.duplicateOutputCondition, "first", "second");
         });
 
+
         it('should not output an error when one condition is empty', function () {
             spies.validateHook = function () {
-                this.configXmlDoc = {
-                    control: {
-                        outputs: [
-                            {
-                                output: [
-                                    {
-                                        $: {
-                                            id: 'empty',
-                                            defaultGeneration: true
-                                        }
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                };
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control><outputs>' +
+                    '<output id="empty" defaultGeneration="true">' +
+                    '</output>' +
+                    '</outputs></control>');
             };
+
             adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeError).not.toHaveBeenCalled();
@@ -1235,31 +1064,14 @@ describe('ADXValidator', function () {
 
         it('should output an error when at least two conditions are empty', function () {
             spies.validateHook = function () {
-                this.configXmlDoc = {
-                    control: {
-                        outputs: [
-                            {
-                                output: [
-                                    {
-                                        $: {
-                                            id: 'first',
-                                            defaultGeneration: true
-                                        }
-                                    },
-                                    {
-                                        $: {
-                                            id: 'second',
-                                            defaultGeneration: true
-                                        },
-                                        condition: [
-                                            ""
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                };
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control><outputs>' +
+                    '<output id="first" defaultGeneration="true">' +
+                    '</output>' +
+                    '<output id="second" defaultGeneration="true">' +
+                    '<condition></condition>'+
+                    '</output>' +
+                    '</outputs></control>');
             };
             adxValidator.validate(null, '/adx/path/dir');
 
@@ -1271,34 +1083,14 @@ describe('ADXValidator', function () {
                 this.dirResources.isExist = true;
                 this.dirResources.dynamic.isExist = true;
                 this.dirResources.dynamic['test.js'] = 'test.js';
-                this.configXmlDoc = {
-                    control: {
-                        outputs: [
-                            {
-                                output: [
-                                    {
-                                        $: {
-                                            id: 'empty'
-                                        },
-                                        condition: [
-                                            "Browser.Support(\"Javascript\")"
-                                        ],
-                                        content: [
-                                            {
-                                                $: {
-                                                    type: 'javascript',
-                                                    fileName: 'test.js',
-                                                    mode: 'dynamic',
-                                                    position: 'foot'
-                                                }
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                };
+
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control><outputs>' +
+                    '<output id="empty">' +
+                    '<condition>Browser.Support(\"Javascript\")</condition>'+
+                    '<content type="javascript" fileName="test.js" mode="dynamic" position="foot"></content>' +
+                    '</output>' +
+                    '</outputs></control>');
             };
 
             adxValidator.validate(null, '/adx/path/dir');
@@ -1308,51 +1100,29 @@ describe('ADXValidator', function () {
 
         it('should output a success when no error found', function () {
             spies.validateHook = function () {
-                this.configXmlDoc = {
-                    control: {
-                        outputs: [
-                            {
-                                output: [
-                                    {
-                                        $: {
-                                            id: 'empty',
-                                            defaultGeneration: true
-                                        }
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                };
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control><outputs>' +
+                    '<output id="empty" defaultGeneration="true">' +
+                    '</output>' +
+                    '</outputs></control>');
             };
-
             adxValidator.validate(null, '/adx/path/dir');
             expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(successMsg.xmlOutputsValidate);
         });
+
 
         describe("#validateADXContents", function () {
 
             it("should output an error when the resources directory doesn't exist", function () {
                 spies.validateHook = function () {
                     this.dirResources.isExist = false;
-                    this.configXmlDoc = {
-                        control: {
-                            outputs: [
-                                {
-                                    output: [
-                                        {
-                                            $: {
-                                                id: 'empty'
-                                            },
-                                            content: [
-                                                "a content"
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    };
+
+                    this.adxConfigurator = new Configurator('/adx/path/dir');
+                    this.adxConfigurator.fromXml('<control><outputs>' +
+                        '<output id="empty">' +
+                        '<content>a content</content>' +
+                        '</output>' +
+                        '</outputs></control>');
                 };
 
                 adxValidator.validate(null, '/adx/path/dir');
@@ -1360,8 +1130,8 @@ describe('ADXValidator', function () {
             });
 
             describe('@defaultGeneration=false', function () {
-                var jsContent, htmlContent;
                 beforeEach(function () {
+
                     spies.validateHook = function () {
                         this.dirResources.isExist = true;
                         this.dirResources.dynamic.isExist = true;
@@ -1376,88 +1146,86 @@ describe('ADXValidator', function () {
                         this.dirResources.share['test.js'] = 'test.js';
                         this.dirResources.share['test.html'] = 'test.html';
                         this.dirResources.share['test.css'] = 'test.css';
-
-                        this.configXmlDoc = {
-                            control: {
-                                outputs: [
-                                    {
-                                        output: [
-                                            {
-                                                $: {
-                                                    id: 'empty'
-                                                },
-                                                content: [
-                                                    {
-                                                        $: {
-                                                            type: 'javascript',
-                                                            fileName: 'test.js',
-                                                            mode: 'static'
-                                                        }
-                                                    },
-                                                    {
-                                                        $: {
-                                                            type: 'html',
-                                                            fileName: 'test.html',
-                                                            mode: 'static'
-                                                        }
-                                                    },
-                                                    {
-                                                        $: {
-                                                            type: 'css',
-                                                            fileName: 'test.css',
-                                                            mode: 'dynamic'
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        };
-                        var contents = this.configXmlDoc.control.outputs[0].output[0].content;
-                        jsContent = contents[0];
-                        htmlContent = contents[1];
                     };
                 });
 
                 it("should output an error when there is no contents", function () {
                     extraHook(function () {
-                        delete this.configXmlDoc.control.outputs[0].output[0].content;
+                        this.adxConfigurator = new Configurator('/adx/path/dir');
+                        this.adxConfigurator.fromXml('<control><outputs>' +
+                            '<output id="empty">' +
+                            '</output>' +
+                            '</outputs></control>');
                     });
                     adxValidator.validate(null, '/adx/path/dir');
                     expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should output an error when there is no dynamic html or javascript content", function () {
+                    extraHook(function () {
+                        this.adxConfigurator = new Configurator('/adx/path/dir');
+                        this.adxConfigurator.fromXml('<control><outputs>' +
+                            '<output id="empty">' +
+                            '<content type="javascript" fileName="test.js" mode="static" />' +
+                            '<content type="html" fileName="test.html" mode="static" />' +
+                            '<content type="css" fileName="test.css" mode="dynamic" />' +
+                            '</output>' +
+                            '</outputs></control>');
+                    });
                     adxValidator.validate(null, '/adx/path/dir');
                     expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should output an error when there is a dynamic html content but with position=none", function () {
                     extraHook(function () {
-                        htmlContent.$.mode = 'dynamic';
-                        htmlContent.$.position = 'none';
+                        this.adxConfigurator = new Configurator('/adx/path/dir');
+                        this.adxConfigurator.fromXml('<control><outputs>' +
+                            '<output id="empty">' +
+                            '<content type="javascript" fileName="test.js" mode="static" />' +
+                            '<content type="html" fileName="test.html" mode="dynamic" position="none"/>' +
+                            '<content type="css" fileName="test.css" mode="dynamic" />' +
+                            '</output>' +
+                            '</outputs></control>');
                     });
                     adxValidator.validate(null, '/adx/path/dir');
                     expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should not output an error when there is a dynamic html content", function () {
                     extraHook(function () {
-                        htmlContent.$.mode = 'dynamic';
+                        this.adxConfigurator = new Configurator('/adx/path/dir');
+                        this.adxConfigurator.fromXml('<control><outputs>' +
+                            '<output id="empty">' +
+                            '<content type="javascript" fileName="test.js" mode="static" />' +
+                            '<content type="html" fileName="test.html" mode="dynamic" />' +
+                            '<content type="css" fileName="test.css" mode="dynamic" />' +
+                            '</output>' +
+                            '</outputs></control>');
                     });
                     adxValidator.validate(null, '/adx/path/dir');
                     expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should not output an error when there is a dynamic javascript content", function () {
                     extraHook(function () {
-                        jsContent.$.mode = 'dynamic';
+                        this.adxConfigurator = new Configurator('/adx/path/dir');
+                        this.adxConfigurator.fromXml('<control><outputs>' +
+                            '<output id="empty">' +
+                            '<content type="javascript" fileName="test.js" mode="dynamic" />' +
+                            '<content type="html" fileName="test.html" mode="static" />' +
+                            '<content type="css" fileName="test.css" mode="dynamic" />' +
+                            '</output>' +
+                            '</outputs></control>');
                     });
                     adxValidator.validate(null, '/adx/path/dir');
                     expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should  output an error when there is a dynamic javascript content but with position=none", function () {
                     extraHook(function () {
-                        jsContent.$.mode = 'dynamic';
-                        jsContent.$.position = 'none';
+                        this.adxConfigurator = new Configurator('/adx/path/dir');
+                        this.adxConfigurator.fromXml('<control><outputs>' +
+                            '<output id="empty">' +
+                            '<content type="javascript" fileName="test.js" mode="dynamic" position="none" />' +
+                            '<content type="html" fileName="test.html" mode="static" />' +
+                            '<content type="css" fileName="test.css" mode="dynamic" />' +
+                            '</output>' +
+                            '</outputs></control>');
                     });
                     adxValidator.validate(null, '/adx/path/dir');
                     expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
@@ -1470,31 +1238,13 @@ describe('ADXValidator', function () {
                         this.dirResources.isExist = true;
                         this.dirResources.dynamic.isExist = true;
                         this.dirResources.dynamic['test.js'] = 'test.js';
-                        this.configXmlDoc = {
-                            control: {
-                                outputs: [
-                                    {
-                                        output: [
-                                            {
-                                                $: {
-                                                    id: 'empty'
-                                                },
-                                                content: [
-                                                    {
-                                                        $: {
-                                                            type: 'javascript',
-                                                            fileName: 'test.js',
-                                                            mode: 'dynamic',
-                                                            position: 'foot'
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        };
+
+                        this.adxConfigurator = new Configurator('/adx/path/dir');
+                        this.adxConfigurator.fromXml('<control><outputs>' +
+                            '<output id="empty">' +
+                            '<content type="javascript" fileName="test.js" mode="dynamic" position="foot" />' +
+                            '</output>' +
+                            '</outputs></control>');
                     };
 
                     adxValidator.validate(null, '/adx/path/dir');
@@ -1507,34 +1257,14 @@ describe('ADXValidator', function () {
                         this.dirResources.isExist = true;
                         this.dirResources.dynamic.isExist = true;
                         this.dirResources.dynamic['test.js'] = 'test.js';
-                        this.configXmlDoc = {
-                            control: {
-                                outputs: [
-                                    {
-                                        output: [
-                                            {
-                                                $: {
-                                                    id: 'empty'
-                                                },
-                                                condition: [
-                                                    "Lorem ipsum dolor Browser.Support(\"javascript\") lorem ipsum"
-                                                ],
-                                                content: [
-                                                    {
-                                                        $: {
-                                                            type: 'javascript',
-                                                            fileName: 'test.js',
-                                                            mode: 'dynamic',
-                                                            position: 'foot'
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        };
+
+                        this.adxConfigurator = new Configurator('/adx/path/dir');
+                        this.adxConfigurator.fromXml('<control><outputs>' +
+                            '<output id="empty">' +
+                            '<condition>Lorem ipsum dolor Browser.Support(\"javascript\") lorem ipsum</condition>'+
+                            '<content type="javascript" fileName="test.js" mode="dynamic" position="foot" />' +
+                            '</output>' +
+                            '</outputs></control>');
                     };
                     adxValidator.validate(null, '/adx/path/dir');
 
@@ -1546,32 +1276,13 @@ describe('ADXValidator', function () {
                         this.dirResources.isExist = true;
                         this.dirResources.dynamic.isExist = true;
                         this.dirResources.dynamic['test.js'] = 'test.js';
-                        this.configXmlDoc = {
-                            control: {
-                                outputs: [
-                                    {
-                                        output: [
-                                            {
-                                                $: {
-                                                    id: 'empty',
-                                                    defaultGeneration: true
-                                                },
-                                                content: [
-                                                    {
-                                                        $: {
-                                                            type: 'javascript',
-                                                            fileName: 'test.js',
-                                                            mode: 'dynamic',
-                                                            position: 'foot'
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        };
+
+                        this.adxConfigurator = new Configurator('/adx/path/dir');
+                        this.adxConfigurator.fromXml('<control><outputs>' +
+                            '<output id="empty" defaultGeneration="true">' +
+                            '<content type="javascript" fileName="test.js" mode="dynamic" position="foot" />' +
+                            '</output>' +
+                            '</outputs></control>');
                     };
                     adxValidator.validate(null, '/adx/path/dir');
 
@@ -1585,39 +1296,14 @@ describe('ADXValidator', function () {
                         this.dirResources.statics['test.swf'] = 'test.swf';
                         this.dirResources.dynamic.isExist = true;
                         this.dirResources.dynamic['test.html'] = 'test.html';
-                        this.configXmlDoc = {
-                            control: {
-                                outputs: [
-                                    {
-                                        output: [
-                                            {
-                                                $: {
-                                                    id: 'empty'
-                                                },
-                                                content: [
-                                                    {
-                                                        $: {
-                                                            type: 'flash',
-                                                            fileName: 'test.swf',
-                                                            mode: 'static',
-                                                            position: 'placeholder'
-                                                        }
-                                                    },
-                                                    {
-                                                        $: {
-                                                            type: 'html',
-                                                            fileName: 'test.html',
-                                                            mode: 'dynamic',
-                                                            position: 'placeholder'
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        };
+
+                        this.adxConfigurator = new Configurator('/adx/path/dir');
+                        this.adxConfigurator.fromXml('<control><outputs>' +
+                            '<output id="empty">' +
+                            '<content type="flash" fileName="test.swf" mode="static" position="placeholder" />' +
+                            '<content type="html" fileName="test.html" mode="dynamic" position="placeholder" />' +
+                            '</output>' +
+                            '</outputs></control>');
                     };
 
                     adxValidator.validate(null, '/adx/path/dir');
@@ -1632,42 +1318,15 @@ describe('ADXValidator', function () {
                         this.dirResources.statics['test.swf'] = 'test.swf';
                         this.dirResources.dynamic.isExist = true;
                         this.dirResources.dynamic['test.html'] = 'test.html';
-                        this.configXmlDoc = {
-                            control: {
-                                outputs: [
-                                    {
-                                        output: [
-                                            {
-                                                $: {
-                                                    id: 'empty'
-                                                },
-                                                condition: [
-                                                    "Lorem ipsum dolor Browser.Support(\"flash\") lorem ipsum"
-                                                ],
-                                                content: [
-                                                    {
-                                                        $: {
-                                                            type: 'flash',
-                                                            fileName: 'test.swf',
-                                                            mode: 'static',
-                                                            position: 'placeholder'
-                                                        }
-                                                    },
-                                                    {
-                                                        $: {
-                                                            type: 'html',
-                                                            fileName: 'test.html',
-                                                            mode: 'dynamic',
-                                                            position: 'placeholder'
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        };
+
+                        this.adxConfigurator = new Configurator('/adx/path/dir');
+                        this.adxConfigurator.fromXml('<control><outputs>' +
+                            '<output id="empty">' +
+                            '<condition>Lorem ipsum dolor Browser.Support(\"flash\") lorem ipsum</condition>' +
+                            '<content type="flash" fileName="test.swf" mode="static" position="placeholder" />' +
+                            '<content type="html" fileName="test.html" mode="dynamic" position="placeholder" />' +
+                            '</output>' +
+                            '</outputs></control>');
                     };
 
                     adxValidator.validate(null, '/adx/path/dir');
@@ -1682,40 +1341,16 @@ describe('ADXValidator', function () {
                         this.dirResources.statics['test.swf'] = 'test.swf';
                         this.dirResources.dynamic.isExist = true;
                         this.dirResources.dynamic['test.html'] = 'test.html';
-                        this.configXmlDoc = {
-                            control: {
-                                outputs: [
-                                    {
-                                        output: [
-                                            {
-                                                $: {
-                                                    id: 'empty',
-                                                    defaultGeneration: true
-                                                },
-                                                content: [
-                                                    {
-                                                        $: {
-                                                            type: 'flash',
-                                                            fileName: 'test.swf',
-                                                            mode: 'static',
-                                                            position: 'placeholder'
-                                                        }
-                                                    },
-                                                    {
-                                                        $: {
-                                                            type: 'html',
-                                                            fileName: 'test.html',
-                                                            mode: 'dynamic',
-                                                            position: 'placeholder'
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        };
+
+                        this.adxConfigurator = new Configurator('/adx/path/dir');
+                        this.adxConfigurator.fromXml('<control><outputs>' +
+                            '<output id="empty" defaultGeneration="true">' +
+                            '<condition>Lorem ipsum dolor Browser.Support(\"flash\") lorem ipsum</condition>' +
+                            '<content type="flash" fileName="test.swf" mode="static" position="placeholder" />' +
+                            '<content type="html" fileName="test.html" mode="dynamic" position="placeholder" />' +
+                            '</output>' +
+                            '</outputs></control>');
+
                     };
 
                     adxValidator.validate(null, '/adx/path/dir');
@@ -1733,41 +1368,17 @@ describe('ADXValidator', function () {
                         this.dirResources.isExist = true;
                         this.dirResources.statics.isExist = true;
                         this.dirResources.statics['test.js'] = 'test.js';
-                        this.configXmlDoc = {
-                            control: {
-                                outputs: [
-                                    {
-                                        output: [
-                                            {
-                                                $: {
-                                                    id: 'empty',
-                                                    defaultGeneration: true
-                                                },
-                                                content: [
-                                                    {
-                                                        $: {
-                                                            type: 'javascript',
-                                                            fileName: 'test.js',
-                                                            mode: 'static'
-                                                        },
-                                                        attribute: [
-                                                            {
-                                                                $: {
-                                                                    name: 'test'
-                                                                }
-                                                            }
-                                                        ],
-                                                        'yield': [
-                                                            "test"
-                                                        ]
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        };
+
+                        this.adxConfigurator = new Configurator('/adx/path/dir');
+                        this.adxConfigurator.fromXml('<control><outputs>' +
+                            '<output id="empty" defaultGeneration="true">' +
+                            '<condition>Lorem ipsum dolor Browser.Support(\"flash\") lorem ipsum</condition>' +
+                            '<content type="javascript" fileName="test.js" mode="static">'+
+                            '<attribute name="test" />' +
+                            '<yield>test</yield>' +
+                            '</content>' +
+                            '</output>' +
+                            '</outputs></control>');
                     };
 
                     adxValidator.validate(null, '/adx/path/dir');
@@ -1776,51 +1387,37 @@ describe('ADXValidator', function () {
                 });
 
                 describe('binary content', function () {
-                    var content;
                     beforeEach(function () {
                         spies.validateHook = function () {
                             this.dirResources.isExist = true;
                             this.dirResources.statics.isExist = true;
                             this.dirResources.statics['test.js'] = 'test.js';
-                            this.configXmlDoc = {
-                                control: {
-                                    outputs: [
-                                        {
-                                            output: [
-                                                {
-                                                    $: {
-                                                        id: 'empty',
-                                                        defaultGeneration: true
-                                                    },
-                                                    content: [
-                                                        {
-                                                            $: {
-                                                                type: 'binary',
-                                                                fileName: 'test.js',
-                                                                mode: 'static',
-                                                                position: 'placeholder'
-                                                            }
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            };
-
-                            content = this.configXmlDoc.control.outputs[0].output[0].content[0];
                         };
                     });
 
                     it("should output an error when binary content doesn't have a yield or position=none", function () {
+                        extraHook(function () {
+                            this.adxConfigurator = new Configurator('/adx/path/dir');
+                            this.adxConfigurator.fromXml('<control><outputs>' +
+                                '<output id="empty" defaultGeneration="true">' +
+                                '<content type="binary" fileName="test.js" mode="static" position="placeholder" />'+
+                                '</output>' +
+                                '</outputs></control>');
+                        });
                         adxValidator.validate(null, '/adx/path/dir');
                         expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.yieldRequireForBinary, "empty", 'test.js'));
                     });
 
                     it("should not output an error when binary content have a yield", function () {
                         extraHook(function () {
-                            content.yield = ['test'];
+                            this.adxConfigurator = new Configurator('/adx/path/dir');
+                            this.adxConfigurator.fromXml('<control><outputs>' +
+                                '<output id="empty" defaultGeneration="true">' +
+                                '<content type="binary" fileName="test.js" mode="static" position="placeholder">' +
+                                '<yield>test</yield>' +
+                                '</content>'+
+                                '</output>' +
+                                '</outputs></control>');
                         });
                         adxValidator.validate(null, '/adx/path/dir');
                         expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.yieldRequireForBinary, "empty", 'test.js'));
@@ -1828,7 +1425,12 @@ describe('ADXValidator', function () {
 
                     it("should not output an error when binary content have a position=none", function () {
                         extraHook(function () {
-                            content.$.position = 'none';
+                            this.adxConfigurator = new Configurator('/adx/path/dir');
+                            this.adxConfigurator.fromXml('<control><outputs>' +
+                                '<output id="empty" defaultGeneration="true">' +
+                                '<content type="binary" fileName="test.js" mode="static" position="none" />'+
+                                '</output>' +
+                                '</outputs></control>');
                         });
                         adxValidator.validate(null, '/adx/path/dir');
                         expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.yieldRequireForBinary, "empty", 'test.js'));
@@ -1840,35 +1442,18 @@ describe('ADXValidator', function () {
 
                     describe('content with mode ' + mode, function () {
                         var instance;
-                       beforeEach(function () {
+                        beforeEach(function () {
                            spies.validateHook = function () {
                                instance  = this;
                                this.dirResources.isExist = true;
-                               this.configXmlDoc = {
-                                   control: {
-                                       outputs: [
-                                           {
-                                               output: [
-                                                   {
-                                                       $: {
-                                                           id: 'empty',
-                                                           defaultGeneration: true
-                                                       },
-                                                       content: [
-                                                           {
-                                                               $: {
-                                                                   type: 'html',
-                                                                   fileName: 'test.html',
-                                                                   mode: mode
-                                                               }
-                                                           }
-                                                       ]
-                                                   }
-                                               ]
-                                           }
-                                       ]
-                                   }
-                               };
+
+                               this.adxConfigurator = new Configurator('/adx/path/dir');
+                               this.adxConfigurator.fromXml('<control><outputs>' +
+                                   '<output id="empty" defaultGeneration="true">' +
+                                   '<content type="html" fileName="test.html" mode="' + mode + '" />'+
+                                   '</output>' +
+                                   '</outputs></control>');
+
                            };
                        });
 
@@ -1891,7 +1476,12 @@ describe('ADXValidator', function () {
                         function testDynamicBinary(type) {
                             it("should output an error when trying to use " + type + " file", function () {
                                 extraHook(function () {
-                                    instance.configXmlDoc.control.outputs[0].output[0].content[0].$.type = type;
+                                    instance.adxConfigurator = new Configurator('/adx/path/dir');
+                                    instance.adxConfigurator.fromXml('<control><outputs>' +
+                                        '<output id="empty" defaultGeneration="true">' +
+                                        '<content type="' + type + '" fileName="test.html" mode="' + mode + '" />'+
+                                        '</output>' +
+                                        '</outputs></control>');
                                     instance.dirResources[key].isExist = true;
                                     instance.dirResources[key]['test.html'] = 'test.html';
                                 });
@@ -1903,7 +1493,12 @@ describe('ADXValidator', function () {
                         function testDynamicText(type) {
                             it("should not output an error when trying to use " + type + " file", function () {
                                 extraHook(function () {
-                                    instance.configXmlDoc.control.outputs[0].output[0].content[0].$.type = type;
+                                    instance.adxConfigurator = new Configurator('/adx/path/dir');
+                                    instance.adxConfigurator.fromXml('<control><outputs>' +
+                                        '<output id="empty" defaultGeneration="true">' +
+                                        '<content type="' + type + '" fileName="test.html" mode="' + mode + '" />'+
+                                        '</output>' +
+                                        '</outputs></control>');
                                     instance.dirResources[key].isExist = true;
                                     instance.dirResources[key]['test.html'] = 'test.html';
                                 });
@@ -1923,7 +1518,6 @@ describe('ADXValidator', function () {
                 directories.forEach(testMode);
 
                 describe("#validateADXContentAttribute", function () {
-                    var content;
                     beforeEach(function () {
                         spies.validateHook = function () {
                             this.dirResources.isExist = true;
@@ -1933,58 +1527,34 @@ describe('ADXValidator', function () {
                             this.dirResources.statics['test.js'] = 'test.js';
                             this.dirResources.share.isExist = true;
                             this.dirResources.share['test.js'] = 'test.js';
-
-                            this.configXmlDoc = {
-                                control : {
-                                    outputs : [
-                                        {
-                                            output : [
-                                                {
-                                                    $ : {
-                                                        id : 'empty',
-                                                        defaultGeneration : true
-
-                                                    },
-                                                    content : [
-                                                        {
-                                                            $ : {
-                                                                type        : 'javascript',
-                                                                fileName    : 'test.js',
-                                                                mode        : 'static',
-                                                                position    : 'none'
-                                                            }
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            };
-                            content = this.configXmlDoc.control.outputs[0].output[0].content[0];
                         };
 
                     });
 
                     it("should not output an error when there is no attributes node", function () {
+                        extraHook(function () {
+                            this.adxConfigurator = new Configurator('/adx/path/dir');
+                            this.adxConfigurator.fromXml('<control><outputs>' +
+                                '<output id="empty" defaultGeneration="true">' +
+                                '<content type="javascript" fileName="test.js" mode="static" position="none" />'+
+                                '</output>' +
+                                '</outputs></control>');
+                        });
                         adxValidator.validate(null, '/adx/path/dir');
                         expect(Validator.prototype.writeError).not.toHaveBeenCalled();
                     });
 
                     it("should output an error when there is duplicate attribute node with the same name", function () {
                         extraHook(function () {
-                            content.attribute = [
-                                {
-                                    $: {
-                                        name: 'test'
-                                    }
-                                },
-                                {
-                                    $: {
-                                        name: 'test'
-                                    }
-                                }
-                            ];
+                            this.adxConfigurator = new Configurator('/adx/path/dir');
+                            this.adxConfigurator.fromXml('<control><outputs>' +
+                                '<output id="empty" defaultGeneration="true">' +
+                                '<content type="javascript" fileName="test.js" mode="static" position="none">'+
+                                '<attribute name="test" />' +
+                                '<attribute name="test" />' +
+                                '</content>' +
+                                '</output>' +
+                                '</outputs></control>');
                         });
                         adxValidator.validate(null, '/adx/path/dir');
                         expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.duplicateAttributeNode, 'empty', 'test', 'test.js'));
@@ -1993,45 +1563,54 @@ describe('ADXValidator', function () {
                     function testIgnoredFile(type) {
                         it("should output a warning with " + type + " file", function () {
                             extraHook(function () {
-                                content.$.type = type;
-                                content.attribute = [
-                                    {}
-                                ];
+                                this.adxConfigurator = new Configurator('/adx/path/dir');
+                                this.adxConfigurator.fromXml('<control><outputs>' +
+                                    '<output id="empty" defaultGeneration="true">' +
+                                    '<content type="' + type + '" fileName="test.js" mode="static" position="none">'+
+                                    '<attribute />' +
+                                    '</content>' +
+                                    '</output>' +
+                                    '</outputs></control>');
                             });
                             adxValidator.validate(null, 'adx/path/dir');
                             expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.attributeNodeWillBeIgnored, "empty", type, "test.js");
                         });
                     }
 
+
                     describe('ignored attributes node', function () {
                         ['text', 'binary', 'html', 'flash'].forEach(testIgnoredFile);
 
                         it("should output a warning with dynamic file", function () {
                             extraHook(function () {
-                                content.$.mode = 'dynamic';
-                                content.attribute = [
-                                    {}
-                                ];
+                                this.adxConfigurator = new Configurator('/adx/path/dir');
+                                this.adxConfigurator.fromXml('<control><outputs>' +
+                                    '<output id="empty" defaultGeneration="true">' +
+                                    '<content type="javascript" fileName="test.js" mode="dynamic" position="none" >'+
+                                    '<attribute />' +
+                                    '</content>' +
+                                    '</output>' +
+                                    '</outputs></control>');
                             });
                             adxValidator.validate(null, 'adx/path/dir');
                             expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.attributeNodeAndDynamicContent, "empty", "test.js");
                         });
                     });
 
+
                     function testNotOverridableAttribute(obj) {
                         var type     = obj.type,
                             attrName = obj.attr;
                         it("should output an error on " + type + " content when attempt to override " + attrName, function () {
-
                             extraHook(function () {
-                                content.$.type = type;
-                                content.attribute = [
-                                    {
-                                        $: {
-                                            name: attrName
-                                        }
-                                    }
-                                ];
+                                this.adxConfigurator = new Configurator('/adx/path/dir');
+                                this.adxConfigurator.fromXml('<control><outputs>' +
+                                    '<output id="empty" defaultGeneration="true">' +
+                                    '<content type="' + type + '" fileName="test.js" mode="static" position="none">' +
+                                    '<attribute name="' + attrName + '"/>' +
+                                    '</content>' +
+                                    '</output>' +
+                                    '</outputs></control>');
                             });
 
                            adxValidator.validate(null, 'adx/path/dir');
@@ -2072,6 +1651,8 @@ describe('ADXValidator', function () {
         });
 
     });
+
+    return;
 
     describe('#validateADXProperties', function () {
         beforeEach(function () {

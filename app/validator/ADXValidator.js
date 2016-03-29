@@ -178,22 +178,23 @@ zip|rar|sql|ini|dmg|iso|vcd|class|java|htaccess
 */
 
 
-var fs          = require('fs');
-var pathHelper  = require('path');
-var xml2js      = require('xml2js');
-var util        = require('util');
-var common      = require('../common/common.js');
-var errMsg      = common.messages.error;
-var warnMsg     = common.messages.warning;
-var successMsg  = common.messages.success;
-var msg         = common.messages.message;
+var fs           = require('fs');
+var pathHelper   = require('path');
+var xml2js       = require('xml2js');
+var util         = require('util');
+var common       = require('../common/common.js');
+var Configurator = require('../configurator/ADXConfigurator.js').Configurator;
+var errMsg       = common.messages.error;
+var warnMsg      = common.messages.warning;
+var successMsg   = common.messages.success;
+var msg          = common.messages.message;
 //  Test the file extension
-var fileExt     = {
+var fileExt      = {
     blacklist : /\.(cgi|dll|erb|rjs|rhtml|rb|py|phtml|php3|php4|php|pl|action|do|wss|jspx|jsp|jhtml|yaws|cfm|aspx|axd|asx|asmx|ashx|axd|ascx|asp|config|action|apk|app|bat|bin|cmd|com|command|cpl|csh|exe|gadget|inf1|ins|inx|ipa|isu|job|jse|ksh|lnk|msc|msi|msp|mst|ocx|osx|out|paf|pif|prg|ps1|reg|rgs|run|sct|shb|shs|u3p|vb|vbe|vbs|vbscript|workflow|ws|wsf|cs|cpp|zip|rar|sql|ini|dmg|iso|vcd|class|java|htaccess)$/gi,
     whitelist : /\.(xml|rss|atom|svg|js|xhtml|htm|html|swf|css|hss|sass|less|ccss|pcss|txt|csv|json|gif|jpeg|jpg|tif|tiff|png|bmp|pdf|ico|cur|aif|iff|m4a|mid|mp3|mpa|ra|wav|wma|ogg|oga|webma|3g2|3gp|avi|flv|mov|mp4|mpg|rm|wmv|ogv|webm|md)$/gi
 };
 // Hash with all content type
-var contentType      = {
+var contentType  = {
     'text'      : 'text',
     'html'      : 'text',
     'javascript': 'text',
@@ -282,8 +283,8 @@ function Validator(adxDirPath) {
             'validatePathArg',
             'validateADXDirectoryStructure',
             'validateFileExtensions',
-            'validateXMLAgainstXSD',
             'initConfigXMLDoc',
+            'validateXMLAgainstXSD',
             'validateADXInfo',
             'validateADXInfoConstraints',
             'validateADXOutputs',
@@ -330,6 +331,12 @@ function Validator(adxDirPath) {
      * Config xml document in json format
      */
     this.configXmlDoc  = null;
+
+    /**
+     * Instance of configurator
+     * @type {ADX.Configurator}
+     */
+    this.adxConfigurator = null;
 
     /**
      * Logger to override with an object
@@ -408,8 +415,8 @@ Validator.prototype.validate = function validate(options, callback) {
         // --no-xml
         if (options.xml === false) { // Check bool value not falsy
             this.removeOnSequence([
-                'validateXMLAgainstXSD',
                 'initConfigXMLDoc',
+                'validateXMLAgainstXSD',
                 'validateADXInfo',
                 'validateADXInfoConstraints',
                 'validateADXOutputs',
@@ -758,42 +765,38 @@ Validator.prototype.validateXMLAgainstXSD = function validateXMLAgainstXSD() {
  */
 Validator.prototype.initConfigXMLDoc = function initConfigXMLDoc() {
     var self = this;
-    fs.readFile(pathHelper.join(self.adxDirectoryPath, common.CONFIG_FILE_NAME), 'utf8', function readConfigXMLFile(err, data) {
+
+    self.adxConfigurator = new Configurator(self.adxDirectoryPath);
+    self.adxConfigurator.load(function (err) {
         if (err) {
             self.resume(err);
             return;
         }
-        // Remove the BOM characters in UTF-8 string
-        data = data.replace(/^\uFEFF/, '');
-        xml2js.parseString(data, function parseXML(err, result) {
-            self.configXmlDoc = result;
-            if (!err) {
-                self.writeSuccess(successMsg.xmlInitialize);
-            }
-            self.resume(err);
-        });
+        self.writeSuccess(successMsg.xmlInitialize);
+        self.resume(null);
+
     });
 };
-
 
 /**
  * Validate the info of the ADX config file
  */
 Validator.prototype.validateADXInfo = function validateADXInfo() {
-    var infosEl = this.configXmlDoc.control.info && this.configXmlDoc.control.info[0],
-        nameEl  = infosEl && infosEl.name && infosEl.name[0];
+    var xmldoc = this.adxConfigurator.xmldoc;
+    var elInfo = xmldoc.find("info");
+    var elName = elInfo && elInfo.find("name");
 
-    if (!infosEl) {
+    if (!elInfo) {
         this.resume(newError(errMsg.missingInfoNode));
         return;
     }
 
-    if (!nameEl) {
+    if (!elName || !elName.text) {
         this.resume(newError(errMsg.missingOrEmptyNameNode));
         return;
     }
 
-    this.adxName = nameEl;
+    this.adxName = elName.text;
     this.writeSuccess(successMsg.xmlInfoValidate);
     this.resume(null);
 };
@@ -803,33 +806,43 @@ Validator.prototype.validateADXInfo = function validateADXInfo() {
  * Validate the info/constraints of the ADX config file
  */
 Validator.prototype.validateADXInfoConstraints = function validateADXInfoConstraints() {
-    var constraintsEl           = this.configXmlDoc.control.info[0].constraints[0],
-        constraints             = constraintsEl.constraint || [],
-        constraintsOn           = {
-            questions : 0,
-            responses : 0,
-            controls  : 0
-        }, attr, i, l, key, hasRule = false;
+    var xmldoc = this.adxConfigurator.xmldoc;
+    var elInfo = xmldoc.find("info");
+    var elConstraints = elInfo && elInfo.find("constraints");
+    var constraintsOn  = {
+        questions : 0,
+        responses : 0,
+        controls  : 0
+    };
+    var self = this;
+    var exitIter = false;
 
-    for (i = 0, l = constraints.length; i < l; i++) {
-        hasRule = false;
-        attr = constraints[i].$ || {};
-        if (!attr.on) {
-            continue;
+    elConstraints.iter('constraint', function (constraint) {
+        if (exitIter) {
+            return;
         }
-
-        // Validate the duplicate constraints
-        constraintsOn[attr.on]++;
-        if (constraintsOn[attr.on] > 1) {
-            this.resume(newError(errMsg.duplicateConstraints, attr.on));
+        var hasRule = false;
+        var attrOn  = constraint.get("on");
+        if (!attrOn) {
             return;
         }
 
+        // Validate the duplicate constraints
+        constraintsOn[attrOn]++;
+        if (constraintsOn[attrOn] > 1) {
+            self.resume(newError(errMsg.duplicateConstraints, attrOn));
+            exitIter = true;
+            return;
+        }
+
+
         // Validate the attribute logic
-        for (key in attr) {
+        var attr = constraint.attrib;
+        for (var key in attr) {
             if (attr.hasOwnProperty(key) && key !== 'on') {
-                if (constraintAttributeRules[attr.on].indexOf(key) === -1) {
-                    this.resume(newError(errMsg.invalidConstraintAttribute, attr.on, key));
+                if (constraintAttributeRules[attrOn].indexOf(key) === -1) {
+                    self.resume(newError(errMsg.invalidConstraintAttribute, attrOn, key));
+                    exitIter = true;
                     return;
                 }
                 if (key !== 'min' && key !== 'max') {
@@ -844,9 +857,13 @@ Validator.prototype.validateADXInfoConstraints = function validateADXInfoConstra
 
         // No rule specified
         if (!hasRule) {
-            this.resume(newError(errMsg.noRuleOnConstraint, attr.on));
-            return;
+            self.resume(newError(errMsg.noRuleOnConstraint, attrOn));
+            exitIter = true;
         }
+    });
+
+    if (exitIter) {
+        return;
     }
 
     if (!constraintsOn.questions) {
@@ -868,49 +885,60 @@ Validator.prototype.validateADXInfoConstraints = function validateADXInfoConstra
  * Validate the outputs of the ADX config file
  */
 Validator.prototype.validateADXOutputs = function validateADXOutputs() {
-    var outputsEl               = this.configXmlDoc.control.outputs[0],
-        outputs                 = outputsEl.output,
-        conditions              = {},
-        outputsEmptyCondition   = [],
-        htmlFallBackCount       = 0,
-        lastOutput,
-        defaultGeneration, i, l, output, id, condition, err;
+    var xmldoc = this.adxConfigurator.xmldoc;
+    var elOutputs = xmldoc.find("outputs");
+    var exitIter = false;
+    var conditions              = {};
+    var outputsEmptyCondition   = [];
+    var htmlFallBackCount       = 0;
+    var self = this;
+    var err;
 
-    for (i = 0, l = outputs.length; i < l; i++) {
-        output      = outputs[i];
-        id          = output.$.id;
-        condition   = output.condition && output.condition[0];
-        defaultGeneration = output.$.defaultGeneration || false;
+    elOutputs.iter("output", function (output) {
+        if (exitIter) {
+            return;
+        }
+        var id          = output.get("id");
+        var elCondition = output.find("condition");
+        var condition   = elCondition && elCondition.text;
+        var defaultGeneration = output.get("defaultGeneration") || false;
 
         if (!condition) {
             outputsEmptyCondition.push(id);
         }
+
         if (condition && conditions[condition]) {
-            this.report.warnings++;
-            this.writeWarning(warnMsg.duplicateOutputCondition, conditions[condition], id);
+            self.report.warnings++;
+            self.writeWarning(warnMsg.duplicateOutputCondition, conditions[condition], id);
         }
 
         conditions[condition] = id;
-        lastOutput = {
+
+
+        var lastOutput = {
             id                : id,
             defaultGeneration : defaultGeneration,
-            contents          : output.content || [],
+            contents          : output.findall("content") || [],
             condition         : condition,
             dynamicContentCount     : 0,
             javascriptContentCount  : 0,
             flashContentCount       : 0
         };
 
-        err = this.validateADXContents(lastOutput);
+        err = self.validateADXContents(lastOutput);
 
         if (defaultGeneration || !lastOutput.javascriptContentCount) {
             htmlFallBackCount++;
         }
 
         if (err) {
-            this.resume(err);
-            return;
+            self.resume(err);
+            exitIter = true;
         }
+    });
+
+    if (exitIter) {
+        return;
     }
 
     if (outputsEmptyCondition.length > 1) {
@@ -978,13 +1006,13 @@ Validator.prototype.validateADXContents = function validateADXContents(output) {
  * @return {Error|void} Return the error or null when no error.
  */
 Validator.prototype.validateADXContent = function validateADXContent(output, content) {
-    var atts        = content.$,
+    var atts        = content.attrib,
         type        = atts.type,
         position    = atts.position,
         mode        = atts.mode,
         key         = (mode !== 'static') ? mode : 'statics',
         fileName    = atts.fileName,
-        yieldNode   = content['yield'] || [],
+        yieldNode   = content.find('yield'),
         dirResources = this.dirResources;
 
     // Missing directory
@@ -1003,7 +1031,7 @@ Validator.prototype.validateADXContent = function validateADXContent(output, con
     }
 
     // A binary file require a 'yield' node or 'position=none'
-    if (type === 'binary' && position !== 'none' && !yieldNode.length) {
+    if (type === 'binary' && position !== 'none' && (!yieldNode || !yieldNode.text)) {
         return newError(errMsg.yieldRequireForBinary, output.id, fileName);
     }
 
@@ -1035,15 +1063,16 @@ Validator.prototype.validateADXContent = function validateADXContent(output, con
  * @return {Error|void} Return error or null when no error
  */
 Validator.prototype.validateADXContentAttribute = function validateADXContentAttribute(output, content) {
-    if (!content.attribute || !content.attribute.length) {
+    var attributes = content.findall('attribute');
+    if (!attributes || !attributes.length) {
         return null;
     }
 
-    var atts        = content.$,
+    var atts        = content.attrib,
         type        = atts.type,
         mode        = atts.mode,
         fileName    = atts.fileName,
-        attributes  = content.attribute,
+        yieldNode   = content.find("yield"),
         attribute,
         attName,
         attMap      = {},
@@ -1062,14 +1091,14 @@ Validator.prototype.validateADXContentAttribute = function validateADXContentAtt
     }
 
     // Attribute nodes are ignored with yield
-    if (content['yield'] && content['yield'].length) {
+    if (yieldNode && yieldNode.text) {
         this.report.warnings++;
         this.writeWarning(warnMsg.attributeNodeAndYieldNode, output.id, fileName);
     }
 
     for (i = 0, l = attributes.length; i < l; i++) {
         attribute = attributes[i];
-        attName     = (attribute.$ && attribute.$.name && attribute.$.name.toLocaleLowerCase()) || '';
+        attName     = (attribute.attrib && attribute.attrib.name && attribute.attrib.name.toLocaleLowerCase()) || '';
 
         if (contentSealAttr[type] && contentSealAttr[type][attName]) {
             return newError(errMsg.attributeNotOverridable, output.id, attName, fileName);
