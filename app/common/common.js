@@ -97,6 +97,17 @@ exports.messages = {
         missingInfoNode         : "The config.xml must contains the `info` node as a child of the xml root element",
         missingOrEmptyNameNode   : "The node `name` in `info` doesn't exist or is empty",
         missingOrEmptyMasterPageAttr   : "Output: `%s`. The `masterPage` attribute doesn't exist or is empty",
+        masterPageRequireAskiaHeadTag : "The master page `%s` doesn't contains the `askia-head`  tag",
+        masterPageRequireOnlyOneAskiaHeadTag : "The master page `%s` contains more than one `askia-head` tag",
+        masterPageRequireAskiaFootTag : "The master page `%s` doesn't contains the `askia-foot`  tag",
+        masterPageRequireOnlyOneAskiaFootTag : "The master page `%s` contains more than one `askia-foot` tag",
+        masterPageRequireAskiaFormTag : "The master page `%s` doesn't contains the `askia-form` tag",
+        masterPageRequireOnlyOneAskiaFormTag : "The master page `%s` contains more than one `askia-form` tag`",
+        masterPageRequireAskiaFormCloseTag : "In the master page `%s` the `askia-form` tag is not close",
+        masterPageRequireOnlyOneAskiaFormCloseTag : "In the master page `%s` the `askia-form` tag seems closed twice`",
+        masterPageRequireAskiaQuestionsTag : "The master page `%s` doesn't contains the `askia-questions` tag",
+        masterPageRequireOnlyOneAskiaQuestionsTag : "The master page `%s` contains more than one `askia-questions` tag`",
+        masterPageRequireAskiaQuestionsTagInsideAskiaFormTag : "In the master page `%s` the `askia-questions` tag seems not inside the `askia-form` tag",
 
         // Generator
         missingTypeArgument     : "The `type` parameter is required",
@@ -145,6 +156,7 @@ exports.messages = {
         xmlInfoConstraintsValidate : "Config#info#constraints validation done",
         xmlOutputsValidate         : "Config#outputs validation done",
         xmlPropertiesValidate      : "Config#properties validation done",
+        masterPageAskiaTagsValidate     : "Master page with Askia tags validation done",
         adxUnitSucceed             : "ADX Unit tests succeeded",
 
         // Generator

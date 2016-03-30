@@ -282,7 +282,8 @@ describe('ADXValidator', function () {
                 'validateADXInfo',
                 'validateADXInfoConstraints',
                 'validateADXOutputs',
-                'validateADXProperties'
+                'validateADXProperties',
+                'validateMasterPage'
             ]);
         });
 
@@ -724,6 +725,17 @@ describe('ADXValidator', function () {
             adxValidator.validate(null, '/adx/path/dir');
 
             expect(Validator.prototype.writeError).not.toHaveBeenCalled();
+        });
+
+        it("should remove the validateMasterPage in the sequence while using an ADC", function () {
+            Configurator.prototype.load.andCallFake(function (cb) {
+                this.fromXml('<control></control>');
+                cb(null);
+            });
+            spies.sequence = ['initConfigXMLDoc', 'validateMasterPage'];
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(validatorInstance.validators.sequence).toEqual(['initConfigXMLDoc']);
+            expect(validatorInstance.report.total).toEqual(1);
         });
 
         it("should remove the validateADXInfoConstraints in the sequence while using an ADP", function () {
@@ -1872,6 +1884,285 @@ describe('ADXValidator', function () {
             expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.noProperties);
         });
 
+    });
+
+    describe('#validateMasterPage', function () {
+        beforeEach(function () {
+            // Modify the sequence of the validation to only call the validateMasterPage method
+            spies.sequence = ['validateMasterPage'];
+            spyOn(Validator.prototype, 'writeError');
+            spyOn(Validator.prototype, 'writeWarning');
+            spyOn(Validator.prototype, 'writeSuccess');
+            spyOn(Validator.prototype, 'writeMessage');
+        });
+
+        it("should read the master page of all outputs", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs>' +
+                '<output id="first" masterPage="first.html"></output>' +
+                '<output id="second" masterPage="second.html"></output>' +
+                '<output id="third" masterPage="third.html"></output>' +
+                '</outputs></page>');
+            };
+            var files = [];
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                files.push(file);
+                cb(null, '<askia-head/><askia-form><askia-questions/></askia-form><askia-foot/>');
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(files).toEqual([
+                '\\adx\\path\\dir\\resources\\dynamic\\first.html',
+                '\\adx\\path\\dir\\resources\\dynamic\\second.html',
+                '\\adx\\path\\dir\\resources\\dynamic\\third.html'
+            ]);
+        });
+
+        it("should validate the master page only one time, even if used several times", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs>' +
+                    '<output id="first" masterPage="first.html"></output>' +
+                    '<output id="second" masterPage="second.html"></output>' +
+                    '<output id="third" masterPage="first.html"></output>' +
+                    '<output id="fourth" masterPage="third.html"></output>' +
+                    '<output id="fifth" masterPage="second.html"></output>' +
+                    '</outputs></page>');
+            };
+            var files = [];
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                files.push(file);
+                cb(null, '<askia-head/><askia-form><askia-questions/></askia-form><askia-foot/>');
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(files).toEqual([
+                '\\adx\\path\\dir\\resources\\dynamic\\first.html',
+                '\\adx\\path\\dir\\resources\\dynamic\\second.html',
+                '\\adx\\path\\dir\\resources\\dynamic\\third.html'
+            ]);
+        });
+
+        it("should output an error when the master page could not be read", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs><output id="first" masterPage="first.html"></output></outputs></page>');
+            };
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                if (file === '\\adx\\path\\dir\\resources\\dynamic\\first.html') {
+                    cb(new Error('fake error'));
+                }
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith('fake error');
+        });
+
+        it("should output an error when the master page doesn't contains the <askia-head /> tag", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs><output id="first" masterPage="first.html"></output></outputs></page>');
+            };
+            spies.fs.readFile.andCallFake(function (file, cb) {
+               if (file === '\\adx\\path\\dir\\resources\\dynamic\\first.html') {
+                   cb(null, '<html><body></body></html>');
+               }
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.masterPageRequireAskiaHeadTag, 'first.html'));
+        });
+
+        it("should output an error when the master page contains more than one <askia-head /> tag", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs><output id="first" masterPage="first.html"></output></outputs></page>');
+            };
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                if (file === '\\adx\\path\\dir\\resources\\dynamic\\first.html') {
+                    cb(null, '<html><body><askia-head /><askia-head/></body></html>');
+                }
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.masterPageRequireOnlyOneAskiaHeadTag, 'first.html'));
+        });
+
+        it("should output an error when the master page doesn't contains the <askia-form> tag", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs><output id="first" masterPage="first.html"></output></outputs></page>');
+            };
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                if (file === '\\adx\\path\\dir\\resources\\dynamic\\first.html') {
+                    cb(null, '<html><head><askia-head/></head><body></body></html>');
+                }
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.masterPageRequireAskiaFormTag, 'first.html'));
+        });
+
+        it("should output an error when the master page contains more than one <askia-form> tag", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs><output id="first" masterPage="first.html"></output></outputs></page>');
+            };
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                if (file === '\\adx\\path\\dir\\resources\\dynamic\\first.html') {
+                    cb(null, '<html><body><askia-head /><askia-form><askia-form ></body></html>');
+                }
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.masterPageRequireOnlyOneAskiaFormTag, 'first.html'));
+        });
+
+        it("should output an error when the master page doesn't contains the </askia-form> tag", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs><output id="first" masterPage="first.html"></output></outputs></page>');
+            };
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                if (file === '\\adx\\path\\dir\\resources\\dynamic\\first.html') {
+                    cb(null, '<html><head><askia-head/></head><body><askia-form></body></html>');
+                }
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.masterPageRequireAskiaFormCloseTag, 'first.html'));
+        });
+
+        it("should output an error when the master page contains more than one </askia-form> tag", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs><output id="first" masterPage="first.html"></output></outputs></page>');
+            };
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                if (file === '\\adx\\path\\dir\\resources\\dynamic\\first.html') {
+                    cb(null, '<html><body><askia-head /><askia-form></askia-form></askia-form></body></html>');
+                }
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.masterPageRequireOnlyOneAskiaFormCloseTag, 'first.html'));
+        });
+
+        it("should output an error when the master page doesn't contains the <askia-questions/> tag", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs><output id="first" masterPage="first.html"></output></outputs></page>');
+            };
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                if (file === '\\adx\\path\\dir\\resources\\dynamic\\first.html') {
+                    cb(null, '<html><head><askia-head/></head><body><askia-form></askia-form></body></html>');
+                }
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.masterPageRequireAskiaQuestionsTag, 'first.html'));
+        });
+
+        it("should output an error when the master page contains more than one <askia-questions/> tag", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs><output id="first" masterPage="first.html"></output></outputs></page>');
+            };
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                if (file === '\\adx\\path\\dir\\resources\\dynamic\\first.html') {
+                    cb(null, '<html><body><askia-head /><askia-form><askia-questions/><askia-questions /></askia-form></body></html>');
+                }
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.masterPageRequireOnlyOneAskiaQuestionsTag, 'first.html'));
+        });
+
+        it("should output an error when the master page doesn't contains the <askia-foot/> tag", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs><output id="first" masterPage="first.html"></output></outputs></page>');
+            };
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                if (file === '\\adx\\path\\dir\\resources\\dynamic\\first.html') {
+                    cb(null, '<html><head><askia-head/></head><body><askia-form><askia-questions/></askia-form></body></html>');
+                }
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.masterPageRequireAskiaFootTag, 'first.html'));
+        });
+
+        it("should output an error when the master page contains more than one <askia-foot/> tag", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs><output id="first" masterPage="first.html"></output></outputs></page>');
+            };
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                if (file === '\\adx\\path\\dir\\resources\\dynamic\\first.html') {
+                    cb(null, '<html><body><askia-head /><askia-form><askia-questions/></askia-form><askia-foot/><askia-foot /></body></html>');
+                }
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.masterPageRequireOnlyOneAskiaFootTag, 'first.html'));
+        });
+
+        it("should output an error when the <askia-questions/> seems not to be inside the <askia-form> and </askia-form> (part 1)", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs><output id="first" masterPage="first.html"></output></outputs></page>');
+            };
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                if (file === '\\adx\\path\\dir\\resources\\dynamic\\first.html') {
+                    cb(null, '<html>\r\n<head>\r\n<askia-head/>\r\n</head>\r\n<body>\r\n</askia-form>\r\n<askia-form>\r\n<askia-questions/>\r\n<askia-foot/></body>\r\n</html>');
+                }
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.masterPageRequireAskiaQuestionsTagInsideAskiaFormTag, 'first.html'));
+        });
+
+        it("should output an error when the <askia-questions/> seems not to be inside the <askia-form> and </askia-form> (part 2)", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs><output id="first" masterPage="first.html"></output></outputs></page>');
+            };
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                if (file === '\\adx\\path\\dir\\resources\\dynamic\\first.html') {
+                    cb(null, '<html>\r\n<head>\r\n<askia-head/>\r\n</head>\r\n<body>\r\n</askia-form>\r\n<askia-questions/>\r\n<askia-form>\r\n<askia-foot/></body>\r\n</html>');
+                }
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.masterPageRequireAskiaQuestionsTagInsideAskiaFormTag, 'first.html'));
+        });
+
+        it("should output an error when the <askia-questions/> seems not to be inside the <askia-form> and </askia-form> (part 1)", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs><output id="first" masterPage="first.html"></output></outputs></page>');
+            };
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                if (file === '\\adx\\path\\dir\\resources\\dynamic\\first.html') {
+                    cb(null, '<html>\r\n<head>\r\n<askia-head/>\r\n</head>\r\n<body>\r\n</askia-form>\r\n<askia-form>\r\n<askia-questions/>\r\n<askia-foot/></body>\r\n</html>');
+                }
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.masterPageRequireAskiaQuestionsTagInsideAskiaFormTag, 'first.html'));
+        });
+
+        it("should not output an error when the <askia-questions/> is inside the <askia-form> and </askia-form>", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs><output id="first" masterPage="first.html"></output></outputs></page>');
+            };
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                if (file === '\\adx\\path\\dir\\resources\\dynamic\\first.html') {
+                    cb(null, '<html>\r\n<head>\r\n<askia-head/>\r\n</head>\r\n<body>\r\n<askia-form>\r\nSomething before\r\n<askia-questions/>\r\nSomething after\r\n</askia-form>\r\n<askia-foot/></body>\r\n</html>');
+                }
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.masterPageRequireAskiaQuestionsTagInsideAskiaFormTag, 'first.html'));
+        });
+
+        it('should output a success when no error found', function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page><outputs><output id="first" masterPage="first.html"></output><output id="second" masterPage="second.html"></output></outputs></page>');
+            };
+            spies.fs.readFile.andCallFake(function (file, cb) {
+                cb(null, '<html>\r\n<head>\r\n<askia-head/>\r\n</head>\r\n<body>\r\n<askia-form>\r\nSomething before\r\n<askia-questions/>\r\nSomething after\r\n</askia-form>\r\n<askia-foot/></body>\r\n</html>');
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(successMsg.masterPageAskiaTagsValidate);
+        });
     });
 
     describe('#runAutoTests', function () {

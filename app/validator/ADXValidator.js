@@ -289,6 +289,7 @@ function Validator(adxDirPath) {
             'validateADXInfoConstraints',
             'validateADXOutputs',
             'validateADXProperties',
+            'validateMasterPage',
             'runAutoTests',
             'runADXUnitTests'
         ]
@@ -415,7 +416,8 @@ Validator.prototype.validate = function validate(options, callback) {
                 'validateADXInfo',
                 'validateADXInfoConstraints',
                 'validateADXOutputs',
-                'validateADXProperties'
+                'validateADXProperties',
+                'validateMasterPage'
             ]);
         }
 
@@ -734,6 +736,31 @@ Validator.prototype.validateFileExtensions = function validateFileExtensions() {
 
 
 /**
+ * Initialize the XMLDoc using the config.xml
+ */
+Validator.prototype.initConfigXMLDoc = function initConfigXMLDoc() {
+    var self = this;
+
+    self.adxConfigurator = new Configurator(self.adxDirectoryPath);
+    self.adxConfigurator.load(function (err) {
+        if (err) {
+            self.resume(err);
+            return;
+        }
+        if (self.adxConfigurator.projectType === 'adp') {
+            self.removeOnSequence(['validateADXInfoConstraints']);
+        } else {
+            self.removeOnSequence((['validateMasterPage']));
+        }
+        self.report.total = self.validators.sequence.length;
+        self.writeSuccess(successMsg.xmlInitialize);
+        self.resume(null);
+
+    });
+};
+
+
+/**
  * Validate the config.xml file of the ADX against the XSD schema
  */
 Validator.prototype.validateXMLAgainstXSD = function validateXMLAgainstXSD() {
@@ -757,28 +784,6 @@ Validator.prototype.validateXMLAgainstXSD = function validateXMLAgainstXSD() {
     });
 };
 
-
-/**
- * Initialize the XMLDoc using the config.xml
- */
-Validator.prototype.initConfigXMLDoc = function initConfigXMLDoc() {
-    var self = this;
-
-    self.adxConfigurator = new Configurator(self.adxDirectoryPath);
-    self.adxConfigurator.load(function (err) {
-        if (err) {
-            self.resume(err);
-            return;
-        }
-        if (self.adxConfigurator.projectType === 'adp') {
-            self.removeOnSequence(['validateADXInfoConstraints']);
-            self.report.total = self.validators.sequence.length;
-        }
-        self.writeSuccess(successMsg.xmlInitialize);
-        self.resume(null);
-
-    });
-};
 
 /**
  * Validate the info of the ADX config file
@@ -1181,6 +1186,118 @@ Validator.prototype.validateADXProperties = function validateADXProperties() {
         this.writeWarning(warnMsg.noProperties);
     }
     this.writeSuccess(successMsg.xmlPropertiesValidate);
+    this.resume(null);
+};
+
+/**
+ * Validate the content of the master page of ADP
+ */
+Validator.prototype.validateMasterPage = function validateMasterPage() {
+    var xmldoc = this.adxConfigurator.xmldoc;
+    var elOutputs = xmldoc.findall("./outputs/output");
+    var outputIndex = 0, len = elOutputs.length;
+    var self = this;
+    var treats = {};
+
+    // Recursive calls to validate each master page one by one
+    function validateNextMasterPage() {
+        var elOutput = elOutputs[outputIndex];
+        var masterPage = elOutput.get("masterPage");
+
+        // Don't validate the master page several time
+        if (treats[masterPage]) {
+            outputIndex++;
+            if (outputIndex < len) {
+                return validateNextMasterPage();
+            }
+            return;
+        }
+
+        treats[masterPage] = true;
+        var masterPagePath = pathHelper.join(self.adxDirectoryPath, 'resources/dynamic', masterPage);
+
+        fs.readFile(masterPagePath, function (err, data) {
+            if (err) {
+                self.resume(err);
+                return;
+            }
+
+            data = data.toString();
+
+            var askiaHeadCount = (data.match(/<askia\-head\s*\/?>/gi) || []).length;
+            // <askia-head /> required
+            if (!askiaHeadCount) {
+                self.resume(newError(errMsg.masterPageRequireAskiaHeadTag, masterPage));
+                return;
+            }
+            if (askiaHeadCount > 1) {
+                self.resume(newError(errMsg.masterPageRequireOnlyOneAskiaHeadTag, masterPage));
+                return;
+            }
+
+            // <askia-form> required
+            var askiaFormCount = (data.match(/<askia\-form\s*>/gi) || []).length;
+            if (!askiaFormCount) {
+                self.resume(newError(errMsg.masterPageRequireAskiaFormTag, masterPage));
+                return;
+            }
+            if (askiaFormCount > 1) {
+                self.resume(newError(errMsg.masterPageRequireOnlyOneAskiaFormTag, masterPage));
+                return;
+            }
+
+            // </askia-form> required
+            var askiaFormCloseCount = (data.match(/<\/askia\-form\s*>/gi) || []).length;
+            if (!askiaFormCloseCount) {
+                self.resume(newError(errMsg.masterPageRequireAskiaFormCloseTag, masterPage));
+                return;
+            }
+            if (askiaFormCloseCount > 1) {
+                self.resume(newError(errMsg.masterPageRequireOnlyOneAskiaFormCloseTag, masterPage));
+                return;
+            }
+
+            // <askia-questions/> required
+            var askiaQuestionsCount = (data.match(/<askia\-questions\s*\/?>/gi) || []).length;
+            if (!askiaQuestionsCount) {
+                self.resume(newError(errMsg.masterPageRequireAskiaQuestionsTag, masterPage));
+                return;
+            }
+            if (askiaQuestionsCount > 1) {
+                self.resume(newError(errMsg.masterPageRequireOnlyOneAskiaQuestionsTag, masterPage));
+                return;
+            }
+
+            // <askia-foot/> required
+            var askiaFootCount = (data.match(/<askia\-foot\s*\/?>/gi) || []).length;
+            if (!askiaFootCount) {
+                self.resume(newError(errMsg.masterPageRequireAskiaFootTag, masterPage));
+                return;
+            }
+            if (askiaFootCount > 1) {
+                self.resume(newError(errMsg.masterPageRequireOnlyOneAskiaFootTag, masterPage));
+                return;
+            }
+
+            // Validate that the <askia-questions/> is between <askia-form> and </askia-form>
+            // This ultimate validation also ensure that </askia-form> appear after <askia-form>
+            var isCorrectForm = /<askia\-form\s*>(.|\r|\n)*<askia\-questions\s*\/?>(.|\r|\n)*<\/askia\-form\s*>/mgi.test(data);
+            if (!isCorrectForm) {
+                self.resume(newError(errMsg.masterPageRequireAskiaQuestionsTagInsideAskiaFormTag, masterPage));
+                return;
+            }
+
+
+            outputIndex++;
+            if (outputIndex < len) {
+                return validateNextMasterPage();
+            }
+        });
+    }
+
+    validateNextMasterPage();
+
+    this.writeSuccess(successMsg.masterPageAskiaTagsValidate);
     this.resume(null);
 };
 
