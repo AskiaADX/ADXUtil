@@ -30,6 +30,12 @@ function Builder(adxDirPath) {
     this.adxDirectoryPath = adxDirPath ? pathHelper.normalize(adxDirPath) : process.cwd();
 
     /**
+     * Configurator of the ADX
+     * @type {ADX.Configurator}
+     */
+    this.adxConfigurator = null;
+
+    /**
      * Bin path of the ADX
      * @type {string}
      */
@@ -116,6 +122,7 @@ Builder.prototype.build = function build(options, callback) {
         }
 
         self.adxName          = self.validator.adxName;
+        self.adxConfigurator  = self.validator.adxConfigurator;
         self.binPath          = pathHelper.join(self.adxDirectoryPath, common.ADX_BIN_PATH);
         self.validationReport = report;
 
@@ -185,7 +192,8 @@ Builder.prototype.done = function done(err) {
         return;
     }
 
-    var output = pathHelper.join(this.binPath, this.adxName + '.adc');
+    var fileExt = '.' + this.adxConfigurator.projectType.toLowerCase();
+    var output = pathHelper.join(this.binPath, this.adxName + fileExt);
 
     if (!this.validationReport.warnings) {
         this.writeSuccess(successMsg.buildSucceed, output);
@@ -256,8 +264,9 @@ Builder.prototype.compressADX =  function compressADX() {
         });
 
         var buffer = zip.generate({type:"nodebuffer"});
+        var fileExt = '.' + self.adxConfigurator.projectType.toLowerCase();
 
-        self.outputPath = pathHelper.join(self.binPath, self.adxName + '.adc');
+        self.outputPath = pathHelper.join(self.binPath, self.adxName + fileExt);
         fs.writeFile(self.outputPath, buffer, function writeZipFile(err) {
             if (err) {
                 throw err;
