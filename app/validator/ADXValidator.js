@@ -907,6 +907,9 @@ Validator.prototype.validateADXOutputs = function validateADXOutputs() {
     var htmlFallBackCount       = 0;
     var self = this;
     var err;
+    var projectType    = this.adxConfigurator.projectType;
+    var projectVersion = this.adxConfigurator.projectVersion;
+    var dirResources   = this.dirResources;
 
     elOutputs.iter("output", function (output) {
         if (exitIter) {
@@ -916,6 +919,28 @@ Validator.prototype.validateADXOutputs = function validateADXOutputs() {
         var elCondition = output.find("condition");
         var condition   = elCondition && elCondition.text;
         var defaultGeneration = output.get("defaultGeneration") || false;
+
+        // Require a `masterPage` attribute that represent an existing dynamic file for ADP
+        if (projectType === 'adp') {
+            var masterPage = output.get('masterPage');
+
+            // Verify the presence of a non-empty masterPage attribute
+            if (!masterPage) {
+                err = newError(errMsg.missingOrEmptyMasterPageAttr, id);
+                self.resume(err);
+                exitIter = true;
+                return;
+            }
+
+            // Verify that the masterPage exist in the `dynamic` folder
+            if (!dirResources.dynamic || !dirResources.dynamic[masterPage.toLocaleLowerCase()]) {
+                err = newError(errMsg.cannotFindFileInDirectory, id, masterPage, 'dynamic');
+                self.resume(err);
+                exitIter = true;
+                return;
+            }
+        }
+
 
         if (!condition) {
             outputsEmptyCondition.push(id);
@@ -927,16 +952,14 @@ Validator.prototype.validateADXOutputs = function validateADXOutputs() {
         }
 
         // defaultGeneration attribute is mark as deprecated in the 2.1.0
-        if (self.adxConfigurator.projectVersion !== '2.0.0') {
+        if (projectVersion !== '2.0.0') {
             if ("defaultGeneration" in output.attrib) {
                 self.report.warnings++;
                 self.writeWarning(warnMsg.deprecatedDefaultGenerationAttr);
             }
         }
 
-
         conditions[condition] = id;
-
 
         var lastOutput = {
             id                : id,
@@ -987,7 +1010,8 @@ Validator.prototype.validateADXOutputs = function validateADXOutputs() {
  * @return {Error|void} Return the error or null when no error.
  */
 Validator.prototype.validateADXContents = function validateADXContents(output) {
-    var contents = output.contents,
+    var projectType = this.adxConfigurator.projectType,
+        contents = output.contents,
         i, l,
         err = null,
         condition = output.condition || "";
@@ -1003,18 +1027,21 @@ Validator.prototype.validateADXContents = function validateADXContents(output) {
         }
     }
 
-    if (!output.defaultGeneration && !output.dynamicContentCount) {
-        return newError(errMsg.dynamicFileRequire, output.id);
-    }
+    // ADP doesn't require content, it already have at least one masterPage
+    if (projectType !== 'adp' ) {
+        if (!output.defaultGeneration && !output.dynamicContentCount) {
+            return newError(errMsg.dynamicFileRequire, output.id);
+        }
 
-    if (!output.defaultGeneration && output.javascriptContentCount && !/browser\.support\("javascript"\)/gi.test(condition)) {
-        this.report.warnings++;
-        this.writeWarning(warnMsg.javascriptUseWithoutBrowserCheck, output.id);
-    }
+        if (!output.defaultGeneration && output.javascriptContentCount && !/browser\.support\("javascript"\)/gi.test(condition)) {
+            this.report.warnings++;
+            this.writeWarning(warnMsg.javascriptUseWithoutBrowserCheck, output.id);
+        }
 
-    if (!output.defaultGeneration && output.flashContentCount  && !/browser\.support\("flash"\)/gi.test(condition)) {
-        this.report.warnings++;
-        this.writeWarning(warnMsg.flashUseWithoutBrowserCheck, output.id);
+        if (!output.defaultGeneration && output.flashContentCount  && !/browser\.support\("flash"\)/gi.test(condition)) {
+            this.report.warnings++;
+            this.writeWarning(warnMsg.flashUseWithoutBrowserCheck, output.id);
+        }
     }
 
     return err;

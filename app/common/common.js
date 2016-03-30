@@ -76,8 +76,8 @@ exports.messages = {
         noSuchFileOrDirectory   : "No such file or directory `%s`",
 
         // Validator
-        missingArgPath          : "missing required argument `path`",
-        noConfigFile            : "cannot find the `Config.xml` file in the directory",
+        missingArgPath          : "Missing `path` argument",
+        noConfigFile            : "Cannot find the `Config.xml` file in the directory",
         fileExtensionForbidden  : "File extension `%s` is forbidden",
         duplicateConstraints    : "Duplicate constraints on `%s`",
         invalidConstraintAttribute : "The constraint on `%s` doesn't accept the `%s` attribute",
@@ -94,6 +94,7 @@ exports.messages = {
         duplicateAttributeNode  : "Output: `%s`. Duplicate `%s` attribute node in content `%s`",
         missingInfoNode         : "The config.xml must contains the `info` node as a child of the xml root element",
         missingOrEmptyNameNode   : "The node `name` in `info` doesn't exist or is empty",
+        missingOrEmptyMasterPageAttr   : "Output: `%s`. The `masterPage` attribute doesn't exist or is empty",
 
         // Generator
         missingTypeArgument     : "The `type` parameter is required",

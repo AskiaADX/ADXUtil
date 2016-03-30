@@ -1183,6 +1183,65 @@ describe('ADXValidator', function () {
             expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.deprecatedDefaultGenerationAttr);
         });
 
+        it('should output an error when the `masterPage` attribute doesn\'t exist with the ADP 2.1', function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page version="2.1.0"><outputs>' +
+                    '<output id="first">' +
+                    '</output>' +
+                    '</outputs></page>');
+            };
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.missingOrEmptyMasterPageAttr, "first"));
+        });
+
+        it('should output an error when the `masterPage` attribute is empty with the ADP 2.1', function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page version="2.1.0"><outputs>' +
+                    '<output id="first" masterPage="">' +
+                    '</output>' +
+                    '</outputs></page>');
+            };
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.missingOrEmptyMasterPageAttr, "first"));
+        });
+
+        it('should output an error when the dynamic file associated with `masterPage` attribute is not found with ADP 2.1 ', function () {
+            spies.validateHook = function () {
+                this.dirResources.isExist = true;
+                this.dirResources.dynamic.isExist = true;
+
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page version="2.1.0"><outputs>' +
+                    '<output id="first" masterPage="not_existing_file.html">' +
+                    '</output>' +
+                    '</outputs></page>');
+            };
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.cannotFindFileInDirectory, "first", "not_existing_file.html", "dynamic"));
+        });
+
+        it('should not output an error nor warning when the dynamic file associated with `masterPage` attribute is found with ADP 2.1 ', function () {
+            spies.validateHook = function () {
+                this.dirResources.isExist = true;
+                this.dirResources.dynamic.isExist = true;
+                this.dirResources.dynamic['existing_file.html'] = 'existing_file.html';
+
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page version="2.1.0"><outputs>' +
+                    '<output id="first" masterPage="existing_file.html">' +
+                    '</output>' +
+                    '</outputs></page>');
+            };
+            adxValidator.validate(null, '/adx/path/dir');
+            expect(Validator.prototype.writeWarning).not.toHaveBeenCalled();
+            expect(Validator.prototype.writeError).not.toHaveBeenCalled();
+        });
+
         describe("#validateADXContents", function () {
 
             it("should output an error when the resources directory doesn't exist", function () {
