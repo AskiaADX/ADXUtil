@@ -32,8 +32,10 @@ exports.FIXTIRES_DIR_PATH = "tests/fixtures";
 exports.XML_LINT_PATH   = '/lib/libxml/xmllint.exe';
 // Path to the XSD schema file to validate the ADX config.xml
 exports.SCHEMA_PATH     = '/schema/';
-// Name of the schema to validate the config file
-exports.SCHEMA_CONFIG   = 'config.xsd';
+// Name of the schema to validate the ADC config file
+exports.SCHEMA_ADC   = 'ADCSchema.xsd';
+// Name of the schema to validate the ADC config file
+exports.SCHEMA_ADP = 'ADPSchema.xsd';
 // Name of the schema to validate the unit test file
 exports.SCHEMA_TEST_UNIT   = 'UnitTests.xsd';
 // Path to the directory of the ADXShell program

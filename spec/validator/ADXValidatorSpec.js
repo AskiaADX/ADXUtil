@@ -748,10 +748,45 @@ describe('ADXValidator', function () {
             spyOn(Validator.prototype, 'writeMessage');
         });
 
-        it('should run the xmllint process with the config.xsd and the config.xml file', function () {
+        it('should run the xmllint process with the 2.0.0/ADCSchema.xsd and the config.xml file with ADC 2.0', function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control></control>');
+            };
+
             var childProc = require('child_process');
             spyOn(childProc, 'exec').andCallFake(function (command) {
-                expect(command).toBe('"\\root\\lib\\libxml\\xmllint.exe" --noout --schema "\\root\\schema\\config.xsd" "\\adx\\path\\dir\\config.xml"');
+                expect(command).toBe('"\\root\\lib\\libxml\\xmllint.exe" --noout --schema "\\root\\schema\\2.0.0\\ADCSchema.xsd" "\\adx\\path\\dir\\config.xml"');
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(childProc.exec).toHaveBeenCalled();
+        });
+
+        it('should run the xmllint process with the 2.1.0/ADCSchema.xsd and the config.xml file with ADC 2.1', function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control version="2.1.0"></control>');
+            };
+
+            var childProc = require('child_process');
+            spyOn(childProc, 'exec').andCallFake(function (command) {
+                expect(command).toBe('"\\root\\lib\\libxml\\xmllint.exe" --noout --schema "\\root\\schema\\2.1.0\\ADCSchema.xsd" "\\adx\\path\\dir\\config.xml"');
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(childProc.exec).toHaveBeenCalled();
+        });
+
+        it('should run the xmllint process with the 2.1.0/ADPSchema.xsd and the config.xml file with ADP 2.1', function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<page version="2.1.0"></page>');
+            };
+
+            var childProc = require('child_process');
+            spyOn(childProc, 'exec').andCallFake(function (command) {
+                expect(command).toBe('"\\root\\lib\\libxml\\xmllint.exe" --noout --schema "\\root\\schema\\2.1.0\\ADPSchema.xsd" "\\adx\\path\\dir\\config.xml"');
             });
             adxValidator.validate(null, '/adx/path/dir');
 
@@ -759,6 +794,10 @@ describe('ADXValidator', function () {
         });
 
         it('should output an error when the xmllint process failed', function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control></control>');
+            };
             var childProc = require('child_process');
             spyOn(childProc, 'exec').andCallFake(function (command, callback) {
                 callback(new Error('Fake validation error'));
@@ -769,6 +808,10 @@ describe('ADXValidator', function () {
         });
 
         it("should not output an error when the xmllint process doesn't failed", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control></control>');
+            };
             var childProc = require('child_process');
             spyOn(childProc, 'exec').andCallFake(function (command, callback) {
                 callback(null);
@@ -779,6 +822,10 @@ describe('ADXValidator', function () {
         });
 
         it("should output a success when the xmllint process doesn't failed", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control></control>');
+            };
             var childProc = require('child_process');
             spyOn(childProc, 'exec').andCallFake(function (command, callback) {
                 callback(null);

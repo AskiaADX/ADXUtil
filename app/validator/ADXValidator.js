@@ -737,9 +737,12 @@ Validator.prototype.validateFileExtensions = function validateFileExtensions() {
  * Validate the config.xml file of the ADX against the XSD schema
  */
 Validator.prototype.validateXMLAgainstXSD = function validateXMLAgainstXSD() {
-    var exec            = require('child_process').exec,
+    var projectType     = this.adxConfigurator.projectType,
+        schemaName      = projectType === 'adp' ? common.SCHEMA_ADP : common.SCHEMA_ADC,
+        projectVersion  = this.adxConfigurator.projectVersion,
+        exec            = require('child_process').exec,
         xmlLintPath     = pathHelper.join(this.rootdir, common.XML_LINT_PATH),
-        xmlSchemaPath   = pathHelper.join(this.rootdir, common.SCHEMA_PATH, common.SCHEMA_CONFIG),
+        xmlSchemaPath   = pathHelper.join(this.rootdir, common.SCHEMA_PATH, projectVersion, schemaName),
         xmlPath         = pathHelper.join(this.adxDirectoryPath, common.CONFIG_FILE_NAME),
 
         self = this,
