@@ -3,34 +3,34 @@ var pathHelper  = require('path');
 var common      = require('../common/common.js');
 var errMsg      = common.messages.error;
 var successMsg  = common.messages.success;
-var Validator   = require('../validator/ADCValidator.js').Validator;
+var Validator   = require('../validator/ADXValidator.js').Validator;
 
 /**
- * Validate and compress the ADC directory to an `.adc` file
+ * Validate and compress the ADX directory to an `.adc` or `.adp` file
  *
- * @class ADC.Builder
+ * @class ADX.Builder
  * @private
  */
-function Builder(adcDirPath) {
+function Builder(adxDirPath) {
     /**
-     * Root dir of the current ADCUtil
+     * Root dir of the current ADXUtil
      */
     this.rootdir = pathHelper.resolve(__dirname, "../../");
 
     /**
-     * Name of the ADC
+     * Name of the ADX
      * @type {string}
      */
-    this.adcName = '';
+    this.adxName = '';
 
     /**
-     * Path to the ADC directory
+     * Path to the ADX directory
      * @type {string}
      */
-    this.adcDirectoryPath = adcDirPath ? pathHelper.normalize(adcDirPath) : process.cwd();
+    this.adxDirectoryPath = adxDirPath ? pathHelper.normalize(adxDirPath) : process.cwd();
 
     /**
-     * Bin path of the ADC
+     * Bin path of the ADX
      * @type {string}
      */
     this.binPath = '';
@@ -47,7 +47,7 @@ function Builder(adcDirPath) {
      */
     this.sequence = new common.Sequence([
         this.createBinDir,
-        this.compressADC
+        this.compressADX
     ], this.done, this);
 
     /**
@@ -65,15 +65,15 @@ function Builder(adcDirPath) {
 }
 
 /**
- * Create a new instance of ADC Builder
+ * Create a new instance of ADX Builder
  *
  * @constructor
- * @param {String} adcDirPath Path of the ADC directory
+ * @param {String} adxDirPath Path of the ADX directory
  */
 Builder.prototype.constructor = Builder;
 
 /**
- * Build the ADC
+ * Build the ADX
  *
  * @param {Object} [options] Options of validation
  * @param {Boolean} [options.test=true] Run unit tests
@@ -100,7 +100,8 @@ Builder.prototype.build = function build(options, callback) {
 
     this.buildCallback = callback;
 
-    this.validator = new Validator(this.adcDirectoryPath);
+    this.validator = new Validator(this.adxDirectoryPath);
+
     var self = this;
     options = options || {};
     options.xml = true;
@@ -114,8 +115,8 @@ Builder.prototype.build = function build(options, callback) {
             return self.sequence.resume(new Error(errMsg.validationFailed));
         }
 
-        self.adcName          = self.validator.adcName;
-        self.binPath          = pathHelper.join(self.adcDirectoryPath, common.ADX_BIN_PATH);
+        self.adxName          = self.validator.adxName;
+        self.binPath          = pathHelper.join(self.adxDirectoryPath, common.ADX_BIN_PATH);
         self.validationReport = report;
 
         return self.sequence.resume();
@@ -184,7 +185,7 @@ Builder.prototype.done = function done(err) {
         return;
     }
 
-    var output = pathHelper.join(this.binPath, this.adcName + '.adc');
+    var output = pathHelper.join(this.binPath, this.adxName + '.adc');
 
     if (!this.validationReport.warnings) {
         this.writeSuccess(successMsg.buildSucceed, output);
@@ -214,9 +215,9 @@ Builder.prototype.createBinDir =  function createBinDir() {
 };
 
 /**
- * Compress the ADC directory
+ * Compress the ADX directory
  */
-Builder.prototype.compressADC =  function compressADC() {
+Builder.prototype.compressADX =  function compressADX() {
     var self = this;
     common.getDirStructure(self.adcDirectoryPath, function callbackGetStructure(err, structure) {
         if (err) {
@@ -232,10 +233,10 @@ Builder.prototype.compressADC =  function compressADC() {
                 zipDirLower = zipDir.toLowerCase();
 
             if (typeof file === 'string') {  // File
-                if (zipDirLower === 'resources/') return; // Exclude extra files
+                if (zipDirLower === 'resources\\') return; // Exclude extra files
                 if (zipDirLower === '' && !/^(config\.xml|readme|changelog)/i.test(file)) return; // Exclude extra files
                 if (common.isIgnoreFile(file)) return; // Ignore files
-                zip.file(pathHelper.join(zipDir, file), fs.readFileSync(pathHelper.join(self.adcDirectoryPath, zipDir, file)));
+                zip.file(pathHelper.join(zipDir, file), fs.readFileSync(pathHelper.join(self.adxDirectoryPath, zipDir, file)));
             } else { // Directory
                 if (!file.sub || !file.sub.length) return;        // Exclude empty folder
 
@@ -243,11 +244,11 @@ Builder.prototype.compressADC =  function compressADC() {
 
                 if (folderLower === 'bin') return;   // Exclude the bin folder
                 if (folderLower === 'tests') return; // Exclude tests folder
-                if (zipDirLower === 'resources/' &&  !/^(dynamic|static|share)$/i.test(folderLower)) return; // Exclude extra directories
+                if (zipDirLower === 'resources\\' &&  !/^(dynamic|static|share)$/i.test(folderLower)) return; // Exclude extra directories
                 if (zipDirLower === '' && !/^(resources)$/.test(folderLower)) return; // Exclude extra directories
 
                 prevDir = zipDir;
-                zipDir += file.name + '/';
+                zipDir += file.name + '\\';
                 zip.folder(zipDir);
                 file.sub.forEach(appendInZip);
                 zipDir = prevDir;
@@ -256,7 +257,7 @@ Builder.prototype.compressADC =  function compressADC() {
 
         var buffer = zip.generate({type:"nodebuffer"});
 
-        self.outputPath = pathHelper.join(self.binPath, self.adcName + '.adc');
+        self.outputPath = pathHelper.join(self.binPath, self.adxName + '.adc');
         fs.writeFile(self.outputPath, buffer, function writeZipFile(err) {
             if (err) {
                 throw err;
@@ -273,10 +274,10 @@ exports.Builder = Builder;
 
 
 /*
- * Build the ADC file
+ * Build the ADX file
  *
  * @param {Command} program Commander object which hold the arguments pass to the program
- * @param {String} path Path of the ADC to directory
+ * @param {String} path Path of the ADX to directory
  */
 exports.build = function build(program, path) {
     var builder = new Builder(path);

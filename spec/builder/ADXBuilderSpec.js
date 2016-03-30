@@ -1,38 +1,38 @@
-describe('ADCBuilder', function () {
+describe('ADXBuilder', function () {
 
     var fs              = require('fs'),
         spies           = {},
         common,
-        adcValidator,
+        adxValidator,
         Validator,
-        adcBuilder,
+        adxBuilder,
         Builder,
         errMsg,
         successMsg;
 
     beforeEach(function () {
-        // Clean the cache, obtain a fresh instance of the adcGenerator each time
-        var adcBuilderKey   = require.resolve('../../app/builder/ADCBuilder.js'),
-            adcValidatorKey = require.resolve('../../app/validator/ADCValidator.js'),
+        // Clean the cache, obtain a fresh instance of the adxBuilder each time
+        var adxBuilderKey   = require.resolve('../../app/builder/ADXBuilder.js'),
+            adxValidatorKey = require.resolve('../../app/validator/ADXValidator.js'),
             commonKey       = require.resolve('../../app/common/common.js');
 
         delete require.cache[commonKey];
         common = require('../../app/common/common.js');
 
-        delete require.cache[adcValidatorKey];
-        adcValidator = require('../../app/validator/ADCValidator.js');
+        delete require.cache[adxValidatorKey];
+        adxValidator = require('../../app/validator/ADXValidator.js');
 
-        Validator = adcValidator.Validator;
+        Validator = adxValidator.Validator;
         spies.validateHook = function () {};
 
         Validator.prototype.validate = function () {
             spies.validateHook.apply(this, arguments);
         };
 
-        delete require.cache[adcBuilderKey];
-        adcBuilder = require('../../app/builder/ADCBuilder.js');
+        delete require.cache[adxBuilderKey];
+        adxBuilder = require('../../app/builder/ADXBuilder.js');
 
-        Builder = adcBuilder.Builder;
+        Builder = adxBuilder.Builder;
 
         // Messages
         errMsg      = common.messages.error;
@@ -70,7 +70,7 @@ describe('ADCBuilder', function () {
 
     describe('#build', function () {
         it("should run the validator", function () {
-            adcBuilder.build();
+            adxBuilder.build();
             expect(spies.validateHook).toHaveBeenCalled();
         });
 
@@ -79,7 +79,7 @@ describe('ADCBuilder', function () {
             spies.validateHook.andCallFake(function (options) {
                 p = options;
             });
-            adcBuilder.build({
+            adxBuilder.build({
                 xml : false
             });
             expect(p.xml).toBe(true);
@@ -90,7 +90,7 @@ describe('ADCBuilder', function () {
             spies.validateHook.andCallFake(function (options) {
                 p = options;
             });
-            adcBuilder.build({
+            adxBuilder.build({
                 test : false
             });
             expect(p.autoTest).toBe(true);
@@ -101,7 +101,7 @@ describe('ADCBuilder', function () {
                 callback(new Error("Fake error"));
             });
             var spy = spyOn(Builder.prototype, 'writeError');
-            adcBuilder.build();
+            adxBuilder.build();
             expect(spy).toHaveBeenCalledWith(errMsg.validationFailed);
         });
 
@@ -134,7 +134,7 @@ describe('ADCBuilder', function () {
         describe("create `bin` directory", function () {
             beforeEach(function () {
                 spies.validateHook.andCallFake(function (options, callback) {
-                    this.adcDirectoryPath = 'adc/path/dir/';
+                    this.adxDirectoryPath = 'adx/path/dir/';
                     callback(null);
                 });
             });
@@ -143,7 +143,7 @@ describe('ADCBuilder', function () {
                 spies.dirExists.andCallFake(function (path, callback) {
                    callback(null, false);
                 });
-                adcBuilder.build();
+                adxBuilder.build();
                 expect(fs.mkdirSync).toHaveBeenCalled();
             });
 
@@ -151,7 +151,7 @@ describe('ADCBuilder', function () {
                 spies.dirExists.andCallFake(function (path, callback) {
                     callback(null, true);
                 });
-                adcBuilder.build();
+                adxBuilder.build();
                 expect(fs.mkdirSync).not.toHaveBeenCalled();
             });
 
@@ -161,17 +161,17 @@ describe('ADCBuilder', function () {
                 });
                 spies.fs.mkdirSync.andReturn(new Error("Fake error"));
                 var spy = spyOn(Builder.prototype, 'writeError');
-                adcBuilder.build();
+                adxBuilder.build();
                 expect(spy).toHaveBeenCalledWith("Fake error");
             });
         });
 
-        describe("compress the ADC directory", function () {
+        describe("compress the ADX directory", function () {
             var struct, newZip, files;
             beforeEach(function () {
                 spies.validateHook.andCallFake(function (options, callback) {
-                    this.adcName = 'myadc';
-                    this.adcDirectoryPath = 'adc/path/dir/';
+                    this.adxName = 'myadx';
+                    this.adxDirectoryPath = 'adx/path/dir/';
                     callback(null, {});
                 });
 
@@ -233,16 +233,16 @@ describe('ADCBuilder', function () {
             });
 
             it("should add files and directories recursively in the zip", function () {
-                adcBuilder.build();
+                adxBuilder.build();
                 expect(files).toEqual([
-                    'resources/',
-                    'resources/dynamic/',
+                    'resources\\',
+                    'resources\\dynamic\\',
                     'resources\\dynamic\\default.html',
                     'resources\\dynamic\\dynamic.css',
-                    'resources/static/',
+                    'resources\\static\\',
                     'resources\\static\\default.html',
                     'resources\\static\\static.css',
-                    'resources/share/',
+                    'resources\\share\\',
                     'resources\\share\\default.js',
                     'resources\\share\\share.js',
                     'config.xml',
@@ -261,16 +261,16 @@ describe('ADCBuilder', function () {
                     sub  : ['test.html']
                 });
 
-                adcBuilder.build();
+                adxBuilder.build();
                 expect(files).toEqual([
-                    'resources/',
-                    'resources/dynamic/',
+                    'resources\\',
+                    'resources\\dynamic\\',
                     'resources\\dynamic\\default.html',
                     'resources\\dynamic\\dynamic.css',
-                    'resources/static/',
+                    'resources\\static\\',
                     'resources\\static\\default.html',
                     'resources\\static\\static.css',
-                    'resources/share/',
+                    'resources\\share\\',
                     'resources\\share\\default.js',
                     'resources\\share\\share.js',
                     'config.xml',
@@ -286,10 +286,10 @@ describe('ADCBuilder', function () {
                 dynamic.sub = [];
                 share.sub   = [];
 
-                adcBuilder.build();
+                adxBuilder.build();
                 expect(files).toEqual([
-                    'resources/',
-                    'resources/static/',
+                    'resources\\',
+                    'resources\\static\\',
                     'resources\\static\\default.html',
                     'resources\\static\\static.css',
                     'config.xml',
@@ -297,7 +297,7 @@ describe('ADCBuilder', function () {
                 ]);
             });
 
-            it("should exclude all extra files and directories that will not be read by the ADC engine", function () {
+            it("should exclude all extra files and directories that will not be read by the ADX engine", function () {
                 var resources = struct[0].sub,
                     dynamic   = resources[0].sub;
 
@@ -318,18 +318,18 @@ describe('ADCBuilder', function () {
                     sub  : ['text.html']
                 });
 
-                adcBuilder.build();
+                adxBuilder.build();
                 expect(files).toEqual([
-                    'resources/',
-                    'resources/dynamic/',
+                    'resources\\',
+                    'resources\\dynamic\\',
                     'resources\\dynamic\\default.html',
                     'resources\\dynamic\\dynamic.css',
-                    'resources/dynamic/shouldbeinclude/',
+                    'resources\\dynamic\\shouldbeinclude\\',
                     'resources\\dynamic\\shouldbeinclude\\test.html',
-                    'resources/static/',
+                    'resources\\static\\',
                     'resources\\static\\default.html',
                     'resources\\static\\static.css',
-                    'resources/share/',
+                    'resources\\share\\',
                     'resources\\share\\default.js',
                     'resources\\share\\share.js',
                     'config.xml',
@@ -337,10 +337,10 @@ describe('ADCBuilder', function () {
                 ]);
             });
 
-            it("should write the adc file in the `bin` directory", function () {
-                adcBuilder.build(null, 'adc/path/dir');
+            it("should write the adx file in the `bin` directory", function () {
+                adxBuilder.build(null, 'adx/path/dir');
                 spies.fs.writeFile.andCallFake(function (path) {
-                    expect(path).toEqual('adc\\path\\dir\\bin\\myadc.adc');
+                    expect(path).toEqual('adx\\path\\dir\\bin\\myadx.adc');
                 });
             });
 
@@ -349,8 +349,8 @@ describe('ADCBuilder', function () {
         describe("done", function () {
             beforeEach(function () {
                 spies.validateHook.andCallFake(function (options, callback) {
-                    this.adcName = 'myadc';
-                    this.adcDirectoryPath = 'adc/path/dir/';
+                    this.adxName = 'myadx';
+                    this.adxDirectoryPath = 'adx/path/dir/';
                     callback(null);
                 });
 
@@ -400,8 +400,8 @@ describe('ADCBuilder', function () {
 
             it("should output a success when the build succeed", function () {
                 spies.validateHook.andCallFake(function (options, callback) {
-                    this.adcName = 'myadc';
-                    this.adcDirectoryPath = 'adc/path/dir/';
+                    this.adxName = 'myadx';
+                    this.adxDirectoryPath = 'adx/path/dir/';
                     this.report = {
                         warnings : 0,
                         errors : 0
@@ -409,30 +409,30 @@ describe('ADCBuilder', function () {
                     callback(null, this.report);
                 });
                 var spy = spyOn(Builder.prototype, 'writeSuccess');
-                adcBuilder.build(null, 'adc/path/dir');
-                expect(spy).toHaveBeenCalledWith(successMsg.buildSucceed, 'adc\\path\\dir\\bin\\myadc.adc');
+                adxBuilder.build(null, 'adx/path/dir');
+                expect(spy).toHaveBeenCalledWith(successMsg.buildSucceed, 'adx\\path\\dir\\bin\\myadx.adc');
             });
 
             it("should output a with warning when the build succeed with warning", function () {
                 spies.validateHook.andCallFake(function (options, callback) {
-                    this.adcName = 'myadc';
-                    this.adcDirectoryPath = 'adc/path/dir/';
+                    this.adxName = 'myadx';
+                    this.adxDirectoryPath = 'adx/path/dir/';
                     this.report = {
                         warnings : 1
                     };
                     callback(null, this.report);
                 });
                 var spy = spyOn(Builder.prototype, 'writeSuccess');
-                adcBuilder.build(null, 'adc/path/dir');
-                expect(spy).toHaveBeenCalledWith(successMsg.buildSucceedWithWarning, 1, 'adc\\path\\dir\\bin\\myadc.adc');
+                adxBuilder.build(null, 'adx/path/dir');
+                expect(spy).toHaveBeenCalledWith(successMsg.buildSucceedWithWarning, 1, 'adx\\path\\dir\\bin\\myadx.adc');
             });
         });
 
         describe("API `callback`", function () {
             beforeEach(function () {
                 spies.validateHook.andCallFake(function (options, callback) {
-                    this.adcName = 'myadc';
-                    this.adcDirectoryPath = 'adc/path/dir/';
+                    this.adxName = 'myadx';
+                    this.adxDirectoryPath = 'adx/path/dir/';
                     callback(null, {
                         fakeReport : true
                     });
@@ -483,7 +483,7 @@ describe('ADCBuilder', function () {
             });
 
             it("should be called when defined without `options` arg", function () {
-               var builder = new Builder('adc/path/dir/');
+                var builder = new Builder('adx/path/dir/');
                 var wasCalled = false;
                 builder.build(function () {
                     wasCalled = true;
@@ -493,7 +493,7 @@ describe('ADCBuilder', function () {
             });
 
             it("should be called when defined with the`options` arg", function () {
-                var builder = new Builder('adc/path/dir/');
+                var builder = new Builder('adx/path/dir/');
                 var wasCalled = false;
                 builder.build({}, function () {
                     wasCalled = true;
@@ -515,17 +515,17 @@ describe('ADCBuilder', function () {
             });
 
             it("should be call with the `outputPath` in arg", function () {
-              var builder = new Builder('adc/path/dir/');
+              var builder = new Builder('adx/path/dir/');
                 var callbackPath;
                 builder.build(function (err, outputPath) {
                     callbackPath = outputPath;
                 });
 
-                expect(callbackPath).toEqual('adc\\path\\dir\\bin\\myadc.adc');
+                expect(callbackPath).toEqual('adx\\path\\dir\\bin\\myadx.adc');
             });
 
             it("should be call with the `report` in arg", function () {
-                var builder = new Builder('adc/path/dir/');
+                var builder = new Builder('adx/path/dir/');
                 var callbackReport;
                 builder.build(function (err, outputPath, report) {
                     callbackReport = report;
