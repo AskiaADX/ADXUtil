@@ -1,25 +1,25 @@
-describe('ADCShow', function () {
+describe('ADXShow', function () {
 
     var common,
         InteractiveADXShell,
-        adcShow,
+        adxShow,
         Show,
         spies = {},
         errMsg,
         successMsg;
 
     beforeEach(function () {
-        // Clean the cache, obtain a fresh instance of the adcShow each time
-        var adcShowKey   = require.resolve('../../app/show/ADCShow.js'),
+        // Clean the cache, obtain a fresh instance of the adxShow each time
+        var adxShowKey   = require.resolve('../../app/show/ADXShow.js'),
             commonKey       = require.resolve('../../app/common/common.js');
 
         delete require.cache[commonKey];
         common = require('../../app/common/common.js');
 
-        delete require.cache[adcShowKey];
-        adcShow = require('../../app/show/ADCShow.js');
+        delete require.cache[adxShowKey];
+        adxShow = require('../../app/show/ADXShow.js');
 
-        Show = adcShow.Show;
+        Show = adxShow.Show;
 
         // Messages
         errMsg      = common.messages.error;
@@ -51,12 +51,12 @@ describe('ADCShow', function () {
 
     describe('#show', function () {
         it("should output an error when the `output` option is not defined", function () {
-            adcShow.show({});
+            adxShow.show({});
             expect(common.writeError).toHaveBeenCalledWith(errMsg.noOutputDefinedForShow);
         });
 
         it("should output an error when the `fixture` option is not defined", function () {
-            adcShow.show({
+            adxShow.show({
                 output : 'Something'
             });
             expect(common.writeError).toHaveBeenCalledWith(errMsg.noFixtureDefinedForShow);
@@ -70,12 +70,12 @@ describe('ADCShow', function () {
 
             spyExec.andCallFake(function (file, args) {
                 expect(file).toBe('.\\ADXShell.exe');
-                expect(args).toEqual(['show', '"-output:something"', '"-fixture:single.xml"', '"\\adc\\path\\dir"']);
+                expect(args).toEqual(['show', '"-output:something"', '"-fixture:single.xml"', '"\\adx\\path\\dir"']);
             });
-            adcShow.show({
+            adxShow.show({
                 output : 'something',
                 fixture : 'single.xml'
-            }, '/adc/path/dir');
+            }, '/adx/path/dir');
 
             expect(childProc.execFile).toHaveBeenCalled();
         });
@@ -88,13 +88,13 @@ describe('ADCShow', function () {
 
             spyExec.andCallFake(function (file, args) {
                 expect(file).toBe('.\\ADXShell.exe');
-                expect(args).toEqual(['show', '"-output:something"', '"-fixture:single.xml"', '"-masterPage:mp.html"', '"\\adc\\path\\dir"']);
+                expect(args).toEqual(['show', '"-output:something"', '"-fixture:single.xml"', '"-masterPage:mp.html"', '"\\adx\\path\\dir"']);
             });
-            adcShow.show({
+            adxShow.show({
                 output : 'something',
                 fixture : 'single.xml',
                 masterPage : 'mp.html'
-            }, '/adc/path/dir');
+            }, '/adx/path/dir');
 
             expect(childProc.execFile).toHaveBeenCalled();
         });
@@ -107,14 +107,14 @@ describe('ADCShow', function () {
 
             spyExec.andCallFake(function (file, args) {
                 expect(file).toBe('.\\ADXShell.exe');
-                expect(args).toEqual(['show', '"-output:something"', '"-fixture:single.xml"', '"-masterPage:mp.html"', '"-properties:prop1=value1&prop2=value2&prop%203=value%2C%223"', '"\\adc\\path\\dir"']);
+                expect(args).toEqual(['show', '"-output:something"', '"-fixture:single.xml"', '"-masterPage:mp.html"', '"-properties:prop1=value1&prop2=value2&prop%203=value%2C%223"', '"\\adx\\path\\dir"']);
             });
-            adcShow.show({
+            adxShow.show({
                 output : 'something',
                 fixture : 'single.xml',
                 masterPage : 'mp.html',
                 properties : 'prop1=value1&prop2=value2&prop%203=value%2C%223'
-            }, '/adc/path/dir');
+            }, '/adx/path/dir');
 
             expect(childProc.execFile).toHaveBeenCalled();
         });
@@ -126,20 +126,20 @@ describe('ADCShow', function () {
             spies.interactiveExec.andCallFake(function (command) {
                 mockCommand = command;
             });
-            adcShow.show({
+            adxShow.show({
                 output : 'something',
                 fixture : 'single.xml',
                 masterPage : 'mp.html',
                 properties : 'prop1=value1&prop2=value2&prop%203=value%2C%223',
                 adxShell : new InteractiveADXShell()
-            }, '/adc/path/dir');
-            expect(mockCommand).toBe('show "-output:something" "-fixture:single.xml" "-masterPage:mp.html" "-properties:prop1=value1&prop2=value2&prop%203=value%2C%223" "\\adc\\path\\dir"');
+            }, '/adx/path/dir');
+            expect(mockCommand).toBe('show "-output:something" "-fixture:single.xml" "-masterPage:mp.html" "-properties:prop1=value1&prop2=value2&prop%203=value%2C%223" "\\adx\\path\\dir"');
         });
 
         describe("API `callback`", function () {
 
             it("should call the `callback` function with error when an error occurred", function () {
-                var show = new Show('adc/path/dir');
+                var show = new Show('adx/path/dir');
                 runSync(function (done) {
                     show.show({}, function (err) {
                         expect(err instanceof  Error).toBe(true);
@@ -159,7 +159,7 @@ describe('ADCShow', function () {
                     cb(null,null, new Error("ERROR"));
                 });
 
-                var show = new Show('adc/path/dir');
+                var show = new Show('adx/path/dir');
                 var spyWriteError = spyOn(show, 'writeError');
                 runSync(function (done) {
                     show.show({
@@ -182,7 +182,7 @@ describe('ADCShow', function () {
                     cb(null,null, new Error("ERROR"));
                 });
 
-                var show = new Show('adc/path/dir');
+                var show = new Show('adx/path/dir');
                 var spyWriteError = spyOn(show, 'writeError');
                 runSync(function (done) {
                     show.show({
@@ -207,7 +207,7 @@ describe('ADCShow', function () {
                     cb(null, 'TEST OUTPUT', null);
                 });
 
-                var show = new Show('adc/path/dir');
+                var show = new Show('adx/path/dir');
                 runSync(function (done) {
                     show.show({
                         output: 'something',
@@ -230,7 +230,7 @@ describe('ADCShow', function () {
                     cb(null, 'TEST OUTPUT', null);
                 });
 
-                var show = new Show('adc/path/dir');
+                var show = new Show('adx/path/dir');
                 var spyWriteMessage = spyOn(show, 'writeMessage');
                 runSync(function (done) {
                     show.show({
@@ -254,7 +254,7 @@ describe('ADCShow', function () {
                     cb(null, 'TEST OUTPUT', null);
                 });
 
-                var show = new Show('adc/path/dir');
+                var show = new Show('adx/path/dir');
                 var spyWriteMessage = spyOn(show, 'writeMessage');
                 runSync(function (done) {
                     show.show({

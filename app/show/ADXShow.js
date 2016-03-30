@@ -5,29 +5,29 @@ var errMsg          = common.messages.error;
 
 
 /**
- * Compile, execute and display the output of an ADC
+ * Compile, execute and display the output of an ADX
  *
- * @class ADC.Show
+ * @class ADX.Show
  * @private
  */
-function Show(adcDirPath) {
+function Show(adxDirPath) {
     /**
-     * Root dir of the current ADCUtil
+     * Root dir of the current ADXUtil
      */
     this.rootdir    = pathHelper.resolve(__dirname, "../../");
 
     /**
-     * Path to the ADC directory
+     * Path to the ADX directory
      * @type {string}
      */
-    this.adcDirectoryPath = adcDirPath ? pathHelper.normalize(adcDirPath) : process.cwd();
+    this.adxDirectoryPath = adxDirPath ? pathHelper.normalize(adxDirPath) : process.cwd();
 }
 
 /**
- * Create a new instance of ADC Show
+ * Create a new instance of ADX Show
  *
  * @constructor
- * @param {String} adcDirPath Path of the ADC directory
+ * @param {String} adxDirPath Path of the ADX directory
  */
 Show.prototype.constructor = Show;
 
@@ -64,12 +64,12 @@ Show.prototype.writeMessage = function writeMessage(text) {
 };
 
 /**
- * Show an ADC output
+ * Show an ADX output
  *
  * @param {Object} options Options
- * @param {String} options.output Name of the ADC Output to use
- * @param {String} options.fixture FileName of the ADC fixture to use
- * @param {String} [options.masterPage] Path of the master page to use
+ * @param {String} options.output Name of the ADX Output to use
+ * @param {String} options.fixture FileName of the ADX fixture to use
+ * @param {String} [options.masterPage] Path of the master page to use (ADC Only)
  * @param {String} [options.properties] ADC properties (in url query string format: 'param1=value1&param2-value2')
  * @param {InteractiveADXShell} [options.adxShell] Interactive ADXShell process
  * @param {Boolean} [options.silent=false] Silent mode: Don't message in the console but only through the callback
@@ -111,7 +111,7 @@ Show.prototype.show = function show(options, callback) {
     if (options.properties) {
         args.push('"-properties:' + options.properties + '"');
     }
-    args.push('"' + this.adcDirectoryPath + '"');
+    args.push('"' + this.adxDirectoryPath + '"');
 
     var self = this;
     function execCallback(err, stdout, stderr) {
@@ -153,10 +153,10 @@ Show.prototype.show = function show(options, callback) {
 exports.Show = Show;
 
 /*
- * Show an ADC output
+ * Show an ADX output
  *
  * @param {Command} program Commander object which hold the arguments pass to the program
- * @param {String} path Path of the ADC to directory
+ * @param {String} path Path of the ADX to directory
  */
 exports.show = function show(program, path) {
     var showInstance = new Show(path);
