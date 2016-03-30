@@ -126,7 +126,10 @@ exports.messages = {
         javascriptUseWithoutBrowserCheck : "Output: `%s`. It's recommended to test the `Browser.Support(\"Javascript\") in the condition node, before to use `javascript` content.",
         flashUseWithoutBrowserCheck : "Output: `%s`. It's recommended to test the `Browser.Support(\"Flash\") in the condition node, before to use `flash` content.",
         noHTMLFallBack              : "It's recommended to have at least one fallback with HTML only",
-        noProperties                : "It's recommended to define at least one properties"
+        noProperties                : "It's recommended to define at least one properties",
+        deprecatedInfoStyleTag      : "[Deprecated]: The `info > style` tag is mark as deprecated in 2.1.0, it will not longer be supported in the next ADX version.\r\nPlease avoid it's usage",
+        deprecatedInfoCategoriesTag : "[Deprecated]: The `info > categories` tag is mark as deprecated in 2.1.0, it will not longer be supported in the next ADX version.\r\nPlease avoid it's usage",
+        deprecatedDefaultGenerationAttr : "[Deprecated]: The `output > defaultGeneration` attribute is mark as deprecated in 2.1.0, it will not longer be supported in the next ADX version.\r\nPlease avoid it's usage"
     },
     success : {
         // Validator

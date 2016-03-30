@@ -851,6 +851,46 @@ describe('ADXValidator', function () {
 
             expect(instance.adxName).toBe('test');
         });
+
+        it("should output a warning when the `style` tag is used with ADC 2.1", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control version="2.1.0"><info><name>something</name><style width="200" height="400" /></info></control>');
+            };
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.deprecatedInfoStyleTag);
+        });
+
+        it("should not output a warning when the `style` tag is used with ADC 2.0", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control><info><name>something</name><style width="200" height="400" /></info></control>');
+            };
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.deprecatedInfoStyleTag);
+        });
+
+        it("should output a warning when the `categories` tag is used with ADC 2.1", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control version="2.1.0"><info><name>something</name><categories><category>test</category></categories></info></control>');
+            };
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.deprecatedInfoCategoriesTag);
+        });
+
+        it("should not output a warning when the `categories` tag is used with ADC 2.0", function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control><info><name>something</name><categories><category>test</category></categories></info></control>');
+            };
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.deprecatedInfoCategoriesTag);
+        });
     });
 
     describe('#validateADXInfoConstraints', function () {
@@ -1055,7 +1095,6 @@ describe('ADXValidator', function () {
             expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.duplicateOutputCondition, "first", "second");
         });
 
-
         it('should not output an error when one condition is empty', function () {
             spies.validateHook = function () {
                 this.adxConfigurator = new Configurator('/adx/path/dir');
@@ -1118,6 +1157,31 @@ describe('ADXValidator', function () {
             expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(successMsg.xmlOutputsValidate);
         });
 
+        it('should output a warning when using the `defaultGeneration` with the ADC 2.1', function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control version="2.1.0"><outputs>' +
+                    '<output id="first" defaultGeneration="true">' +
+                    '</output>' +
+                    '</outputs></control>');
+            };
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.deprecatedDefaultGenerationAttr);
+        });
+
+        it('should not output a warning when using the `defaultGeneration` with the ADC 2.0', function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control><outputs>' +
+                    '<output id="first" defaultGeneration="true">' +
+                    '</output>' +
+                    '</outputs></control>');
+            };
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.deprecatedDefaultGenerationAttr);
+        });
 
         describe("#validateADXContents", function () {
 

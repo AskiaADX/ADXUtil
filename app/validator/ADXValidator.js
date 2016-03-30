@@ -795,6 +795,21 @@ Validator.prototype.validateADXInfo = function validateADXInfo() {
         return;
     }
 
+    // The `style` and `categories` tags is mark as deprecated since the version 2.1.0
+    if (this.adxConfigurator.projectVersion !== "2.0.0") {
+        var elStyle = elInfo && elInfo.find("style");
+        if (elStyle) {
+            this.report.warnings++;
+            this.writeWarning(warnMsg.deprecatedInfoStyleTag);
+        }
+
+        var elCategories = elInfo && elInfo.find("categories");
+        if (elCategories) {
+            this.report.warnings++;
+            this.writeWarning(warnMsg.deprecatedInfoCategoriesTag);
+        }
+    }
+
     this.adxName = elName.text;
     this.writeSuccess(successMsg.xmlInfoValidate);
     this.resume(null);
@@ -910,6 +925,15 @@ Validator.prototype.validateADXOutputs = function validateADXOutputs() {
             self.report.warnings++;
             self.writeWarning(warnMsg.duplicateOutputCondition, conditions[condition], id);
         }
+
+        // defaultGeneration attribute is mark as deprecated in the 2.1.0
+        if (self.adxConfigurator.projectVersion !== '2.0.0') {
+            if ("defaultGeneration" in output.attrib) {
+                self.report.warnings++;
+                self.writeWarning(warnMsg.deprecatedDefaultGenerationAttr);
+            }
+        }
+
 
         conditions[condition] = id;
 
