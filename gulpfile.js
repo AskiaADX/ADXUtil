@@ -29,8 +29,11 @@ gulp.task('clean:docs', function (cb) {
 // Document
 gulp.task('document', ['clean:docs'], function (cb) {
     var args = [
-        '--title=ADCUtil',
+        '--title=ADXUtil',
         '--output=' + DEST_DOCS,
+        SRC + 'common/common.js',
+        SRC + 'common/InteractiveADXShell.js',
+        SRC + 'preferences/ADXPreferences.js',
         SRC + 'builder/ADXBuilder.js',
         SRC + 'configurator/ADXConfigurator.js',
         SRC + 'generator/ADXGenerator.js',

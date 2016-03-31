@@ -161,7 +161,7 @@ Preferences.getInstance = function getInstance() {
  */
 exports.preferences = Preferences.getInstance();
 
-/**
+/*
  * Read the user preferences and display it
  *
  * @param {Object} [options]
@@ -179,7 +179,7 @@ exports.read = function read(options, callback) {
 };
 
 
-/**
+/*
  * Write the preferences
  *
  * @param {Object} preferences

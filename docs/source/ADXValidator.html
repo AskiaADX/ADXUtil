@@ -195,22 +195,22 @@ zip|rar|sql|ini|dmg|iso|vcd|class|java|htaccess
 */
 
 
-var fs          = require(&#39;fs&#39;);
-var pathHelper  = require(&#39;path&#39;);
-var xml2js      = require(&#39;xml2js&#39;);
-var util        = require(&#39;util&#39;);
-var common      = require(&#39;../common/common.js&#39;);
-var errMsg      = common.messages.error;
-var warnMsg     = common.messages.warning;
-var successMsg  = common.messages.success;
-var msg         = common.messages.message;
+var fs           = require(&#39;fs&#39;);
+var pathHelper   = require(&#39;path&#39;);
+var util         = require(&#39;util&#39;);
+var common       = require(&#39;../common/common.js&#39;);
+var Configurator = require(&#39;../configurator/ADXConfigurator.js&#39;).Configurator;
+var errMsg       = common.messages.error;
+var warnMsg      = common.messages.warning;
+var successMsg   = common.messages.success;
+var msg          = common.messages.message;
 //  Test the file extension
-var fileExt     = {
+var fileExt      = {
     blacklist : /\.(cgi|dll|erb|rjs|rhtml|rb|py|phtml|php3|php4|php|pl|action|do|wss|jspx|jsp|jhtml|yaws|cfm|aspx|axd|asx|asmx|ashx|axd|ascx|asp|config|action|apk|app|bat|bin|cmd|com|command|cpl|csh|exe|gadget|inf1|ins|inx|ipa|isu|job|jse|ksh|lnk|msc|msi|msp|mst|ocx|osx|out|paf|pif|prg|ps1|reg|rgs|run|sct|shb|shs|u3p|vb|vbe|vbs|vbscript|workflow|ws|wsf|cs|cpp|zip|rar|sql|ini|dmg|iso|vcd|class|java|htaccess)$/gi,
     whitelist : /\.(xml|rss|atom|svg|js|xhtml|htm|html|swf|css|hss|sass|less|ccss|pcss|txt|csv|json|gif|jpeg|jpg|tif|tiff|png|bmp|pdf|ico|cur|aif|iff|m4a|mid|mp3|mpa|ra|wav|wma|ogg|oga|webma|3g2|3gp|avi|flv|mov|mp4|mpg|rm|wmv|ogv|webm|md)$/gi
 };
 // Hash with all content type
-var contentType      = {
+var contentType  = {
     &#39;text&#39;      : &#39;text&#39;,
     &#39;html&#39;      : &#39;text&#39;,
     &#39;javascript&#39;: &#39;text&#39;,
@@ -256,7 +256,7 @@ var constraintAttributeRules = {
 };
 
 /*
- * Build a new error messag
+ * Build a new error message
  * @param {String} message Error message
  * @return {Error} New error
  */
@@ -264,31 +264,31 @@ function newError(message) {
     return new Error(util.format.apply(null, arguments));
 }
 
-<span id='ADC-Validator'>/**
-</span> * Validate the ADC files structure, configuration and logical
+<span id='ADX-Validator'>/**
+</span> * Validate the ADX files structure, configuration and logical
  *
- * @class ADC.Validator
+ * @class ADX.Validator
  * @private
  */
-function Validator(adcDirPath) {
-<span id='ADC-Validator-property-rootdir'>    /**
-</span>     * Root dir of the current ADCUtil
+function Validator(adxDirPath) {
+<span id='ADX-Validator-property-rootdir'>    /**
+</span>     * Root dir of the current ADXUtil
      */
     this.rootdir    = pathHelper.resolve(__dirname, &quot;../../&quot;);
 
-<span id='ADC-Validator-property-adcName'>    /**
-</span>     * Name of the ADC
+<span id='ADX-Validator-property-adxName'>    /**
+</span>     * Name of the ADX
      * @type {string}
      */
-    this.adcName    = &#39;&#39;;
+    this.adxName    = &#39;&#39;;
 
-<span id='ADC-Validator-property-adcDirectoryPath'>    /**
-</span>     * Path to the ADC directory
+<span id='ADX-Validator-property-adxDirectoryPath'>    /**
+</span>     * Path to the ADX directory
      * @type {string}
      */
-    this.adcDirectoryPath = adcDirPath ? pathHelper.normalize(adcDirPath) : process.cwd();
+    this.adxDirectoryPath = adxDirPath ? pathHelper.normalize(adxDirPath) : process.cwd();
 
-<span id='ADC-Validator-property-validators'>    /**
+<span id='ADX-Validator-property-validators'>    /**
 </span>     * Validators
      *
      * @type {{current: number, sequence: string[]}}
@@ -297,23 +297,24 @@ function Validator(adcDirPath) {
         current  : -1,
         sequence : [
             &#39;validatePathArg&#39;,
-            &#39;validateADCDirectoryStructure&#39;,
+            &#39;validateADXDirectoryStructure&#39;,
             &#39;validateFileExtensions&#39;,
-            &#39;validateXMLAgainstXSD&#39;,
             &#39;initConfigXMLDoc&#39;,
-            &#39;validateADCInfo&#39;,
-            &#39;validateADCInfoConstraints&#39;,
-            &#39;validateADCOutputs&#39;,
-            &#39;validateADCProperties&#39;,
+            &#39;validateXMLAgainstXSD&#39;,
+            &#39;validateADXInfo&#39;,
+            &#39;validateADXInfoConstraints&#39;,
+            &#39;validateADXOutputs&#39;,
+            &#39;validateADXProperties&#39;,
+            &#39;validateMasterPage&#39;,
             &#39;runAutoTests&#39;,
-            &#39;runADCUnitTests&#39;
+            &#39;runADXUnitTests&#39;
         ]
     };
 
-<span id='ADC-Validator-property-report'>    /**
+<span id='ADX-Validator-property-report'>    /**
 </span>     * Report of the validation
      *
-     * @type {{startTime: null, endTime: null, runs: number, total: number, success: number, warnings: number, errors: number}}
+     * @type {{startTime: number, endTime: number, runs: number, total: number, success: number, warnings: number, errors: number}}
      */
     this.report     = {
         startTime : null,
@@ -325,7 +326,7 @@ function Validator(adcDirPath) {
         errors    : 0
     };
 
-<span id='ADC-Validator-property-dirResources'>    /**
+<span id='ADX-Validator-property-dirResources'>    /**
 </span>     * Map all files in the resources directory
      *
      * @type {{isExist: boolean, dynamic: {isExist: boolean}, statics: {isExist: boolean}, share: {isExist: boolean}}}
@@ -343,28 +344,29 @@ function Validator(adcDirPath) {
         }
     };
 
-<span id='ADC-Validator-property-configXmlDoc'>    /**
-</span>     * Config xml document in json format
+<span id='ADX-Validator-property-adxConfigurator'>    /**
+</span>     * Instance of configurator
+     * @type {ADX.Configurator}
      */
-    this.configXmlDoc  = null;
+    this.adxConfigurator = null;
 
-<span id='ADC-Validator-property-logger'>    /**
+<span id='ADX-Validator-property-logger'>    /**
 </span>     * Logger to override with an object
-     * @type {{writeMessage : function, writeSuccess : function, writeWarning: function, writeError : function}}
+     * @type {{writeMessage : Function, writeSuccess : Function, writeWarning: Function, writeError : Function}}
      */
     this.logger = null;
 }
 
-<span id='ADC-Validator-method-constructor'>/**
-</span> * Create a new instance of ADC validator
+<span id='ADX-Validator-method-constructor'>/**
+</span> * Create a new instance of ADX validator
  *
  * @constructor
- * @param {String} adcDirPath Path of the ADC directory
+ * @param {String} adxDirPath Path of the ADX directory
  */
 Validator.prototype.constructor = Validator;
 
-<span id='ADC-Validator-method-validate'>/**
-</span> * Validate the current ADC instance
+<span id='ADX-Validator-method-validate'>/**
+</span> * Validate the current ADX instance
  *
  * @param {Object} [options] Options of validation
  * @param {Boolean} [options.test=true] Run unit tests
@@ -419,18 +421,19 @@ Validator.prototype.validate = function validate(options, callback) {
 
         // --no-test
         if (options.test === false) { // Check bool value not falsy
-            this.removeOnSequence([&#39;runADCUnitTests&#39;]);
+            this.removeOnSequence([&#39;runADXUnitTests&#39;]);
         }
 
         // --no-xml
         if (options.xml === false) { // Check bool value not falsy
             this.removeOnSequence([
-                &#39;validateXMLAgainstXSD&#39;,
                 &#39;initConfigXMLDoc&#39;,
-                &#39;validateADCInfo&#39;,
-                &#39;validateADCInfoConstraints&#39;,
-                &#39;validateADCOutputs&#39;,
-                &#39;validateADCProperties&#39;
+                &#39;validateXMLAgainstXSD&#39;,
+                &#39;validateADXInfo&#39;,
+                &#39;validateADXInfoConstraints&#39;,
+                &#39;validateADXOutputs&#39;,
+                &#39;validateADXProperties&#39;,
+                &#39;validateMasterPage&#39;
             ]);
         }
 
@@ -440,7 +443,7 @@ Validator.prototype.validate = function validate(options, callback) {
     this.resume(null);
 };
 
-<span id='ADC-Validator-method-removeOnSequence'>/**
+<span id='ADX-Validator-method-removeOnSequence'>/**
 </span> * Remove the specified validators on the validators sequence
  *
  * @param {Array} validators Validators to remove
@@ -457,7 +460,7 @@ Validator.prototype.removeOnSequence = function removeOnSequence(validators) {
     });
 };
 
-<span id='ADC-Validator-method-done'>/**
+<span id='ADX-Validator-method-done'>/**
 </span> * Summarize the validation
  *
  * @param {Error} [err] Last error
@@ -495,10 +498,10 @@ Validator.prototype.done  = function done(err) {
     }
 };
 
-<span id='ADC-Validator-method-resume'>/**
+<span id='ADX-Validator-method-resume'>/**
 </span> * Execute the next validation
  *
- * @param {Error|void} err Error which occured during the previous validation
+ * @param {Error|void} err Error which occurred during the previous validation
  */
 Validator.prototype.resume = function resume(err) {
     if (err) {
@@ -535,7 +538,7 @@ Validator.prototype.resume = function resume(err) {
     this[validatorName]();
 };
 
-<span id='ADC-Validator-method-writeError'>/**
+<span id='ADX-Validator-method-writeError'>/**
 </span> * Write an error output in the console or in the logger
  * @param {String} text Text to write in the console
  */
@@ -547,7 +550,7 @@ Validator.prototype.writeError = function writeError(text) {
     }
 };
 
-<span id='ADC-Validator-method-writeWarning'>/**
+<span id='ADX-Validator-method-writeWarning'>/**
 </span> * Write a warning output in the console or in the logger
  * @param {String} text Text to write in the console
  */
@@ -559,7 +562,7 @@ Validator.prototype.writeWarning = function writeWarning(text) {
     }
 };
 
-<span id='ADC-Validator-method-writeSuccess'>/**
+<span id='ADX-Validator-method-writeSuccess'>/**
 </span> * Write a success output in the console or in the logger
  * @param {String} text Text to write in the console
  */
@@ -571,8 +574,8 @@ Validator.prototype.writeSuccess = function writeSuccess(text) {
     }
 };
 
-<span id='ADC-Validator-method-writeMessage'>/**
-</span> * Write an arbitrary message in the console  or in the logger without specific prefix or in the  logger
+<span id='ADX-Validator-method-writeMessage'>/**
+</span> * Write an arbitrary message in the console  or in the logger without specific prefix or in the logger
  * @param {String} text Text to write in the console
  */
 Validator.prototype.writeMessage = function writeMessage(text) {
@@ -584,21 +587,21 @@ Validator.prototype.writeMessage = function writeMessage(text) {
 };
 
 
-<span id='ADC-Validator-method-validatePathArg'>/**
+<span id='ADX-Validator-method-validatePathArg'>/**
 </span>* Validate that the `path` argument is correct
 */
 Validator.prototype.validatePathArg = function validatePathArg() {
-    if (!this.adcDirectoryPath) {
+    if (!this.adxDirectoryPath) {
         this.resume(newError(errMsg.missingArgPath));
         return;
     }
 
-    // Validate the existence of the specify ADC directory
+    // Validate the existence of the specify ADX directory
     var self = this;
-    common.dirExists(self.adcDirectoryPath, function verifyADCDirectory(err, exists) {
+    common.dirExists(self.adxDirectoryPath, function verifyADXDirectory(err, exists) {
         var er;
         if (!exists) {
-            er = newError(errMsg.noSuchFileOrDirectory, pathHelper.normalize(self.adcDirectoryPath));
+            er = newError(errMsg.noSuchFileOrDirectory, pathHelper.normalize(self.adxDirectoryPath));
         } else {
             self.writeSuccess(successMsg.pathValidate);
         }
@@ -607,14 +610,14 @@ Validator.prototype.validatePathArg = function validatePathArg() {
 };
 
 
-<span id='ADC-Validator-method-validateADCDirectoryStructure'>/**
-</span> * Validate the structure of the ADC directory
+<span id='ADX-Validator-method-validateADXDirectoryStructure'>/**
+</span> * Validate the structure of the ADX directory
  */
-Validator.prototype.validateADCDirectoryStructure = function validateADCDirectoryStructure() {
+Validator.prototype.validateADXDirectoryStructure = function validateADXDirectoryStructure() {
     // Verify if the config.xml exists
     var self = this;
-    fs.exists(pathHelper.join(self.adcDirectoryPath, common.CONFIG_FILE_NAME), function verifyConfigFileExist(exists) {
-        var resourcesPath = pathHelper.join(self.adcDirectoryPath, common.RESOURCES_DIR_NAME),
+    fs.exists(pathHelper.join(self.adxDirectoryPath, common.CONFIG_FILE_NAME), function verifyConfigFileExist(exists) {
+        var resourcesPath = pathHelper.join(self.adxDirectoryPath, common.RESOURCES_DIR_NAME),
             dirResources  = self.dirResources;
 
         // Check  the resources directory
@@ -708,8 +711,8 @@ Validator.prototype.validateADCDirectoryStructure = function validateADCDirector
 };
 
 
-<span id='ADC-Validator-method-validateFileExtensions'>/**
-</span> * Validate all file extension against the while list and the black list
+<span id='ADX-Validator-method-validateFileExtensions'>/**
+</span> * Validate all file extension against the white list and the black list
  */
 Validator.prototype.validateFileExtensions = function validateFileExtensions() {
     var dirResources = this.dirResources,
@@ -748,14 +751,42 @@ Validator.prototype.validateFileExtensions = function validateFileExtensions() {
 };
 
 
-<span id='ADC-Validator-method-validateXMLAgainstXSD'>/**
-</span> * Validate the config.xml file of the ADC against the XSD schema
+<span id='ADX-Validator-method-initConfigXMLDoc'>/**
+</span> * Initialize the XMLDoc using the config.xml
+ */
+Validator.prototype.initConfigXMLDoc = function initConfigXMLDoc() {
+    var self = this;
+
+    self.adxConfigurator = new Configurator(self.adxDirectoryPath);
+    self.adxConfigurator.load(function (err) {
+        if (err) {
+            self.resume(err);
+            return;
+        }
+        if (self.adxConfigurator.projectType === &#39;adp&#39;) {
+            self.removeOnSequence([&#39;validateADXInfoConstraints&#39;]);
+        } else {
+            self.removeOnSequence(([&#39;validateMasterPage&#39;]));
+        }
+        self.report.total = self.validators.sequence.length;
+        self.writeSuccess(successMsg.xmlInitialize);
+        self.resume(null);
+
+    });
+};
+
+
+<span id='ADX-Validator-method-validateXMLAgainstXSD'>/**
+</span> * Validate the config.xml file of the ADX against the XSD schema
  */
 Validator.prototype.validateXMLAgainstXSD = function validateXMLAgainstXSD() {
-    var exec            = require(&#39;child_process&#39;).exec,
+    var projectType     = this.adxConfigurator.projectType,
+        schemaName      = projectType === &#39;adp&#39; ? common.SCHEMA_ADP : common.SCHEMA_ADC,
+        projectVersion  = this.adxConfigurator.projectVersion,
+        exec            = require(&#39;child_process&#39;).exec,
         xmlLintPath     = pathHelper.join(this.rootdir, common.XML_LINT_PATH),
-        xmlSchemaPath   = pathHelper.join(this.rootdir, common.SCHEMA_PATH, common.SCHEMA_CONFIG),
-        xmlPath         = pathHelper.join(this.adcDirectoryPath, common.CONFIG_FILE_NAME),
+        xmlSchemaPath   = pathHelper.join(this.rootdir, common.SCHEMA_PATH, projectVersion, schemaName),
+        xmlPath         = pathHelper.join(this.adxDirectoryPath, common.CONFIG_FILE_NAME),
 
         self = this,
 
@@ -770,83 +801,86 @@ Validator.prototype.validateXMLAgainstXSD = function validateXMLAgainstXSD() {
 };
 
 
-<span id='ADC-Validator-method-initConfigXMLDoc'>/**
-</span> * Initialize the XMLDoc using the config.xml
+<span id='ADX-Validator-method-validateADXInfo'>/**
+</span> * Validate the info of the ADX config file
  */
-Validator.prototype.initConfigXMLDoc = function initConfigXMLDoc() {
-    var self = this;
-    fs.readFile(pathHelper.join(self.adcDirectoryPath, common.CONFIG_FILE_NAME), &#39;utf8&#39;, function readConfigXMLFile(err, data) {
-        if (err) {
-            self.resume(err);
-            return;
-        }
-        // Remove the BOM characters in UTF-8 string
-        data = data.replace(/^\uFEFF/, &#39;&#39;);
-        xml2js.parseString(data, function parseXML(err, result) {
-            self.configXmlDoc = result;
-            if (!err) {
-                self.writeSuccess(successMsg.xmlInitialize);
-            }
-            self.resume(err);
-        });
-    });
-};
+Validator.prototype.validateADXInfo = function validateADXInfo() {
+    var xmldoc = this.adxConfigurator.xmldoc;
+    var elInfo = xmldoc.find(&quot;info&quot;);
+    var elName = elInfo &amp;&amp; elInfo.find(&quot;name&quot;);
 
-
-<span id='ADC-Validator-method-validateADCInfo'>/**
-</span> * Validate the info of the ADC config file
- */
-Validator.prototype.validateADCInfo = function validateADCInfo() {
-    var infosEl = this.configXmlDoc.control.info &amp;&amp; this.configXmlDoc.control.info[0],
-        nameEl  = infosEl &amp;&amp; infosEl.name &amp;&amp; infosEl.name[0];
-
-    if (!infosEl) {
+    if (!elInfo) {
         this.resume(newError(errMsg.missingInfoNode));
         return;
     }
 
-    if (!nameEl) {
+    if (!elName || !elName.text) {
         this.resume(newError(errMsg.missingOrEmptyNameNode));
         return;
     }
 
-    this.adcName = nameEl;
+    // The `style` and `categories` tags is mark as deprecated since the version 2.1.0
+    if (this.adxConfigurator.projectVersion !== &quot;2.0.0&quot;) {
+        var elStyle = elInfo &amp;&amp; elInfo.find(&quot;style&quot;);
+        if (elStyle) {
+            this.report.warnings++;
+            this.writeWarning(warnMsg.deprecatedInfoStyleTag);
+        }
+
+        var elCategories = elInfo &amp;&amp; elInfo.find(&quot;categories&quot;);
+        if (elCategories) {
+            this.report.warnings++;
+            this.writeWarning(warnMsg.deprecatedInfoCategoriesTag);
+        }
+    }
+
+    this.adxName = elName.text;
     this.writeSuccess(successMsg.xmlInfoValidate);
     this.resume(null);
 };
 
 
-<span id='ADC-Validator-method-validateADCInfoConstraints'>/**
-</span> * Validate the info/constraints of the ADC config file
+<span id='ADX-Validator-method-validateADXInfoConstraints'>/**
+</span> * Validate the info/constraints of the ADX config file
  */
-Validator.prototype.validateADCInfoConstraints = function validateADCInfoConstraints() {
-    var constraintsEl           = this.configXmlDoc.control.info[0].constraints[0],
-        constraints             = constraintsEl.constraint || [],
-        constraintsOn           = {
-            questions : 0,
-            responses : 0,
-            controls  : 0
-        }, attr, i, l, key, hasRule = false;
+Validator.prototype.validateADXInfoConstraints = function validateADXInfoConstraints() {
+    var xmldoc = this.adxConfigurator.xmldoc;
+    var elInfo = xmldoc.find(&quot;info&quot;);
+    var elConstraints = elInfo &amp;&amp; elInfo.find(&quot;constraints&quot;);
+    var constraintsOn  = {
+        questions : 0,
+        responses : 0,
+        controls  : 0
+    };
+    var self = this;
+    var exitIter = false;
 
-    for (i = 0, l = constraints.length; i &lt; l; i++) {
-        hasRule = false;
-        attr = constraints[i].$ || {};
-        if (!attr.on) {
-            continue;
+    elConstraints.iter(&#39;constraint&#39;, function (constraint) {
+        if (exitIter) {
+            return;
         }
-
-        // Validate the duplicate constraints
-        constraintsOn[attr.on]++;
-        if (constraintsOn[attr.on] &gt; 1) {
-            this.resume(newError(errMsg.duplicateConstraints, attr.on));
+        var hasRule = false;
+        var attrOn  = constraint.get(&quot;on&quot;);
+        if (!attrOn) {
             return;
         }
 
+        // Validate the duplicate constraints
+        constraintsOn[attrOn]++;
+        if (constraintsOn[attrOn] &gt; 1) {
+            self.resume(newError(errMsg.duplicateConstraints, attrOn));
+            exitIter = true;
+            return;
+        }
+
+
         // Validate the attribute logic
-        for (key in attr) {
+        var attr = constraint.attrib;
+        for (var key in attr) {
             if (attr.hasOwnProperty(key) &amp;&amp; key !== &#39;on&#39;) {
-                if (constraintAttributeRules[attr.on].indexOf(key) === -1) {
-                    this.resume(newError(errMsg.invalidConstraintAttribute, attr.on, key));
+                if (constraintAttributeRules[attrOn].indexOf(key) === -1) {
+                    self.resume(newError(errMsg.invalidConstraintAttribute, attrOn, key));
+                    exitIter = true;
                     return;
                 }
                 if (key !== &#39;min&#39; &amp;&amp; key !== &#39;max&#39;) {
@@ -861,9 +895,13 @@ Validator.prototype.validateADCInfoConstraints = function validateADCInfoConstra
 
         // No rule specified
         if (!hasRule) {
-            this.resume(newError(errMsg.noRuleOnConstraint, attr.on));
-            return;
+            self.resume(newError(errMsg.noRuleOnConstraint, attrOn));
+            exitIter = true;
         }
+    });
+
+    if (exitIter) {
+        return;
     }
 
     if (!constraintsOn.questions) {
@@ -881,53 +919,96 @@ Validator.prototype.validateADCInfoConstraints = function validateADCInfoConstra
 };
 
 
-<span id='ADC-Validator-method-validateADCOutputs'>/**
-</span> * Validate the outputs of the ADC config file
+<span id='ADX-Validator-method-validateADXOutputs'>/**
+</span> * Validate the outputs of the ADX config file
  */
-Validator.prototype.validateADCOutputs = function validateADCOutputs() {
-    var outputsEl               = this.configXmlDoc.control.outputs[0],
-        outputs                 = outputsEl.output,
-        conditions              = {},
-        outputsEmptyCondition   = [],
-        htmlFallBackCount       = 0,
-        lastOutput,
-        defaultGeneration, i, l, output, id, condition, err;
+Validator.prototype.validateADXOutputs = function validateADXOutputs() {
+    var xmldoc = this.adxConfigurator.xmldoc;
+    var elOutputs = xmldoc.find(&quot;outputs&quot;);
+    var exitIter = false;
+    var conditions              = {};
+    var outputsEmptyCondition   = [];
+    var htmlFallBackCount       = 0;
+    var self = this;
+    var err;
+    var projectType    = this.adxConfigurator.projectType;
+    var projectVersion = this.adxConfigurator.projectVersion;
+    var dirResources   = this.dirResources;
 
-    for (i = 0, l = outputs.length; i &lt; l; i++) {
-        output      = outputs[i];
-        id          = output.$.id;
-        condition   = output.condition &amp;&amp; output.condition[0];
-        defaultGeneration = output.$.defaultGeneration || false;
+    elOutputs.iter(&quot;output&quot;, function (output) {
+        if (exitIter) {
+            return;
+        }
+        var id          = output.get(&quot;id&quot;);
+        var elCondition = output.find(&quot;condition&quot;);
+        var condition   = elCondition &amp;&amp; elCondition.text;
+        var defaultGeneration = output.get(&quot;defaultGeneration&quot;) || false;
+
+        // Require a `masterPage` attribute that represent an existing dynamic file for ADP
+        if (projectType === &#39;adp&#39;) {
+            var masterPage = output.get(&#39;masterPage&#39;);
+
+            // Verify the presence of a non-empty masterPage attribute
+            if (!masterPage) {
+                err = newError(errMsg.missingOrEmptyMasterPageAttr, id);
+                self.resume(err);
+                exitIter = true;
+                return;
+            }
+
+            // Verify that the masterPage exist in the `dynamic` folder
+            if (!dirResources.dynamic || !dirResources.dynamic[masterPage.toLocaleLowerCase()]) {
+                err = newError(errMsg.cannotFindFileInDirectory, id, masterPage, &#39;dynamic&#39;);
+                self.resume(err);
+                exitIter = true;
+                return;
+            }
+        }
+
 
         if (!condition) {
             outputsEmptyCondition.push(id);
         }
+
         if (condition &amp;&amp; conditions[condition]) {
-            this.report.warnings++;
-            this.writeWarning(warnMsg.duplicateOutputCondition, conditions[condition], id);
+            self.report.warnings++;
+            self.writeWarning(warnMsg.duplicateOutputCondition, conditions[condition], id);
+        }
+
+        // defaultGeneration attribute is mark as deprecated in the 2.1.0
+        if (projectVersion !== &#39;2.0.0&#39;) {
+            if (&quot;defaultGeneration&quot; in output.attrib) {
+                self.report.warnings++;
+                self.writeWarning(warnMsg.deprecatedDefaultGenerationAttr);
+            }
         }
 
         conditions[condition] = id;
-        lastOutput = {
+
+        var lastOutput = {
             id                : id,
             defaultGeneration : defaultGeneration,
-            contents          : output.content || [],
+            contents          : output.findall(&quot;content&quot;) || [],
             condition         : condition,
             dynamicContentCount     : 0,
             javascriptContentCount  : 0,
             flashContentCount       : 0
         };
 
-        err = this.validateADCContents(lastOutput);
+        err = self.validateADXContents(lastOutput);
 
         if (defaultGeneration || !lastOutput.javascriptContentCount) {
             htmlFallBackCount++;
         }
 
         if (err) {
-            this.resume(err);
-            return;
+            self.resume(err);
+            exitIter = true;
         }
+    });
+
+    if (exitIter) {
+        return;
     }
 
     if (outputsEmptyCondition.length &gt; 1) {
@@ -946,14 +1027,15 @@ Validator.prototype.validateADCOutputs = function validateADCOutputs() {
 };
 
 
-<span id='ADC-Validator-method-validateADCContents'>/**
-</span> * Validate the contents of an ADC output
+<span id='ADX-Validator-method-validateADXContents'>/**
+</span> * Validate the contents of an ADX output
  *
  * @param {Object} output Helper output object
  * @return {Error|void} Return the error or null when no error.
  */
-Validator.prototype.validateADCContents = function validateADCContents(output) {
-    var contents = output.contents,
+Validator.prototype.validateADXContents = function validateADXContents(output) {
+    var projectType = this.adxConfigurator.projectType,
+        contents = output.contents,
         i, l,
         err = null,
         condition = output.condition || &quot;&quot;;
@@ -963,45 +1045,48 @@ Validator.prototype.validateADCContents = function validateADCContents(output) {
     }
 
     for (i = 0, l = contents.length; i &lt; l; i++) {
-        err = this.validateADCContent(output, contents[i]);
+        err = this.validateADXContent(output, contents[i]);
         if (err) {
             return err;
         }
     }
 
-    if (!output.defaultGeneration &amp;&amp; !output.dynamicContentCount) {
-        return newError(errMsg.dynamicFileRequire, output.id);
-    }
+    // ADP doesn&#39;t require content, it already have at least one masterPage
+    if (projectType !== &#39;adp&#39; ) {
+        if (!output.defaultGeneration &amp;&amp; !output.dynamicContentCount) {
+            return newError(errMsg.dynamicFileRequire, output.id);
+        }
 
-    if (!output.defaultGeneration &amp;&amp; output.javascriptContentCount &amp;&amp; !/browser\.support\(&quot;javascript&quot;\)/gi.test(condition)) {
-        this.report.warnings++;
-        this.writeWarning(warnMsg.javascriptUseWithoutBrowserCheck, output.id);
-    }
+        if (!output.defaultGeneration &amp;&amp; output.javascriptContentCount &amp;&amp; !/browser\.support\(&quot;javascript&quot;\)/gi.test(condition)) {
+            this.report.warnings++;
+            this.writeWarning(warnMsg.javascriptUseWithoutBrowserCheck, output.id);
+        }
 
-    if (!output.defaultGeneration &amp;&amp; output.flashContentCount  &amp;&amp; !/browser\.support\(&quot;flash&quot;\)/gi.test(condition)) {
-        this.report.warnings++;
-        this.writeWarning(warnMsg.flashUseWithoutBrowserCheck, output.id);
+        if (!output.defaultGeneration &amp;&amp; output.flashContentCount  &amp;&amp; !/browser\.support\(&quot;flash&quot;\)/gi.test(condition)) {
+            this.report.warnings++;
+            this.writeWarning(warnMsg.flashUseWithoutBrowserCheck, output.id);
+        }
     }
 
     return err;
 };
 
 
-<span id='ADC-Validator-method-validateADCContent'>/**
-</span> * Validate the content of an ADC output
+<span id='ADX-Validator-method-validateADXContent'>/**
+</span> * Validate the content of an ADX output
  *
  * @param {Object} output Helper output object
  * @param {Object} content Content node
  * @return {Error|void} Return the error or null when no error.
  */
-Validator.prototype.validateADCContent = function validateADCContent(output, content) {
-    var atts        = content.$,
+Validator.prototype.validateADXContent = function validateADXContent(output, content) {
+    var atts        = content.attrib,
         type        = atts.type,
         position    = atts.position,
         mode        = atts.mode,
         key         = (mode !== &#39;static&#39;) ? mode : &#39;statics&#39;,
         fileName    = atts.fileName,
-        yieldNode   = content[&#39;yield&#39;] || [],
+        yieldNode   = content.find(&#39;yield&#39;),
         dirResources = this.dirResources;
 
     // Missing directory
@@ -1020,7 +1105,7 @@ Validator.prototype.validateADCContent = function validateADCContent(output, con
     }
 
     // A binary file require a &#39;yield&#39; node or &#39;position=none&#39;
-    if (type === &#39;binary&#39; &amp;&amp; position !== &#39;none&#39; &amp;&amp; !yieldNode.length) {
+    if (type === &#39;binary&#39; &amp;&amp; position !== &#39;none&#39; &amp;&amp; (!yieldNode || !yieldNode.text)) {
         return newError(errMsg.yieldRequireForBinary, output.id, fileName);
     }
 
@@ -1040,27 +1125,28 @@ Validator.prototype.validateADCContent = function validateADCContent(output, con
     }
 
     // Validate attribute
-    return this.validateADCContentAttribute(output, content);
+    return this.validateADXContentAttribute(output, content);
 };
 
 
-<span id='ADC-Validator-method-validateADCContentAttribute'>/**
+<span id='ADX-Validator-method-validateADXContentAttribute'>/**
 </span> * Validate the attribute tag of the content node
  *
  * @param {Object} output Helper output object
  * @param {Object} content Content node
  * @return {Error|void} Return error or null when no error
  */
-Validator.prototype.validateADCContentAttribute = function validateADCContentAttribute(output, content) {
-    if (!content.attribute || !content.attribute.length) {
+Validator.prototype.validateADXContentAttribute = function validateADXContentAttribute(output, content) {
+    var attributes = content.findall(&#39;attribute&#39;);
+    if (!attributes || !attributes.length) {
         return null;
     }
 
-    var atts        = content.$,
+    var atts        = content.attrib,
         type        = atts.type,
         mode        = atts.mode,
         fileName    = atts.fileName,
-        attributes  = content.attribute,
+        yieldNode   = content.find(&quot;yield&quot;),
         attribute,
         attName,
         attMap      = {},
@@ -1079,14 +1165,14 @@ Validator.prototype.validateADCContentAttribute = function validateADCContentAtt
     }
 
     // Attribute nodes are ignored with yield
-    if (content[&#39;yield&#39;] &amp;&amp; content[&#39;yield&#39;].length) {
+    if (yieldNode &amp;&amp; yieldNode.text) {
         this.report.warnings++;
         this.writeWarning(warnMsg.attributeNodeAndYieldNode, output.id, fileName);
     }
 
     for (i = 0, l = attributes.length; i &lt; l; i++) {
         attribute = attributes[i];
-        attName     = (attribute.$ &amp;&amp; attribute.$.name &amp;&amp; attribute.$.name.toLocaleLowerCase()) || &#39;&#39;;
+        attName     = (attribute.attrib &amp;&amp; attribute.attrib.name &amp;&amp; attribute.attrib.name.toLocaleLowerCase()) || &#39;&#39;;
 
         if (contentSealAttr[type] &amp;&amp; contentSealAttr[type][attName]) {
             return newError(errMsg.attributeNotOverridable, output.id, attName, fileName);
@@ -1102,15 +1188,16 @@ Validator.prototype.validateADCContentAttribute = function validateADCContentAtt
     return null;
 };
 
-<span id='ADC-Validator-method-validateADCProperties'>/**
-</span> * Validate the ADC properties node
+<span id='ADX-Validator-method-validateADXProperties'>/**
+</span> * Validate the ADX properties node
  */
-Validator.prototype.validateADCProperties = function validateADCProperties() {
-    var propertiesEl           = (this.configXmlDoc.control.properties &amp;&amp; this.configXmlDoc.control.properties[0]) || {},
-        categories             = propertiesEl.category || [],
-        properties             = propertiesEl.property || [];
+Validator.prototype.validateADXProperties = function validateADXProperties() {
+    var xmldoc = this.adxConfigurator.xmldoc;
+    var elProperties = xmldoc.find(&quot;properties&quot;);
+    var categories = elProperties.findall(&#39;category&#39;);
+    var properties = elProperties.findall(&#39;property&#39;);
 
-    if (!properties.length &amp;&amp; !categories.length) {
+    if ((!properties || !properties.length) &amp;&amp; (!categories || !categories.length)) {
         this.report.warnings++;
         this.writeWarning(warnMsg.noProperties);
     }
@@ -1118,15 +1205,127 @@ Validator.prototype.validateADCProperties = function validateADCProperties() {
     this.resume(null);
 };
 
-<span id='ADC-Validator-method-runTests'>/**
-</span> * Run the ADC Unit tests process with specify arguments
+<span id='ADX-Validator-method-validateMasterPage'>/**
+</span> * Validate the content of the master page of ADP
+ */
+Validator.prototype.validateMasterPage = function validateMasterPage() {
+    var xmldoc = this.adxConfigurator.xmldoc;
+    var elOutputs = xmldoc.findall(&quot;./outputs/output&quot;);
+    var outputIndex = 0, len = elOutputs.length;
+    var self = this;
+    var treats = {};
+
+    // Recursive calls to validate each master page one by one
+    function validateNextMasterPage() {
+        var elOutput = elOutputs[outputIndex];
+        var masterPage = elOutput.get(&quot;masterPage&quot;);
+
+        // Don&#39;t validate the master page several time
+        if (treats[masterPage]) {
+            outputIndex++;
+            if (outputIndex &lt; len) {
+                return validateNextMasterPage();
+            }
+            return;
+        }
+
+        treats[masterPage] = true;
+        var masterPagePath = pathHelper.join(self.adxDirectoryPath, &#39;resources/dynamic&#39;, masterPage);
+
+        fs.readFile(masterPagePath, function (err, data) {
+            if (err) {
+                self.resume(err);
+                return;
+            }
+
+            data = data.toString();
+
+            var askiaHeadCount = (data.match(/&lt;askia\-head\s*\/?&gt;/gi) || []).length;
+            // &lt;askia-head /&gt; required
+            if (!askiaHeadCount) {
+                self.resume(newError(errMsg.masterPageRequireAskiaHeadTag, masterPage));
+                return;
+            }
+            if (askiaHeadCount &gt; 1) {
+                self.resume(newError(errMsg.masterPageRequireOnlyOneAskiaHeadTag, masterPage));
+                return;
+            }
+
+            // &lt;askia-form&gt; required
+            var askiaFormCount = (data.match(/&lt;askia\-form\s*&gt;/gi) || []).length;
+            if (!askiaFormCount) {
+                self.resume(newError(errMsg.masterPageRequireAskiaFormTag, masterPage));
+                return;
+            }
+            if (askiaFormCount &gt; 1) {
+                self.resume(newError(errMsg.masterPageRequireOnlyOneAskiaFormTag, masterPage));
+                return;
+            }
+
+            // &lt;/askia-form&gt; required
+            var askiaFormCloseCount = (data.match(/&lt;\/askia\-form\s*&gt;/gi) || []).length;
+            if (!askiaFormCloseCount) {
+                self.resume(newError(errMsg.masterPageRequireAskiaFormCloseTag, masterPage));
+                return;
+            }
+            if (askiaFormCloseCount &gt; 1) {
+                self.resume(newError(errMsg.masterPageRequireOnlyOneAskiaFormCloseTag, masterPage));
+                return;
+            }
+
+            // &lt;askia-questions/&gt; required
+            var askiaQuestionsCount = (data.match(/&lt;askia\-questions\s*\/?&gt;/gi) || []).length;
+            if (!askiaQuestionsCount) {
+                self.resume(newError(errMsg.masterPageRequireAskiaQuestionsTag, masterPage));
+                return;
+            }
+            if (askiaQuestionsCount &gt; 1) {
+                self.resume(newError(errMsg.masterPageRequireOnlyOneAskiaQuestionsTag, masterPage));
+                return;
+            }
+
+            // &lt;askia-foot/&gt; required
+            var askiaFootCount = (data.match(/&lt;askia\-foot\s*\/?&gt;/gi) || []).length;
+            if (!askiaFootCount) {
+                self.resume(newError(errMsg.masterPageRequireAskiaFootTag, masterPage));
+                return;
+            }
+            if (askiaFootCount &gt; 1) {
+                self.resume(newError(errMsg.masterPageRequireOnlyOneAskiaFootTag, masterPage));
+                return;
+            }
+
+            // Validate that the &lt;askia-questions/&gt; is between &lt;askia-form&gt; and &lt;/askia-form&gt;
+            // This ultimate validation also ensure that &lt;/askia-form&gt; appear after &lt;askia-form&gt;
+            var isCorrectForm = /&lt;askia\-form\s*&gt;(.|\r|\n)*&lt;askia\-questions\s*\/?&gt;(.|\r|\n)*&lt;\/askia\-form\s*&gt;/mgi.test(data);
+            if (!isCorrectForm) {
+                self.resume(newError(errMsg.masterPageRequireAskiaQuestionsTagInsideAskiaFormTag, masterPage));
+                return;
+            }
+
+
+            outputIndex++;
+            if (outputIndex &lt; len) {
+                return validateNextMasterPage();
+            }
+        });
+    }
+
+    validateNextMasterPage();
+
+    this.writeSuccess(successMsg.masterPageAskiaTagsValidate);
+    this.resume(null);
+};
+
+<span id='ADX-Validator-method-runTests'>/**
+</span> * Run the ADX Unit tests process with specify arguments
  * @param {Array} args
  * @param {String} message
  */
 Validator.prototype.runTests = function runTests(args, message) {
     var self = this;
     // Validate the existence of the specify unit test directory
-    common.dirExists(pathHelper.join(self.adcDirectoryPath, common.UNIT_TEST_DIR_PATH), function verifyUnitTestDirectory(err, exists) {
+    common.dirExists(pathHelper.join(self.adxDirectoryPath, common.UNIT_TEST_DIR_PATH), function verifyUnitTestDirectory(err, exists) {
         if (!exists) {
             self.resume(null);
             return ;
@@ -1144,7 +1343,7 @@ Validator.prototype.runTests = function runTests(args, message) {
                 }
             } else {
                 self.writeMessage(data);
-                self.writeSuccess(successMsg.adcUnitSucceed);
+                self.writeSuccess(successMsg.adxUnitSucceed);
             }
             self.resume(null);
         }
@@ -1165,28 +1364,28 @@ Validator.prototype.runTests = function runTests(args, message) {
     });
 };
 
-<span id='ADC-Validator-method-runAutoTests'>/**
-</span> * Run the ADC unit tests auto-generated
+<span id='ADX-Validator-method-runAutoTests'>/**
+</span> * Run the ADX unit tests auto-generated
  */
 Validator.prototype.runAutoTests = function runAutoTests() {
-    this.runTests([&#39;--auto&#39;, this.adcDirectoryPath], msg.runningAutoUnit);
+    this.runTests([&#39;--auto&#39;, this.adxDirectoryPath], msg.runningAutoUnit);
 };
 
-<span id='ADC-Validator-method-runADCUnitTests'>/**
-</span> * Run the ADC unit tests
+<span id='ADX-Validator-method-runADXUnitTests'>/**
+</span> * Run the ADX unit tests
  */
-Validator.prototype.runADCUnitTests  = function runADCUnitTests() {
-    this.runTests([this.adcDirectoryPath], msg.runningADCUnit);
+Validator.prototype.runADXUnitTests  = function runADXUnitTests() {
+    this.runTests([this.adxDirectoryPath], msg.runningADXUnit);
 };
 
 // Export the Validator object
 exports.Validator = Validator;
 
 /*
- * Validate an ADC (CLI)
+ * Validate an ADX (CLI)
  *
  * @param {Command} program Commander object which hold the arguments pass to the program
- * @param {String} path Path to the ADC directory
+ * @param {String} path Path to the ADX directory
  * @param {Function} callback Callback function to run at the end it take a single Error argument
  */
 exports.validate = function validate(program, path, callback) {

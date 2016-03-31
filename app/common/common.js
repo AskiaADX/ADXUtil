@@ -69,9 +69,7 @@ exports.DEFAULT_TEMPLATE_NAME = 'blank';
 exports.ADX_BIN_PATH  = '/bin/';
 
 
-/**
- * Error messages
- */
+// Error messages
 exports.messages = {
     error : {
         // Common
@@ -178,7 +176,7 @@ exports.messages = {
     }
 };
 
-/**
+/*
  * Write an error output in the console
  * @param {String} text Text to write in the console
  */
@@ -186,7 +184,7 @@ exports.writeError = function writeError(text) {
     console.error(clc.red.bold("[ERROR]: " + text));
 };
 
-/**
+/*
  * Write a warning output in the console
  * @param {String} text Text to write in the console
  */
@@ -194,7 +192,7 @@ exports.writeWarning = function writeWarning(text) {
     console.log(clc.yellowBright("[WARNING]: " + util.format.apply(null, arguments)));
 };
 
-/**
+/*
  * Write a success output in the console
  * @param {String} text Text to write in the console
  */
@@ -202,7 +200,7 @@ exports.writeSuccess = function writeSuccess(text) {
     console.log(clc.greenBright("[SUCCESS]: " + util.format.apply(null, arguments)));
 };
 
-/**
+/*
  * Write an arbitrary message in the console without specific prefix
  * @param {String} text Text to write in the console
  */
@@ -210,14 +208,14 @@ exports.writeMessage = function writeMessage(text) {
     console.log(util.format.apply(null, arguments));
 };
 
-/**
+/*
  * Get a new zip object
  */
 exports.getNewZip = function getNewZip() {
     return new Zip();
 };
 
-/**
+/*
  * Format the date for xml.
  * If no date in arg, use the current date
  * @param {Date} [date] Date to format
@@ -227,7 +225,7 @@ exports.formatXmlDate = function formatXmlDate(date) {
     return padStr(date.getFullYear()) + '-' + padStr(1 + date.getMonth()) + '-' + padStr(date.getDate());
 };
 
-/**
+/*
  * Pad the number with one 0 when < 10
  * @param {Number} i Number to pad
  * @return {String}
@@ -236,7 +234,7 @@ function padStr(i) {
     return (i < 10) ? "0" + i : "" + i;
 }
 
-/**
+/*
  * Test if a directory exists
  * @param {String} path Path of the directory
  * @param {Function} callback Callback function with err, exists arguments
@@ -252,7 +250,7 @@ exports.dirExists = function dirExists (path, callback) {
     });
 };
 
-/**
+/*
  * Indicates if the file should be ignore
  *
  * @param {String} filename Name of the file
@@ -283,7 +281,7 @@ exports.isIgnoreFile = function isIgnoreFile(filename) {
     return exports.adxIgnoreFilesRules.test(filename);
 };
 
-/**
+/*
  * Return the entire directory structure
  *
  *  [
@@ -369,7 +367,7 @@ exports.getDirStructure = function getDirStructure(path, callback) {
     });
 };
 
-/**
+/*
  * Returns the list of templates directory
  *
  * It searches in the user data folder, the program data folder and the installation program folder
@@ -447,7 +445,7 @@ exports.getTemplateList = function getTemplateList(type, callback) {
     });
 };
 
-/**
+/*
  * Returns the path of the template according to his name
  *
  * It searches in the user data folder, the program data folder and the installation program folder
@@ -512,10 +510,9 @@ exports.getTemplatePath = function getTemplatePath(type, name, callback) {
 
 /**
  * Create a new sequence of function to call
- * @param {Array} sequence Array of function to call one by one
- * @param {Function} callback Callback function to execute at the end of the sequence
- * @param {Object} [scope] Scope of function to execute (this)
- * @constructor
+ *
+ * @class Sequence
+ * @private
  */
 function Sequence(sequence, callback, scope) {
     this.current  = -1;
@@ -523,6 +520,16 @@ function Sequence(sequence, callback, scope) {
     this.callback = callback;
     this.scope    = scope;
 }
+
+/**
+ * Creates a new instance of sequence
+ *
+ * @param {Array} sequence Array of function to call one by one
+ * @param {Function} callback Callback function to execute at the end of the sequence
+ * @param {Object} [scope] Scope of function to execute (this)
+ * @constructor
+ */
+Sequence.prototype.constructor = Sequence;
 
 /**
  * Return the index of the next function to execute

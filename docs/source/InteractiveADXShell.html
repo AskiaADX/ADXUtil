@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">var childProcess = require(&#39;child_process&#39;);
+var path         = require(&#39;path&#39;);
+var common       = require(&#39;./common.js&#39;);
+
+
+<span id='InteractiveADXShell'>/**
+</span> * Manage the ADXShell process in interactive mode.
+ *
+ * It allow a single instance creation of the ADXShell
+ * and a bi-directional communication using the stdio of the spawn process
+ *
+ * @class InteractiveADXShell
+ * @private
+ */
+function InteractiveADXShell(dir) {
+    this.path = dir;
+}
+
+<span id='InteractiveADXShell-method-constructor'>/**
+</span> * Create an interactive spawn process with the ADXShell
+ *
+ * @constructor
+ * @param {String} dir Path of the ADX directory
+ */
+InteractiveADXShell.prototype.constructor = InteractiveADXShell;
+
+
+<span id='InteractiveADXShell-method-exec'>/**
+</span> * Send the specified command in the ADXShell process
+ *
+ * @param {String} command Command to execute
+ * @param {Function} callback
+ */
+InteractiveADXShell.prototype.exec = function exec(command, callback) {
+    var self = this;
+    var message = [],
+        errorMessage = [],
+        errTimeout;
+
+    if (!self._process) {
+        var root =  path.resolve(__dirname, &quot;../../&quot;);
+        self._process = childProcess.spawn(&#39;.\\&#39; + common.ADX_UNIT_PROCESS_NAME, [
+            &#39;interactive&#39;,
+            self.path
+        ], {
+            cwd   : path.join(root, common.ADX_UNIT_DIR_PATH),
+            env   : process.env
+        });
+        self._process._firstData = true;
+    }
+
+    function onOutput(data) {
+        if (self._process._firstData) {
+            self._process._firstData = false;
+            self._process.stdin.write(command + &#39;\n&#39;);
+            return;
+        }
+        var str = data.toString();
+        if (!/^\[ADXShell:End\]/m.test(str)) {
+            message.push(str);
+        } else {
+            // Remove the end of the message
+            str = str.replace(/(\r?\n\[ADXShell:End\].*)/m, &#39;&#39;);
+            message.push(str);
+
+            // Remove the listener at the end of the process
+            self._process.stdout.removeListener(&#39;data&#39;, onOutput);
+            self._process.stderr.removeListener(&#39;data&#39;, onError);
+
+            if (typeof callback === &#39;function&#39;) {
+                callback(null, message.join(&#39;&#39;).replace(/(\[ADXShell:End\].*)/m, &#39;&#39;));
+            }
+        }
+    }
+
+    function onError(data) {
+        var str = data.toString();
+        if (!/^\[ADXShell:End\]/m.test(str)) {
+            errorMessage.push(str);
+            // If an hard error the message end is never throw,
+            // wait half a sec and send the message anyway
+            clearTimeout(errTimeout);
+            errTimeout = setTimeout(function () {
+                onError(&#39;[ADXShell:End]&#39;);
+            }, 500);
+        } else {
+            // Remove the end of the message
+            str = str.replace(/(\r?\n\[ADXShell:End\].*)/m, &#39;&#39;);
+            errorMessage.push(str);
+
+            // Remove the listener at the end of the process
+            self._process.stdout.removeListener(&#39;data&#39;, onOutput);
+            self._process.stderr.removeListener(&#39;data&#39;, onError);
+
+            if (typeof callback === &#39;function&#39;) {
+                callback(new Error(errorMessage.join(&#39;&#39;).replace(/(\[ADXShell:End\].*)/m, &#39;&#39;)), null);
+            }
+        }
+    }
+
+    self._process.stdout.on(&#39;data&#39;, onOutput);
+    self._process.stderr.on(&#39;data&#39;, onError);
+    if (!self._process._firstData) {
+        self._process.stdin.write(command  + &#39;\n&#39;);
+    }
+
+};
+
+exports.InteractiveADXShell = InteractiveADXShell;</pre>
+</body>
+</html>

@@ -297,7 +297,7 @@ function Validator(adxDirPath) {
     /**
      * Report of the validation
      *
-     * @type {{startTime: null, endTime: null, runs: number, total: number, success: number, warnings: number, errors: number}}
+     * @type {{startTime: number, endTime: number, runs: number, total: number, success: number, warnings: number, errors: number}}
      */
     this.report     = {
         startTime : null,
@@ -335,7 +335,7 @@ function Validator(adxDirPath) {
 
     /**
      * Logger to override with an object
-     * @type {{writeMessage : function, writeSuccess : function, writeWarning: function, writeError : function}}
+     * @type {{writeMessage : Function, writeSuccess : Function, writeWarning: Function, writeError : Function}}
      */
     this.logger = null;
 }

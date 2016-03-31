@@ -22,76 +22,93 @@ var subElement = et.SubElement;
 var common = require(&#39;../common/common.js&#39;);
 var errMsg = common.messages.error;
 
-<span id='ADC-Configurator'>/**
-</span> * Object used to read and manipulate the config.xml file of an ADC
+<span id='ADX-Configurator'>/**
+</span> * Object used to read and manipulate the config.xml file of an ADX
  *
- *      var ADC = require(&#39;adcutil&#39;).ADC;
+ *      var ADX = require(&#39;adxutil&#39;).ADX;
  *
- *      var myAdc = new ADC(&#39;path/to/adc/&#39;);
- *      myAdc.load(function (err) {
+ *      var myAdx = new ADX(&#39;path/to/adx/&#39;);
+ *      myAdx.load(function (err) {
  *          if (err) {
  *              throw err;
  *          }
  *
  *          // Get the instance of the Configurator
- *          var conf = myAdc.configurator;
+ *          var conf = myAdx.configurator;
  *
  *          console.log(conf.info.name());
  *
  *      });
  *
  *
- * @class ADC.Configurator
+ * @class ADX.Configurator
  */
 function Configurator(dir) {
     if (!dir) {
         throw new Error(errMsg.invalidPathArg);
     }
-<span id='ADC-Configurator-property-path'>    /**
-</span>     * Path of the ADC directory
+
+<span id='ADX-Configurator-property-path'>    /**
+</span>     * Path of the ADX directory
      * @type {String}
      */
     this.path   = dir;
 
+<span id='ADX-Configurator-property-projectType'>    /**
+</span>     * Type of the project (`adc` or `adp`)
+     * @type {&quot;adc&quot;|&quot;adp&quot;}
+     */
+    this.projectType = null;
 
+<span id='ADX-Configurator-property-projectVersion'>    /**
+</span>     * Version of the ADX project
+     * @type {String}
+     */
+    this.projectVersion = null;
+
+<span id='ADX-Configurator-property-xmldoc'>    /**
+</span>     * XML document (ElementTree)
+     * @private
+     * @type {Object}
+     */
     this.xmldoc = null;
 
-<span id='ADC-Configurator-property-info'>    /**
-</span>     * Info of the ADC
-     * @type {ADC.Configurator.Info}
+<span id='ADX-Configurator-property-info'>    /**
+</span>     * Info of the ADX
+     * @type {ADX.Configurator.Info}
      */
     this.info = null;
 
-<span id='ADC-Configurator-property-outputs'>    /**
-</span>     * Outputs of the ADC
-     * @type {ADC.Configurator.Outputs}
+<span id='ADX-Configurator-property-outputs'>    /**
+</span>     * Outputs of the ADX
+     * @type {ADX.Configurator.Outputs}
      */
     this.outputs = null;
 
-<span id='ADC-Configurator-property-properties'>    /**
-</span>     * Properties of the ADC
-     * @type {ADC.Configurator.Properties}
+<span id='ADX-Configurator-property-properties'>    /**
+</span>     * Properties of the ADX
+     * @type {ADX.Configurator.Properties}
      */
     this.properties = null;
 }
 
-<span id='ADC-Configurator-method-constructor'>/**
-</span> * Create a new instance of the ADC configurator object
+<span id='ADX-Configurator-method-constructor'>/**
+</span> * Create a new instance of the ADX configurator object
  *
  * @constructor
- * @param {String} dir Path of the ADC directory
+ * @param {String} dir Path of the ADX directory
  */
 Configurator.prototype.constructor = Configurator;
 
-<span id='ADC-Configurator-method-load'>/**
+<span id='ADX-Configurator-method-load'>/**
 </span> * Read the config.xml file and initialize all properties of the current instance object
  *
  *       // Load the config file
- *       adcInfo.load(function (err) {
+ *       configurator.load(function (err) {
  *          if (err) {
  *              throw err;
  *          }
- *          console.log(adcInfo.name());
+ *          console.log(adxInfo.name());
  *       });
  *
  * @param {Function} [callback] Callback function
@@ -127,7 +144,7 @@ Configurator.prototype.load = function load(callback) {
     });
 };
 
-<span id='ADC-Configurator-method-get'>/**
+<span id='ADX-Configurator-method-get'>/**
 </span> * Get the entire configuration as object
  *
  *       // Get the info object
@@ -148,7 +165,7 @@ Configurator.prototype.get = function get() {
     };
 };
 
-<span id='ADC-Configurator-method-set'>/**
+<span id='ADX-Configurator-method-set'>/**
 </span> * Set th configuration using an object
  *
  *       // Get the info object
@@ -163,8 +180,6 @@ Configurator.prototype.get = function get() {
  *              company : &quot;The company name&quot;,
  *              site    : &quot;http://website.url.com&quot;,
  *              helpURL : &quot;http://help.url.com&quot;,
- *              style   : { width : 400, height : 200},
- *              categories : [&quot;General&quot;, &quot;Slider&quot;, &quot;Single&quot;],
  *              constraints : {
  *                  questions : {
  *                     single : true,
@@ -299,17 +314,17 @@ Configurator.prototype.set = function set(data) {
     }
 };
 
-<span id='ADC-Configurator-method-toXml'>/**
+<span id='ADX-Configurator-method-toXml'>/**
 </span> * Return the configuration as xml
  *
  *       // Serialize the config to XML
- *       adcInfo.toXml();
+ *       configurator.toXml();
  *       // -&gt; &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
- *             &lt;control  xmlns=&quot;http://www.askia.com/ADCSchema&quot;
+ *             &lt;control  xmlns=&quot;http://www.askia.com/2.1.0/ADCSchema&quot;
  *             xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
- *             xsi:schemaLocation=&quot;http://www.askia.com/ADCSchema http://www.askia.com/Downloads/dev/schemas/adc2.0/Config.xsd&quot;
- *             version=&quot;2.0.0&quot;
- *             askiaCompat=&quot;5.3.3&quot;&gt;
+ *             xsi:schemaLocation=&quot;http://www.askia.com/2.1.0/ADCSchema https://raw.githubusercontent.com/AskiaADX/ADXSchema/2.1.0/ADCSchema.xsd&quot;
+ *             version=&quot;2.1.0&quot;
+ *             askiaCompat=&quot;5.4.2&quot;&gt;
  *                 &lt;info&gt;
  *                     &lt;name&gt;My Name&lt;/name&gt;
  *                     &lt;guid&gt;the-guid&lt;/guid&gt;
@@ -327,16 +342,33 @@ Configurator.prototype.set = function set(data) {
  */
 Configurator.prototype.toXml = function toXml() {
     var xml = [],
+        projectType = this.projectType,
+        projectVersion = this.projectVersion,
+        rootName = (projectType === &#39;adc&#39;) ? &#39;control&#39; : &#39;page&#39;,
+        namespaceURI = &#39;http://www.askia.com/&#39; + projectVersion + &#39;/&#39; + projectType.toUpperCase() + &#39;Schema&#39;,
+        schemaURI = &#39;https://raw.githubusercontent.com/AskiaADX/ADXSchema/&#39; + projectVersion + &#39;/&#39; + projectType.toUpperCase() + &#39;Schema.xsd&#39;,
+        askiaCompat,
         infoXml = this.info.toXml(),
         outputsXml = this.outputs.toXml(),
         propertiesXml = this.properties.toXml();
 
+    switch(projectVersion) {
+        case &#39;2.1.0&#39;:
+            askiaCompat = &quot;5.4.2&quot;;
+            break;
+
+        case &#39;2.0.0&#39;:
+        default:
+            askiaCompat = &quot;5.3.3&quot;;
+            break;
+    }
+
     xml.push(&#39;&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#39;);
-    xml.push(&#39;&lt;control  xmlns=&quot;http://www.askia.com/ADCSchema&quot;&#39; +
+    xml.push(&#39;&lt;&#39; + rootName + &#39;  xmlns=&quot;&#39; + namespaceURI + &#39;&quot;&#39; +
             &#39;\n          xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&#39; +
-            &#39;\n          xsi:schemaLocation=&quot;http://www.askia.com/ADCSchema http://www.askia.com/Downloads/dev/schemas/adc2.0/Config.xsd&quot;&#39; +
-            &#39;\n          version=&quot;2.0.0&quot;&#39; +
-            &#39;\n          askiaCompat=&quot;5.3.3&quot;&gt;&#39;);
+            &#39;\n          xsi:schemaLocation=&quot;&#39; + namespaceURI + &#39; &#39; + schemaURI + &#39;&quot;&#39; +
+            &#39;\n          version=&quot;&#39; + projectVersion + &#39;&quot;&#39; +
+            &#39;\n          askiaCompat=&quot;&#39; + askiaCompat + &#39;&quot;&gt;&#39;);
 
     if (infoXml) {
         xml.push(infoXml);
@@ -347,27 +379,42 @@ Configurator.prototype.toXml = function toXml() {
     if (propertiesXml) {
         xml.push(propertiesXml);
     }
-    xml.push(&#39;&lt;/control&gt;&#39;);
+    xml.push(&#39;&lt;/&#39; + rootName + &#39;&gt;&#39;);
 
     return xml.join(&#39;\n&#39;);
 };
 
-<span id='ADC-Configurator-method-fromXml'>/**
+<span id='ADX-Configurator-method-fromXml'>/**
 </span> * Re-init the configurator using the xml string
  *
  *       // Load the configuration using an xml string
  *       // xmlString contains information from config.xml
- *       adcInfo.fromXml(xmlString);
+ *       configurator.fromXml(xmlString);
  *
  */
 Configurator.prototype.fromXml = function fromXml(xml) {
     this.xmldoc = et.parse(xml);
-    this.info = new ADCInfo(this);
-    this.outputs = new ADCOutputs(this);
-    this.properties = new ADCProperties(this);
+
+    var rootEl = this.xmldoc.getroot();
+    switch (rootEl &amp;&amp; rootEl.tag) {
+        case &#39;control&#39;:
+            this.projectType = &#39;adc&#39;;
+            this.projectVersion = rootEl.get(&quot;version&quot;) || &quot;2.0.0&quot;;
+            break;
+        case &#39;page&#39;:
+            this.projectType = &#39;adp&#39;;
+            this.projectVersion = rootEl.get(&quot;version&quot;) || &quot;2.1.0&quot;;
+            break;
+        default:
+            throw new Error(errMsg.invalidConfigFile);
+    }
+
+    this.info = new ADXInfo(this);
+    this.outputs = new ADXOutputs(this);
+    this.properties = new ADXProperties(this);
 };
 
-<span id='ADC-Configurator-method-save'>/**
+<span id='ADX-Configurator-method-save'>/**
 </span> * Save the current configuration
  *
  * @param {Function} [callback]
@@ -387,43 +434,43 @@ Configurator.prototype.save = function save(callback) {
     });
 };
 
-<span id='ADC-Configurator-Info'>/**
-</span> * Provide an object to manipulate the meta-information of the ADC (config.xml &gt; info)
+<span id='ADX-Configurator-Info'>/**
+</span> * Provide an object to manipulate the meta-information of the ADX (config.xml &gt; info)
  *
- *      var ADC = require(&#39;adcutil&#39;).ADC;
+ *      var ADX = require(&#39;adxutil&#39;).ADX;
  *
- *      var myAdc = new ADC(&#39;path/to/adc/&#39;);
- *      myAdc.load(function (err) {
+ *      var myAdx = new ADX(&#39;path/to/adx/&#39;);
+ *      myAdx.load(function (err) {
  *          if (err) {
  *              throw err;
  *          }
  *
  *          // Get the instance of the Info
- *          var info = myAdc.configurator.info;
+ *          var info = myAdx.configurator.info;
  *
  *          console.log(info.get());
  *
  *      });
  *
- * @class ADC.Configurator.Info
+ * @class ADX.Configurator.Info
  */
-function ADCInfo(configurator) {
+function ADXInfo(configurator) {
     this.configurator = configurator;
 }
 
-<span id='ADC-Configurator-Info-method-constructor'>/**
-</span> * Creates a new instance of ADC Info
+<span id='ADX-Configurator-Info-method-constructor'>/**
+</span> * Creates a new instance of ADX Info
  *
  * @constructor
- * @param {ADC.Configurator} configurator Instance of the configurator
+ * @param {ADX.Configurator} configurator Instance of the configurator
  */
-ADCInfo.prototype.constructor = ADCInfo;
+ADXInfo.prototype.constructor = ADXInfo;
 
-<span id='ADC-Configurator-Info-method-get'>/**
+<span id='ADX-Configurator-Info-method-get'>/**
 </span> * Get the entire information as object
  *
  *       // Get the info object
- *       adcInfo.get();
+ *       adxInfo.get();
  *       // {
  *       //   name : &quot;My ADC&quot;
  *       //   version : &quot;2.2.0.beta1&quot;,
@@ -434,8 +481,6 @@ ADCInfo.prototype.constructor = ADCInfo;
  *       //   company : &quot;The company name&quot;,
  *       //   site    : &quot;http://website.url.com&quot;,
  *       //   helpURL : &quot;http://help.url.com&quot;,
- *       //   style   : { width : 400, height : 200},
- *       //   categories : [&quot;General&quot;, &quot;Slider&quot;, &quot;Single&quot;],
  *       //   constraints : {
  *       //       questions : {
  *       //          single : true,
@@ -452,22 +497,32 @@ ADCInfo.prototype.constructor = ADCInfo;
  *
  * @return {Object}
  */
-ADCInfo.prototype.get = function get() {
+ADXInfo.prototype.get = function get() {
     var self = this,
-        result = {};
+        result = {},
+        projectType = this.configurator.projectType,
+        projectVersion = this.configurator.projectVersion,
+        infos = [&quot;name&quot;, &quot;guid&quot;, &quot;version&quot;, &quot;date&quot;, &quot;description&quot;, &quot;company&quot;, &quot;author&quot;, &quot;site&quot;, &quot;helpURL&quot;];
 
-    [&quot;name&quot;, &quot;guid&quot;, &quot;version&quot;, &quot;date&quot;, &quot;description&quot;, &quot;company&quot;, &quot;author&quot;, &quot;site&quot;,
-        &quot;helpURL&quot;, &quot;categories&quot;, &quot;style&quot;, &quot;constraints&quot;].forEach(function (methodName) {
-            result[methodName] = self[methodName]();
+    if (projectType === &#39;adc&#39;) {
+        infos.push(&quot;categories&quot;);
+        if (projectVersion === &#39;2.0.0&#39;) {
+            infos.push(&quot;style&quot;);
+        }
+        infos.push(&quot;constraints&quot;);
+    }
+
+    infos.forEach(function (methodName) {
+         result[methodName] = self[methodName]();
     });
     return result;
 };
 
-<span id='ADC-Configurator-Info-method-set'>/**
+<span id='ADX-Configurator-Info-method-set'>/**
 </span> * Set the information using a plain object
  *
  *       // Get the info object
- *       adcInfo.set({
+ *       adxInfo.set({
  *          name : &quot;My ADC&quot;
  *          version : &quot;2.2.0.beta1&quot;,
  *          date  : &quot;2015-06-25&quot;,
@@ -477,8 +532,6 @@ ADCInfo.prototype.get = function get() {
  *          company : &quot;The company name&quot;,
  *          site    : &quot;http://website.url.com&quot;,
  *          helpURL : &quot;http://help.url.com&quot;,
- *          style   : { width : 400, height : 200},
- *          categories : [&quot;General&quot;, &quot;Slider&quot;, &quot;Single&quot;],
  *          constraints : {
  *              questions : {
  *                 single : true,
@@ -495,21 +548,21 @@ ADCInfo.prototype.get = function get() {
  *
  *
  * @param {Object} data Data to set
- * @param {String} [data.name] Name of the ADC
- * @param {String} [data.version] Version of the ADC
- * @param {String} [data.date] Date of the ADC (YYYY-MM-dd)
- * @param {String} [data.guid] GUID of the ADC
- * @param {String} [data.description] Description of the ADC
- * @param {String} [data.author] Author(s) of the ADC (name1 &lt;name1@email.com, name2 &lt;name2@email.com&gt;)
+ * @param {String} [data.name] Name of the ADX
+ * @param {String} [data.version] Version of the ADX
+ * @param {String} [data.date] Date of the ADX (YYYY-MM-dd)
+ * @param {String} [data.guid] GUID of the ADX
+ * @param {String} [data.description] Description of the ADX
+ * @param {String} [data.author] Author(s) of the ADX (name1 &lt;name1@email.com, name2 &lt;name2@email.com&gt;)
  * @param {String} [data.company] Company name of the creator
  * @param {String} [data.site] Web site URL of the creator
- * @param {String} [data.helpURL] URL to the ADC help
- * @param {Object} [data.style] Style of the ADC
- * @param {Number} [data.style.width] Width of the ADC (in pixel)
- * @param {Number} [data.style.height] Height of the ADC (in pixel)
- * @param {String[]} [data.categories] Categories of the ADC
- * @param {Object} [data.constraints] Constraints of the ADC
- * @param {Object} [data.constraints.questions] Questions constraints of the ADC
+ * @param {String} [data.helpURL] URL to the ADX help
+ * @param {Object} [data.style] [DEPRECATED] Style of the ADC
+ * @param {Number} [data.style.width] [DEPRECATED] Width of the ADC (in pixel)
+ * @param {Number} [data.style.height] [DEPRECATED] Height of the ADC (in pixel)
+ * @param {String[]} [data.categories] [DEPREACATED] Categories of the ADC
+ * @param {Object} [data.constraints] Constraints of the ADC (ADC ONLY)
+ * @param {Object} [data.constraints.questions] Questions constraints of the ADC (ADC ONLY)
  * @param {Boolean} [data.constraints.questions.chapter] Allow or not on chapter
  * @param {Boolean} [data.constraints.questions.single] Allow  or not on single questions
  * @param {Boolean} [data.constraints.questions.multiple] Allow or not on multi-coded questions
@@ -517,18 +570,18 @@ ADCInfo.prototype.get = function get() {
  * @param {Boolean} [data.constraints.questions.open] Allow or not on open-ended questions
  * @param {Boolean} [data.constraints.questions.date] Allow or not on date questions
  * @param {Boolean} [data.constraints.questions.requireParentLoop] Require or not on a parent loop question
- * @param {Object} [data.constraints.controls] Controls constraints of the ADC
+ * @param {Object} [data.constraints.controls] Controls constraints of the ADC (ADC ONLY)
  * @param {Boolean} [data.constraints.controls.responseBlock] Allow or not on response-block
  * @param {Boolean} [data.constraints.controls.label] Allow or not on label
  * @param {Boolean} [data.constraints.controls.textbox] Allow or not on text-box
  * @param {Boolean} [data.constraints.controls.listbox] Allow or not on list-box
  * @param {Boolean} [data.constraints.controls.checkbox] Allow or not on checkbox
  * @param {Boolean} [data.constraints.controls.radiobutton] Allow or not on radio button
- * @param {Object} [data.constraints.responses] Responses constraints of the ADC
+ * @param {Object} [data.constraints.responses] Responses constraints of the ADC (ADC ONLY)
  * @param {Number} [data.constraints.responses.min] Minimum allowed responses
  * @param {Number} [data.constraints.responses.max] Maximum allowed responses
  */
-ADCInfo.prototype.set = function set(data) {
+ADXInfo.prototype.set = function set(data) {
     var self = this;
 
     if (!data) {
@@ -545,159 +598,198 @@ ADCInfo.prototype.set = function set(data) {
 };
 
 
-
 ([&quot;name&quot;, &quot;guid&quot;, &quot;version&quot;, &quot;date&quot;, &quot;description&quot;, &quot;company&quot;, &quot;author&quot;, &quot;site&quot;, &quot;helpURL&quot;].forEach(function (propName) {
-<span id='ADC-Configurator-Info-method-name'>    /**
-</span>     * Get or set the name of the ADC
+<span id='ADX-Configurator-Info-method-name'>    /**
+</span>     * Get or set the name of the ADX
      *
-     *       // Get the name of the ADC
-     *       adcInfo.name();
+     *       // Get the name of the ADX
+     *       adxInfo.name();
      *
-     *       // Set the name of the ADC
-     *       adcInfo.name(&quot;New name&quot;);
+     *       // Set the name of the ADX
+     *       adxInfo.name(&quot;New name&quot;);
      *
      * @method name
-     * @param {String} [data] Name of the ADC to set
-     * @returns {String} Name of the ADC
+     * @param {String} [data] Name of the ADX to set
+     * @returns {String} Name of the ADX
      */
-<span id='ADC-Configurator-Info-method-guid'>    /**
-</span>     * Get or set the GUID of the ADC
+<span id='ADX-Configurator-Info-method-guid'>    /**
+</span>     * Get or set the GUID of the ADX
      *
-     *       // Get the guid of the ADC
-     *       adcInfo.guid();
+     *       // Get the guid of the ADX
+     *       adxInfo.guid();
      *
      *       // Set the guid of the ADC
      *       var uuid = require(&#39;node-uuid&#39;&#39;);
-     *       adcInfo.guid(uuid.v4());
+     *       adxInfo.guid(uuid.v4());
      *
      * @method guid
-     * @param {String} [data] GUID of the ADC to set
-     * @returns {String} GUID of the ADC
+     * @param {String} [data] GUID of the ADX to set
+     * @returns {String} GUID of the ADX
      */
-<span id='ADC-Configurator-Info-method-version'>    /**
-</span>     * Get or set the version of the ADC
+<span id='ADX-Configurator-Info-method-version'>    /**
+</span>     * Get or set the version of the ADX
      *
-     *       // Get the version of the ADC
-     *       adcInfo.version();
+     *       // Get the version of the ADX
+     *       adxInfo.version();
      *
-     *       // Set the version of the ADC
-     *       adcInfo.version(&quot;2.0.0.beta1&quot;);
+     *       // Set the version of the ADX
+     *       adxInfo.version(&quot;2.0.0.beta1&quot;);
      *
      * @method version
-     * @param {String} [data] Version of the ADC to set
-     * @returns {String} Version of the ADC
+     * @param {String} [data] Version of the ADX to set
+     * @returns {String} Version of the ADX
      */
-<span id='ADC-Configurator-Info-method-description'>    /**
-</span>     * Get or set the description of the ADC
+<span id='ADX-Configurator-Info-method-description'>    /**
+</span>     * Get or set the description of the ADX
      *
-     *       // Get the description of the ADC
-     *       adcInfo.description();
+     *       // Get the description of the ADX
+     *       adxInfo.description();
      *
-     *       // Set the description of the ADC
-     *       adcInfo.description(&quot;This is the description of the ADC&quot;);
+     *       // Set the description of the ADX
+     *       adxInfo.description(&quot;This is the description of the ADX&quot;);
      *
      * @method description
-     * @param {String} [data] Description of the ADC to set
-     * @returns {String} Description of the ADC
+     * @param {String} [data] Description of the ADX to set
+     * @returns {String} Description of the ADX
      */
-<span id='ADC-Configurator-Info-method-company'>    /**
-</span>     * Get or set the company name of the ADC creator
+<span id='ADX-Configurator-Info-method-company'>    /**
+</span>     * Get or set the company name of the ADX creator
      *
-     *       // Get the company of the ADC
-     *       adcInfo.company();
+     *       // Get the company of the ADX
+     *       adxInfo.company();
      *
-     *       // Set the company of the ADC
-     *       adcInfo.company(&quot;Askia SAS&quot;);
+     *       // Set the company of the ADX
+     *       adxInfo.company(&quot;Askia SAS&quot;);
      *
      * @method company
      * @param {String} [data] Company name to set
-     * @returns {String} Company of the ADC creator
+     * @returns {String} Company of the ADX creator
      */
-<span id='ADC-Configurator-Info-method-author'>    /**
-</span>     * Get or set the author(s) of the ADC
+<span id='ADX-Configurator-Info-method-author'>    /**
+</span>     * Get or set the author(s) of the ADX
      *
-     *       // Get the author(s) of the ADC
-     *       adcInfo.author();
+     *       // Get the author(s) of the ADX
+     *       adxInfo.author();
      *
-     *       // Set the author(s) of the ADC
-     *       adcInfo.author(&quot;John Doe &lt;john.doe@unknow.com&gt;, Foo Bar &lt;foo@bar.com&gt;&quot;);
+     *       // Set the author(s) of the ADX
+     *       adxInfo.author(&quot;John Doe &lt;john.doe@unknow.com&gt;, Foo Bar &lt;foo@bar.com&gt;&quot;);
      *
      * @method author
      * @param {String} [data] Author(s) to set
      * @returns {String} Author(s)
      */
-<span id='ADC-Configurator-Info-method-date'>    /**
-</span>     * Get or set the date creation of the ADC
+<span id='ADX-Configurator-Info-method-date'>    /**
+</span>     * Get or set the date creation of the ADX
      *
      *       // Get the date
-     *       adcInfo.date();
+     *       adxInfo.date();
      *
      *       // Set the date
-     *       adcInfo.date(&quot;2015-06-25&quot;);
+     *       adxInfo.date(&quot;2015-06-25&quot;);
      *
      * @method date
      * @param {String} [data] Date to set
      * @returns {String} Date
      */
-<span id='ADC-Configurator-Info-method-site'>    /**
-</span>     * Get or set the website URL of the ADC creator
+<span id='ADX-Configurator-Info-method-site'>    /**
+</span>     * Get or set the website URL of the ADX creator
      *
      *       // Get the site
-     *       adcInfo.site();
+     *       adxInfo.site();
      *
      *       // Set the site URL
-     *       adcInfo.site(&quot;http://my.website.com&quot;);
+     *       adxInfo.site(&quot;http://my.website.com&quot;);
      *
      * @method site
      * @param {String} [data] URL to set
      * @returns {String} Site URL
      */
-<span id='ADC-Configurator-Info-method-helpURL'>    /**
-</span>     * Get or set the help URL of the ADC
+<span id='ADX-Configurator-Info-method-helpURL'>    /**
+</span>     * Get or set the help URL of the ADX
      *
      *       // Get the help URL
-     *       adcInfo.helpURL();
+     *       adxInfo.helpURL();
      *
      *       // Set the help URL
-     *       adcInfo.helpURL(&quot;http://my.help.file.com&quot;);
+     *       adxInfo.helpURL(&quot;http://my.help.file.com&quot;);
      *
      * @method helpURL
      * @param {String} [data] URL to set
      * @returns {String} Help URL
      */
-    ADCInfo.prototype[propName] = function (data) {
+    ADXInfo.prototype[propName] = function (data) {
         var xmldoc = this.configurator.xmldoc;
-        var el = xmldoc.find(&quot;info/&quot; + propName);
-        if (data !== undefined) {
+        var elInfo = xmldoc.find(&#39;info&#39;);
+        var isSetter = data !== undefined;
+
+        // No root info
+        if (!elInfo &amp;&amp; isSetter) {
+            elInfo = subElement(xmldoc.getroot(), &#39;info&#39;);
+        } else if (!elInfo &amp;&amp; !isSetter) {
+            return &#39;&#39;;
+        }
+
+        var el = elInfo.find(propName);
+
+        // No element
+        if (!el &amp;&amp; isSetter) {
+            el = subElement(elInfo, propName);
+        } else if (!el &amp;&amp; !isSetter) {
+            return &#39;&#39;;
+        }
+
+        if (isSetter) {
             el.text = data;
         }
         return el.text;
     };
 }));
 
-<span id='ADC-Configurator-Info-method-style'>/**
+<span id='ADX-Configurator-Info-method-style'>/**
 </span> * Get or set the style
  *
  *       // Get the style of the ADC
- *       adcInfo.style();
+ *       adxInfo.style();
  *
  *       // Set the style of the ADC
- *       adcInfo.style({
+ *       adxInfo.style({
  *          width  : 400,
  *          height : 200
  *       });
  *
- *
+ * @deprecated
  * @param {Object} [data] Style to set
  * #param {Number} [data.width] Style width
  * @param {Number} [data.height] Style height
  * @returns {Object}
  */
-ADCInfo.prototype.style = function style(data) {
+ADXInfo.prototype.style = function style(data) {
+    if (this.configurator.projectType !== &#39;adc&#39;) {
+        return;
+    }
+    if (this.configurator.projectVersion !== &quot;2.0.0&quot;) {
+        return;
+    }
     var xmldoc = this.configurator.xmldoc;
-    var el = xmldoc.find(&quot;info/style&quot;);
+    var elInfo = xmldoc.find(&quot;info&quot;);
+    var isSetter = (data !== undefined);
+
+    if (!elInfo &amp;&amp; isSetter) {
+        elInfo = subElement(xmldoc.getroot(), &quot;info&quot;);
+    } else if (!elInfo &amp;&amp; !isSetter) {
+        return { width : 0,height : 0 };
+    }
+
+
+    var el = elInfo.find(&quot;style&quot;);
+    if (!el &amp;&amp; isSetter) {
+        el = subElement(elInfo, &quot;style&quot;);
+    } else if (!el &amp;&amp; !isSetter) {
+        return {width : 0, height : 0};
+    }
+
     var result = {}, w, h;
-    if (data !== undefined &amp;&amp; el) {
+    if (isSetter) {
         if (data.width !== undefined) {
             el.set(&quot;width&quot;, data.width);
         }
@@ -705,8 +797,8 @@ ADCInfo.prototype.style = function style(data) {
             el.set(&quot;height&quot;, data.height);
         }
     }
-    w = (el &amp;&amp; el.get(&quot;width&quot;)) || &quot;0&quot;;
-    h = (el &amp;&amp; el.get(&quot;height&quot;)) || &quot;0&quot;;
+    w = el.get(&quot;width&quot;) || &quot;0&quot;;
+    h = el.get(&quot;height&quot;) || &quot;0&quot;;
 
     result.width = parseInt(w, 10);
     result.height = parseInt(h, 10);
@@ -714,24 +806,45 @@ ADCInfo.prototype.style = function style(data) {
     return result;
 };
 
-<span id='ADC-Configurator-Info-method-categories'>/**
+<span id='ADX-Configurator-Info-method-categories'>/**
 </span> * Get or set the categories
  *
  *       // Get the categories of the ADC
- *       adcInfo.categories();
+ *       adxInfo.categories();
  *
  *       // Set the categories of the ADC
- *       adcInfo.categories([&quot;General&quot;, &quot;Slider&quot;, &quot;Single&quot;]);
+ *       adxInfo.categories([&quot;General&quot;, &quot;Slider&quot;, &quot;Single&quot;]);
  *
- *
+ * @deprecated
  * @param {String[]} [data] Array of string which represent the categories to set
  * @returns {String[]} Name of categories
  */
-ADCInfo.prototype.categories = function categories(data) {
+ADXInfo.prototype.categories = function categories(data) {
+    if (this.configurator.projectType !== &#39;adc&#39;) {
+        return;
+    }
     var xmldoc = this.configurator.xmldoc;
-    var el = xmldoc.find(&quot;info/categories&quot;);
+    var elInfo = xmldoc.find(&#39;info&#39;);
+    var isSetter = Array.isArray(data);
+
+    // No root info
+    if (!elInfo &amp;&amp; isSetter) {
+        elInfo = subElement(xmldoc.getroot(), &#39;info&#39;);
+    } else if (!elInfo &amp;&amp; !isSetter) {
+        return [];
+    }
+
+    var el = elInfo.find(&quot;categories&quot;);
+
+    // No categories
+    if (!el &amp;&amp; isSetter) {
+        el = subElement(elInfo, &#39;categories&#39;);
+    } else if (!el &amp;&amp; !isSetter) {
+        return [];
+    }
+
     var result = [];
-    if (Array.isArray(data)) {
+    if (isSetter) {
         el.delSlice(0, el.len());
         data.forEach(function (text) {
             var cat = subElement(el, &#39;category&#39;);
@@ -746,14 +859,14 @@ ADCInfo.prototype.categories = function categories(data) {
     return result;
 };
 
-<span id='ADC-Configurator-Info-method-constraints'>/**
+<span id='ADX-Configurator-Info-method-constraints'>/**
 </span> * Get or set the constraints
  *
  *       // Get the constraints of the ADC
- *       adcInfo.constraints();
+ *       adxInfo.constraints();
  *
  *       // Set the constraints of the ADC
- *       adcInfo.constraints({
+ *       adxInfo.constraints({
  *          questions : {
  *              single : true,
  *              multiple : true
@@ -768,13 +881,34 @@ ADCInfo.prototype.categories = function categories(data) {
  *       });
  *
  *
- * @param {Object} [data] Constraint data to set
+ * @param {Object} [data] Constraint data to set (ADC ONLY)
  * @return {Object} Constraints
  */
-ADCInfo.prototype.constraints = function constraints(data) {
+ADXInfo.prototype.constraints = function constraints(data) {
+    if (this.configurator.projectType !== &#39;adc&#39;) {
+        return;
+    }
     var xmldoc = this.configurator.xmldoc;
-    var el = xmldoc.find(&quot;info/constraints&quot;);
+    var elInfo = xmldoc.find(&quot;info&quot;);
+
+    // No root info
+    if (!elInfo &amp;&amp; data) {
+        elInfo = subElement(xmldoc.getroot(), &#39;info&#39;)
+    } else if (!elInfo &amp;&amp; !data) {
+        return {};
+    }
+
+    var el = elInfo.find(&quot;constraints&quot;);
+
+    // No constraints
+    if (!el &amp;&amp; data) {
+        el = subElement(elInfo, &#39;constraints&#39;);
+    } else if (!el &amp;&amp; !data) {
+        return {};
+    }
+
     var result = {};
+
     if (data) {
         Object.keys(data).forEach(function (on) {
             if (on !== &#39;questions&#39; &amp;&amp;  on !== &#39;responses&#39; &amp;&amp;  on !== &#39;controls&#39;) {
@@ -820,21 +954,21 @@ ADCInfo.prototype.constraints = function constraints(data) {
     return result;
 };
 
-<span id='ADC-Configurator-Info-method-constraint'>/**
-</span> * Get or set the constraint
+<span id='ADX-Configurator-Info-method-constraint'>/**
+</span> * Get or set the constraint (ADC Only)
  *
  *       // Get the constraint &#39;single&#39; on questions
- *       adcInfo.constraint(&#39;questions&#39;, &#39;single&#39;);
+ *       adxInfo.constraint(&#39;questions&#39;, &#39;single&#39;);
  *
  *       // Set the constraint &#39;single&#39; on questions
- *       adcInfo.constraint(&#39;questions&#39;, &#39;single&#39;, true);
+ *       adxInfo.constraint(&#39;questions&#39;, &#39;single&#39;, true);
  *
  * @param {String} where Which constraint to target
  * @param {String} attName Name of the constraint attribute to get or set
  * @param {Boolean|Number} [attValue] Value of the attribute to set
  * @return {Boolean|Number} Value of the attribute
  */
-ADCInfo.prototype.constraint = function constraint(where, attName, attValue) {
+ADXInfo.prototype.constraint = function constraint(where, attName, attValue) {
     var xmldoc = this.configurator.xmldoc;
     var el = xmldoc.find(&quot;info/constraints/constraint[@on=&#39;&quot; + where + &quot;&#39;]&quot;);
     var result;
@@ -871,18 +1005,20 @@ ADCInfo.prototype.constraint = function constraint(where, attName, attValue) {
     return (result !== &quot;false&quot; &amp;&amp; result !== &quot;0&quot;);
 };
 
-<span id='ADC-Configurator-Info-method-toXml'>/**
+<span id='ADX-Configurator-Info-method-toXml'>/**
 </span> * Return the info as xml string
  *
  *       // Serialize the info to XML
- *       adcInfo.toXml();
+ *       adxInfo.toXml();
  *       // -&gt; &lt;info&gt;&lt;name&gt;MyADC&lt;/name&gt;&lt;guid&gt;the-guid&lt;/guid&gt;....&lt;/info&gt;
  *
  * @return {String}
  */
-ADCInfo.prototype.toXml = function toXml() {
+ADXInfo.prototype.toXml = function toXml() {
     var xml = [],
         self = this,
+        projectType = this.configurator.projectType,
+        projectVersion = this.configurator.projectVersion,
         style,
         constraints,
         constraintsKeys = [&#39;questions&#39;, &#39;controls&#39;, &#39;responses&#39;];
@@ -900,97 +1036,105 @@ ADCInfo.prototype.toXml = function toXml() {
             xml.push(&#39;    &lt;&#39; + methodName + &#39;&gt;&#39; + data + &#39;&lt;/&#39; + methodName + &#39;&gt;&#39;);
     });
 
-    xml.push(&#39;    &lt;categories&gt;&#39;);
-    self.categories().forEach(function (cat) {
-        xml.push(&#39;      &lt;category&gt;&#39; + cat + &#39;&lt;/category&gt;&#39;);
-    });
-    xml.push(&#39;    &lt;/categories&gt;&#39;);
+    // ADC Only
+    if (projectType === &#39;adc&#39;) {
+        xml.push(&#39;    &lt;categories&gt;&#39;);
+        self.categories().forEach(function (cat) {
+            xml.push(&#39;      &lt;category&gt;&#39; + cat + &#39;&lt;/category&gt;&#39;);
+        });
+        xml.push(&#39;    &lt;/categories&gt;&#39;);
 
-    style = self.style();
-    xml.push(&#39;    &lt;style width=&quot;&#39; + style.width + &#39;&quot; height=&quot;&#39; + style.height + &#39;&quot; /&gt;&#39; );
-
-    constraints = self.constraints();
-    xml.push(&#39;    &lt;constraints&gt;&#39;);
-
-    constraintsKeys.forEach(function (on) {
-        if (!constraints[on]) {
-            return;
+        if (projectVersion === &#39;2.0.0&#39;) {
+            style = self.style();
+            xml.push(&#39;    &lt;style width=&quot;&#39; + style.width + &#39;&quot; height=&quot;&#39; + style.height + &#39;&quot; /&gt;&#39; );
         }
-        var str = &#39;      &lt;constraint on=&quot;&#39; + on + &#39;&quot;&#39;,
-            constraint = constraints[on];
-        for(var key in constraint) {
-            if (constraint.hasOwnProperty(key)) {
-                str += &#39; &#39; + key + &#39;=&quot;&#39; + constraint[key].toString() + &#39;&quot;&#39;;
+
+        constraints = self.constraints();
+        xml.push(&#39;    &lt;constraints&gt;&#39;);
+
+        constraintsKeys.forEach(function (on) {
+            if (!constraints[on]) {
+                return;
             }
-        }
-        str += &#39; /&gt;&#39;;
-        xml.push(str);
-    });
-    xml.push(&#39;    &lt;/constraints&gt;&#39;);
+            var str = &#39;      &lt;constraint on=&quot;&#39; + on + &#39;&quot;&#39;,
+                constraint = constraints[on];
+            for(var key in constraint) {
+                if (constraint.hasOwnProperty(key)) {
+                    str += &#39; &#39; + key + &#39;=&quot;&#39; + constraint[key].toString() + &#39;&quot;&#39;;
+                }
+            }
+            str += &#39; /&gt;&#39;;
+            xml.push(str);
+        });
+        xml.push(&#39;    &lt;/constraints&gt;&#39;);
+    }
 
     xml.push(&#39;  &lt;/info&gt;&#39;);
     return xml.join(&#39;\n&#39;);
 };
 
 
-<span id='ADC-Configurator-Outputs'>/**
+<span id='ADX-Configurator-Outputs'>/**
 </span> * Provide an object to manipulate the outputs  of the ADC (config.xml &gt; outputs)
  *
- *      var ADC = require(&#39;adcutil&#39;).ADC;
+ *      var ADX = require(&#39;adxutil&#39;).ADX;
  *
- *      var myAdc = new ADC(&#39;path/to/adc/&#39;);
- *      myAdc.load(function (err) {
+ *      var myAdx = new ADC(&#39;path/to/adx/&#39;);
+ *      myAdx.load(function (err) {
  *          if (err) {
  *              throw err;
  *          }
  *
  *          // Get the instance of the Outputs
- *          var outputs = myAdc.configurator.outputs;
+ *          var outputs = myAdx.configurator.outputs;
  *
  *          console.log(outputs.get());
  *
  *      });
  *
- * @class ADC.Configurator.Outputs
+ * @class ADX.Configurator.Outputs
  */
-function ADCOutputs(configurator) {
+function ADXOutputs(configurator) {
     this.configurator = configurator;
 }
 
-<span id='ADC-Configurator-Outputs-method-constructor'>/**
-</span> * Creates a new instance of ADC Outputs
+<span id='ADX-Configurator-Outputs-method-constructor'>/**
+</span> * Creates a new instance of ADX Outputs
  *
  * @constructor
- * @param {ADC.Configurator} configurator Instance of the configurator
+ * @param {ADX.Configurator} configurator Instance of the configurator
  */
-ADCOutputs.prototype.constructor = ADCOutputs;
+ADXOutputs.prototype.constructor = ADXOutputs;
 
-<span id='ADC-Configurator-Outputs-method-defaultOutput'>/**
-</span> * Get or set the default ADC output
+<span id='ADX-Configurator-Outputs-method-defaultOutput'>/**
+</span> * Get or set the default ADX output
  *
  *       // Get the id default output
- *       adcOutputs.defaultOutput();
+ *       adxOutputs.defaultOutput();
  *
  *       // Set the default output id
- *       adcInfo.defaultOutput(&quot;without_javascript&quot;);
+ *       adxOutputs.defaultOutput(&quot;without_javascript&quot;);
  *
  * @param {String} [data] Id of the default output to set
  * @returns {String} Id of the default output
  */
-ADCOutputs.prototype.defaultOutput = function defaultOutput(data) {
+ADXOutputs.prototype.defaultOutput = function defaultOutput(data) {
     var xmldoc = this.configurator.xmldoc;
     var el = xmldoc.find(&quot;outputs&quot;);
+    if (!el) {
+        el = subElement(xmldoc.getroot(), &#39;outputs&#39;);
+    }
     if (data &amp;&amp; typeof data === &#39;string&#39;) {
         el.set(&#39;defaultOutput&#39;, data);
     }
     return el.get(&#39;defaultOutput&#39;);
 };
 
-<span id='ADC-Configurator-Outputs-method-get'>/**
+<span id='ADX-Configurator-Outputs-method-get'>/**
 </span> * Get outputs as an object
  *
  *       // Get the outputs object
- *       adcOutputs.get();
+ *       adxOutputs.get();
  *       // {
  *       //   defaultOutput  : &quot;main&quot;,
  *       //   outputs : [{
@@ -1007,8 +1151,9 @@ ADCOutputs.prototype.defaultOutput = function defaultOutput(data) {
  *
  * @returns {Object}
  */
-ADCOutputs.prototype.get = function get() {
+ADXOutputs.prototype.get = function get() {
     var xmldoc = this.configurator.xmldoc;
+    var projectType = this.configurator.projectType;
     var el = xmldoc.find(&quot;outputs&quot;);
     var outputs = [];
 
@@ -1029,13 +1174,24 @@ ADCOutputs.prototype.get = function get() {
         if (conditionEl) {
             item.condition = conditionEl.text;
         }
-        var defaultGeneration = output.get(&quot;defaultGeneration&quot;);
-        if (defaultGeneration) {
-            item.defaultGeneration = (defaultGeneration === &quot;1&quot; || defaultGeneration === &quot;true&quot;);
+
+        // ADC Only
+        if (projectType === &#39;adc&#39;) {
+            var defaultGeneration = output.get(&quot;defaultGeneration&quot;);
+            if (defaultGeneration) {
+                item.defaultGeneration = (defaultGeneration === &quot;1&quot; || defaultGeneration === &quot;true&quot;);
+            }
+            var maxIter = output.get(&quot;maxIterations&quot;);
+            if (maxIter) {
+                item.maxIterations = (maxIter === &quot;*&quot;) ? &quot;*&quot; : parseInt(maxIter, 10);
+            }
         }
-        var maxIter = output.get(&quot;maxIterations&quot;);
-        if (maxIter) {
-            item.maxIterations = (maxIter === &quot;*&quot;) ? &quot;*&quot; : parseInt(maxIter, 10);
+        // ADP Only
+        else if (projectType === &#39;adp&#39;) {
+            var masterPage = output.get(&quot;masterPage&quot;);
+            if (masterPage) {
+                item.masterPage = masterPage;
+            }
         }
 
         // Contents
@@ -1059,6 +1215,10 @@ ADCOutputs.prototype.get = function get() {
                 itemContent.position = position;
             }
 
+            // ADC Only
+            if (projectType === &#39;adp&#39; &amp;&amp; itemContent.position === &#39;placeholder&#39;) {
+                return;
+            }
 
             // Attributes
             var attributes = [];
@@ -1099,11 +1259,11 @@ ADCOutputs.prototype.get = function get() {
     };
 };
 
-<span id='ADC-Configurator-Outputs-method-set'>/**
+<span id='ADX-Configurator-Outputs-method-set'>/**
 </span> * Set the outputs using a plain object
  *
  *       // Get the outputs object
- *       adcOutputs.set({
+ *       adxOutputs.set({
  *          defaultOutput : &quot;main&quot;,
  *          outputs : [
  *             {
@@ -1193,6 +1353,7 @@ ADCOutputs.prototype.get = function get() {
  * @param {String} [data.defaultOutput] Id of the default output
  * @param {Object[]} [data.outputs] Outputs
  * @param {String} [data.outputs.id] Id of the output
+ * @param {String} [data.outputs.masterPage] Master page to use for the ADP output
  * @param {String} [data.outputs.description] Description of the output
  * @param {String} [data.outputs.condition] AskiaScript condition to use the output
  * @param {Object[]} [data.outputs.contents] List of contents (files) used by the output
@@ -1205,12 +1366,17 @@ ADCOutputs.prototype.get = function get() {
  * @param {String} [data.outputs.contents.attributes.value] Value of the HTML attribute
  * @param {String} [data.outputs.contents.yieldValue] Yield value, used to override the auto-generation
  */
-ADCOutputs.prototype.set = function set(data) {
+ADXOutputs.prototype.set = function set(data) {
     var xmldoc = this.configurator.xmldoc;
     var el = xmldoc.find(&quot;outputs&quot;);
+    var projectType = this.configurator.projectType;
 
     if (!data) {
         return;
+    }
+
+    if (!el) {
+        el = subElement(xmldoc.getroot(), &#39;outputs&#39;);
     }
 
     if (data.defaultOutput) {
@@ -1225,11 +1391,20 @@ ADCOutputs.prototype.set = function set(data) {
 
         // All output xml attributes
         item.set(&quot;id&quot;, output.id || &quot;&quot;);
-        if (typeof output.defaultGeneration === &#39;boolean&#39;) {
-            item.set(&quot;defaultGeneration&quot;, output.defaultGeneration.toString());
+        // ADC Only
+        if (projectType === &#39;adc&#39;) {
+            if (typeof output.defaultGeneration === &#39;boolean&#39;) {
+                item.set(&quot;defaultGeneration&quot;, output.defaultGeneration.toString());
+            }
+            if (output.maxIterations) {
+                item.set(&quot;maxIterations&quot;, output.maxIterations);
+            }
         }
-        if (output.maxIterations) {
-            item.set(&quot;maxIterations&quot;, output.maxIterations);
+        // ADP Only
+        else if (projectType === &#39;adp&#39;) {
+            if (output.masterPage) {
+                item.set(&quot;masterPage&quot;, output.masterPage);
+            }
         }
 
         // All output sub-nodes
@@ -1247,6 +1422,10 @@ ADCOutputs.prototype.set = function set(data) {
         }
 
         output.contents.forEach(function (content) {
+            // ADP don&#39;t use content with &quot;placeholder&quot; position
+            if (projectType === &#39;adp&#39; &amp;&amp; content.position === &#39;placeholder&#39;) {
+                return;
+            }
             var itemContent = subElement(item, &#39;content&#39;);
             itemContent.set(&quot;fileName&quot;, content.fileName || &quot;&quot;);
             itemContent.set(&quot;type&quot;, content.type || &quot;&quot;);
@@ -1273,18 +1452,19 @@ ADCOutputs.prototype.set = function set(data) {
 
 };
 
-<span id='ADC-Configurator-Outputs-method-toXml'>/**
+<span id='ADX-Configurator-Outputs-method-toXml'>/**
 </span> * Return the outputs as xml string
  *
  *       // Serialize the outputs to XML
- *       adcOupts.toXml();
+ *       adxOutputs.toXml();
  *       // -&gt; &lt;outputs defaultOutput=&quot;main&quot;&gt;&lt;output id=&quot;main&quot;&gt; ...&lt;/outputs&gt;
  *
  * @return {String}
  */
-ADCOutputs.prototype.toXml = function toXml() {
+ADXOutputs.prototype.toXml = function toXml() {
     var xml = [],
-        data = this.get();
+        data = this.get(),
+        projectType = this.configurator.projectType;
 
     if (!data) {
         return &#39;&#39;;
@@ -1293,11 +1473,21 @@ ADCOutputs.prototype.toXml = function toXml() {
     if (Array.isArray(data.outputs)) {
         data.outputs.forEach(function (output) {
             var outputAttr = &#39;&#39;;
-            if (typeof output.defaultGeneration === &#39;boolean&#39;) {
-                outputAttr += &#39; defaultGeneration=&quot;&#39; + output.defaultGeneration.toString() + &#39;&quot;&#39;;
+
+            // ADC Only
+            if (projectType === &#39;adc&#39;) {
+                if (typeof output.defaultGeneration === &#39;boolean&#39;) {
+                    outputAttr += &#39; defaultGeneration=&quot;&#39; + output.defaultGeneration.toString() + &#39;&quot;&#39;;
+                }
+                if (output.maxIterations) {
+                    outputAttr += &#39; maxIterations=&quot;&#39; + output.maxIterations + &#39;&quot;&#39;;
+                }
             }
-            if (output.maxIterations) {
-                outputAttr += &#39; maxIterations=&quot;&#39; + output.maxIterations + &#39;&quot;&#39;;
+            // ADP Only
+            else if (projectType ===&#39;adp&#39;) {
+                if (output.masterPage) {
+                    outputAttr += &#39; masterPage=&quot;&#39; + output.masterPage + &#39;&quot;&#39;;
+                }
             }
 
             xml.push(&#39;    &lt;output id=&quot;&#39; + output.id + &#39;&quot;&#39; + outputAttr + &#39;&gt;&#39;);
@@ -1310,6 +1500,10 @@ ADCOutputs.prototype.toXml = function toXml() {
 
             if (Array.isArray(output.contents)) {
                 output.contents.forEach(function (content) {
+                    // ADC Only
+                    if (projectType === &#39;adp&#39; &amp;&amp; content.position === &#39;placeholder&#39;){
+                        return;
+                    }
                     var xmlContent = [];
                     xmlContent.push(&#39;      &lt;content&#39;);
                     xmlContent.push(&#39; fileName=&quot;&#39;, content.fileName || &quot;&quot;, &#39;&quot;&#39;);
@@ -1346,44 +1540,44 @@ ADCOutputs.prototype.toXml = function toXml() {
 };
 
 
-<span id='ADC-Configurator-Properties'>/**
+<span id='ADX-Configurator-Properties'>/**
 </span> * Provide an object to manipulate the propertues of the ADC (config.xml &gt; properties)
  *
- *      var ADC = require(&#39;adcutil&#39;).ADC;
+ *      var ADX = require(&#39;adxutil&#39;).ADX;
  *
- *      var myAdc = new ADC(&#39;path/to/adc/&#39;);
- *      myAdc.load(function (err) {
+ *      var myAdx = new ADX(&#39;path/to/adc/&#39;);
+ *      myAdx.load(function (err) {
  *          if (err) {
  *              throw err;
  *          }
  *
  *          // Get the instance of the Properties
- *          var properties = myAdc.configurator.properties;
+ *          var properties = myAdx.configurator.properties;
  *
  *          console.log(properties.get());
  *
  *      });
  *
- * @class ADC.Configurator.Properties
+ * @class ADX.Configurator.Properties
  */
-function ADCProperties(configurator) {
+function ADXProperties(configurator) {
     this.configurator = configurator;
 }
 
-<span id='ADC-Configurator-Properties-method-constructor'>/**
-</span> * Creates a new instance of ADC Properties
+<span id='ADX-Configurator-Properties-method-constructor'>/**
+</span> * Creates a new instance of ADX Properties
  *
  * @constructor
- * @param {ADC.Configurator} configurator Instance of the configurator
+ * @param {ADX.Configurator} configurator Instance of the configurator
  */
-ADCProperties.prototype.constructor = ADCProperties;
+ADXProperties.prototype.constructor = ADXProperties;
 
 
-<span id='ADC-Configurator-Properties-method-get'>/**
+<span id='ADX-Configurator-Properties-method-get'>/**
 </span> * Get properties as an object
  *
  *       // Get the properties object
- *       adcProperties.get();
+ *       adxProperties.get();
  *       // {
  *       //   categories : [{
  *       //      id : &quot;general&quot;,
@@ -1418,8 +1612,9 @@ ADCProperties.prototype.constructor = ADCProperties;
  *
  * @returns {Object}
  */
-ADCProperties.prototype.get = function get() {
+ADXProperties.prototype.get = function get() {
     var xmldoc = this.configurator.xmldoc;
+    var projectType = this.configurator.projectType;
     var el = xmldoc.find(&quot;properties&quot;);
     var categories = [];
 
@@ -1527,12 +1722,11 @@ ADCProperties.prototype.get = function get() {
             }
 
             property.iter(&#39;value&#39;, function (value) {
-                var theme = value.get(&quot;theme&quot;);
-                if (!theme &amp;&amp; !(&quot;value&quot; in itemProperty)) {
+                // The theme attribute has been deprecated
+                // only use valud that doesn&#39;t have this attribute
+                var deprecatedTheme = value.get(&quot;theme&quot;);
+                if (!deprecatedTheme &amp;&amp; !(&quot;value&quot; in itemProperty)) {
                     itemProperty.value = value.text || &quot;&quot;;
-                } else {
-                    itemProperty.valueTheme = itemProperty.valueTheme || {};
-                    itemProperty.valueTheme[theme] = value.text || &quot;&quot;;
                 }
             });
 
@@ -1550,6 +1744,16 @@ ADCProperties.prototype.get = function get() {
                 }
             }
 
+            // Deprecated system properties
+            if ( itemProperty.xsiType === &#39;askiaProperty&#39; &amp;&amp;  itemProperty.id === &#39;askia-theme&#39;) {
+                return;
+            }
+
+            // ADC only: property type=question is available for ADC only
+            if (projectType !== &#39;adc&#39; &amp;&amp; itemProperty.type === &#39;question&#39;) {
+                return;
+            }
+
             itemCategory.properties.push(itemProperty);
         });
 
@@ -1562,11 +1766,11 @@ ADCProperties.prototype.get = function get() {
 };
 
 
-<span id='ADC-Configurator-Properties-method-set'>/**
+<span id='ADX-Configurator-Properties-method-set'>/**
 </span> * Set the properties using a plain object
  *
  *       // Get the properties object
- *       adcProperties.set({
+ *       adxProperties.set({
  *          categories : [
  *             {
  *                 id : &quot;general&quot;,
@@ -1612,12 +1816,17 @@ ADCProperties.prototype.get = function get() {
  * @param {String} [data.categories.properties.options.value] Value of the option
  * @param {String} [data.categories.properties.options.text] Text of the option to display
  */
-ADCProperties.prototype.set = function set(data) {
+ADXProperties.prototype.set = function set(data) {
     var xmldoc = this.configurator.xmldoc;
+    var projectType = this.configurator.projectType;
     var el = xmldoc.find(&quot;properties&quot;);
 
     if (!data || !data.categories || !Array.isArray(data.categories)) {
         return;
+    }
+
+    if (!el) {
+        el = subElement(xmldoc.getroot(), &#39;properties&#39;);
     }
     el.delSlice(0, el.len());
     data.categories.forEach(function (category) {
@@ -1628,6 +1837,10 @@ ADCProperties.prototype.set = function set(data) {
 
         if (category.properties &amp;&amp; Array.isArray(category.properties)) {
             category.properties.forEach(function (property) {
+                // property question is available for the ADC only
+                if (projectType !== &#39;adc&#39; &amp;&amp; property.type === &#39;question&#39;) {
+                    return;
+                }
                 var itemProperty = subElement(itemCategory, &#39;property&#39;);
                 itemProperty.set(&#39;xsi:type&#39;, property.xsiType || &quot;standardProperty&quot;);
                 itemProperty.set(&#39;id&#39;, property.id || &quot;&quot;);
@@ -1648,17 +1861,6 @@ ADCProperties.prototype.set = function set(data) {
                     itemValue.text = property.value || &quot;&quot;;
                 }
 
-                if (property.valueTheme) {
-                    var itemTheme;
-                    for (var theme in property.valueTheme) {
-                        if (property.valueTheme.hasOwnProperty(theme)) {
-                            itemTheme = subElement(itemProperty, &quot;value&quot;);
-                            itemTheme.set(&quot;theme&quot;, theme);
-                            itemTheme.text = property.valueTheme[theme].toString();
-                        }
-                    }
-                }
-
                 if (property.options &amp;&amp; Array.isArray(property.options)) {
                     var itemOptions = subElement(itemProperty, &quot;options&quot;);
                     property.options.forEach(function (option) {
@@ -1674,18 +1876,19 @@ ADCProperties.prototype.set = function set(data) {
 };
 
 
-<span id='ADC-Configurator-Properties-method-toXml'>/**
+<span id='ADX-Configurator-Properties-method-toXml'>/**
 </span> * Return the properties as xml string
  *
  *       // Serialize the properties to XML
- *       adcProps.toXml();
+ *       adxProps.toXml();
  *       // -&gt; &lt;properties&gt;&lt;category id=&quot;genereal&quot; name=&quot;Genereal&quot;&gt; ...&lt;/properties&gt;
  *
  * @return {String}
  */
-ADCProperties.prototype.toXml = function toXml() {
+ADXProperties.prototype.toXml = function toXml() {
     var xml = [],
-        data = this.get();
+        data = this.get(),
+        projectType = this.configurator.projectType;
 
     if (!data) {
         return &#39;&#39;;
@@ -1696,6 +1899,10 @@ ADCProperties.prototype.toXml = function toXml() {
             xml.push(&#39;    &lt;category id=&quot;&#39; + (category.id || &quot;&quot;) + &#39;&quot; name=&quot;&#39; + (category.name || &quot;&quot;)  + &#39;&quot;&gt;&#39;);
             if (Array.isArray(category.properties)) {
                 category.properties.forEach(function (property) {
+                    // The property question ia only available for the ADC
+                    if (projectType !== &#39;adc&#39; &amp;&amp; property.type === &#39;question&#39;) {
+                        return;
+                    }
                     var xmlProp = [], value;
                     xmlProp.push(&#39;      &lt;property&#39;);
                     xmlProp.push(&#39; xsi:type=&quot;&#39;, (property.xsiType || &quot;standardProperty&quot;), &#39;&quot;&#39;);
@@ -1719,16 +1926,6 @@ ADCProperties.prototype.toXml = function toXml() {
                         }
                         xmlProp.push(&#39;\n        &lt;value&gt;&#39; + value + &#39;&lt;/value&gt;&#39;);
                     }
-                    if (property.valueTheme) {
-                        for (var theme in property.valueTheme) {
-                            value = property.valueTheme[theme];
-                            if (value !== &quot;&quot;) {
-                                value = &#39;&lt;![CDATA[&#39; + value + &#39;]]&gt;&#39;;
-                            }
-                            xmlProp.push(&#39;\n        &lt;value theme=&quot;&#39; + theme + &#39;&quot;&gt;&#39; + value + &#39;&lt;/value&gt;&#39;);
-                        }
-                    }
-
                     if (property.options &amp;&amp; Array.isArray(property.options)) {
                         xmlProp.push(&#39;\n        &lt;options&gt;&#39;);
                         property.options.forEach(function (opt) {

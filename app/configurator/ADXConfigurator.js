@@ -50,9 +50,9 @@ function Configurator(dir) {
     this.projectVersion = null;
 
     /**
-     * XML document
+     * XML document (ElementTree)
      * @private
-     * @type {ElementTree}
+     * @type {Object}
      */
     this.xmldoc = null;
 
@@ -87,7 +87,7 @@ Configurator.prototype.constructor = Configurator;
  * Read the config.xml file and initialize all properties of the current instance object
  *
  *       // Load the config file
- *       adxInfo.load(function (err) {
+ *       configurator.load(function (err) {
  *          if (err) {
  *              throw err;
  *          }
@@ -163,8 +163,6 @@ Configurator.prototype.get = function get() {
  *              company : "The company name",
  *              site    : "http://website.url.com",
  *              helpURL : "http://help.url.com",
- *              style   : { width : 400, height : 200},
- *              categories : ["General", "Slider", "Single"],
  *              constraints : {
  *                  questions : {
  *                     single : true,
@@ -303,13 +301,13 @@ Configurator.prototype.set = function set(data) {
  * Return the configuration as xml
  *
  *       // Serialize the config to XML
- *       adcInfo.toXml();
+ *       configurator.toXml();
  *       // -> <?xml version="1.0" encoding="utf-8"?>
- *             <control  xmlns="http://www.askia.com/ADCSchema"
+ *             <control  xmlns="http://www.askia.com/2.1.0/ADCSchema"
  *             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- *             xsi:schemaLocation="http://www.askia.com/ADCSchema http://www.askia.com/Downloads/dev/schemas/adc2.0/Config.xsd"
- *             version="2.0.0"
- *             askiaCompat="5.3.3">
+ *             xsi:schemaLocation="http://www.askia.com/2.1.0/ADCSchema https://raw.githubusercontent.com/AskiaADX/ADXSchema/2.1.0/ADCSchema.xsd"
+ *             version="2.1.0"
+ *             askiaCompat="5.4.2">
  *                 <info>
  *                     <name>My Name</name>
  *                     <guid>the-guid</guid>
@@ -374,7 +372,7 @@ Configurator.prototype.toXml = function toXml() {
  *
  *       // Load the configuration using an xml string
  *       // xmlString contains information from config.xml
- *       adcInfo.fromXml(xmlString);
+ *       configurator.fromXml(xmlString);
  *
  */
 Configurator.prototype.fromXml = function fromXml(xml) {
@@ -466,8 +464,6 @@ ADXInfo.prototype.constructor = ADXInfo;
  *       //   company : "The company name",
  *       //   site    : "http://website.url.com",
  *       //   helpURL : "http://help.url.com",
- *       //   style   : { width : 400, height : 200},
- *       //   categories : ["General", "Slider", "Single"],
  *       //   constraints : {
  *       //       questions : {
  *       //          single : true,
@@ -519,8 +515,6 @@ ADXInfo.prototype.get = function get() {
  *          company : "The company name",
  *          site    : "http://website.url.com",
  *          helpURL : "http://help.url.com",
- *          style   : { width : 400, height : 200},
- *          categories : ["General", "Slider", "Single"],
  *          constraints : {
  *              questions : {
  *                 single : true,

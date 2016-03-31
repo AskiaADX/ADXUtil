@@ -49,7 +49,7 @@ function Builder(adxDirPath) {
 
     /**
      * Sequence of calls
-     * @type {*|Sequence}
+     * @type {Sequence}
      */
     this.sequence = new common.Sequence([
         this.createBinDir,
@@ -65,7 +65,7 @@ function Builder(adxDirPath) {
 
     /**
      * Logger to override with an object
-     * @type {{writeMessage : function, writeSuccess : function, writeWarning: function, writeError : function}}
+     * @type {{writeMessage : Function, writeSuccess : Function, writeWarning: Function, writeError : Function}}
      */
     this.logger = null;
 }

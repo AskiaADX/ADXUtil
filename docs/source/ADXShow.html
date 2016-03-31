@@ -21,34 +21,34 @@ var pathHelper      = require(&#39;path&#39;);
 var errMsg          = common.messages.error;
 
 
-<span id='ADC-Show'>/**
-</span> * Compile, execute and display the output of an ADC
+<span id='ADX-Show'>/**
+</span> * Compile, execute and display the output of an ADX
  *
- * @class ADC.Show
+ * @class ADX.Show
  * @private
  */
-function Show(adcDirPath) {
-<span id='ADC-Show-property-rootdir'>    /**
-</span>     * Root dir of the current ADCUtil
+function Show(adxDirPath) {
+<span id='ADX-Show-property-rootdir'>    /**
+</span>     * Root dir of the current ADXUtil
      */
     this.rootdir    = pathHelper.resolve(__dirname, &quot;../../&quot;);
 
-<span id='ADC-Show-property-adcDirectoryPath'>    /**
-</span>     * Path to the ADC directory
+<span id='ADX-Show-property-adxDirectoryPath'>    /**
+</span>     * Path to the ADX directory
      * @type {string}
      */
-    this.adcDirectoryPath = adcDirPath ? pathHelper.normalize(adcDirPath) : process.cwd();
+    this.adxDirectoryPath = adxDirPath ? pathHelper.normalize(adxDirPath) : process.cwd();
 }
 
-<span id='ADC-Show-method-constructor'>/**
-</span> * Create a new instance of ADC Show
+<span id='ADX-Show-method-constructor'>/**
+</span> * Create a new instance of ADX Show
  *
  * @constructor
- * @param {String} adcDirPath Path of the ADC directory
+ * @param {String} adxDirPath Path of the ADX directory
  */
 Show.prototype.constructor = Show;
 
-<span id='ADC-Show-method-writeError'>/**
+<span id='ADX-Show-method-writeError'>/**
 </span> * Write an error output in the console
  * @param {String} text Text to write in the console
  */
@@ -56,7 +56,7 @@ Show.prototype.writeError = function writeError(text) {
     common.writeError.apply(common, arguments);
 };
 
-<span id='ADC-Show-method-writeWarning'>/**
+<span id='ADX-Show-method-writeWarning'>/**
 </span> * Write a warning output in the console
  * @param {String} text Text to write in the console
  */
@@ -64,7 +64,7 @@ Show.prototype.writeWarning = function writeWarning(text) {
     common.writeWarning.apply(common, arguments);
 };
 
-<span id='ADC-Show-method-writeSuccess'>/**
+<span id='ADX-Show-method-writeSuccess'>/**
 </span> * Write a success output in the console
  * @param {String} text Text to write in the console
  */
@@ -72,7 +72,7 @@ Show.prototype.writeSuccess = function writeSuccess(text) {
     common.writeSuccess.apply(common, arguments);
 };
 
-<span id='ADC-Show-method-writeMessage'>/**
+<span id='ADX-Show-method-writeMessage'>/**
 </span> * Write an arbitrary message in the console without specific prefix
  * @param {String} text Text to write in the console
  */
@@ -80,13 +80,13 @@ Show.prototype.writeMessage = function writeMessage(text) {
     common.writeMessage.apply(common, arguments);
 };
 
-<span id='ADC-Show-method-show'>/**
-</span> * Show an ADC output
+<span id='ADX-Show-method-show'>/**
+</span> * Show an ADX output
  *
  * @param {Object} options Options
- * @param {String} options.output Name of the ADC Output to use
- * @param {String} options.fixture FileName of the ADC fixture to use
- * @param {String} [options.masterPage] Path of the master page to use
+ * @param {String} options.output Name of the ADX Output to use
+ * @param {String} options.fixture FileName of the ADX fixture to use
+ * @param {String} [options.masterPage] Path of the master page to use (ADC Only)
  * @param {String} [options.properties] ADC properties (in url query string format: &#39;param1=value1&amp;param2-value2&#39;)
  * @param {InteractiveADXShell} [options.adxShell] Interactive ADXShell process
  * @param {Boolean} [options.silent=false] Silent mode: Don&#39;t message in the console but only through the callback
@@ -128,7 +128,7 @@ Show.prototype.show = function show(options, callback) {
     if (options.properties) {
         args.push(&#39;&quot;-properties:&#39; + options.properties + &#39;&quot;&#39;);
     }
-    args.push(&#39;&quot;&#39; + this.adcDirectoryPath + &#39;&quot;&#39;);
+    args.push(&#39;&quot;&#39; + this.adxDirectoryPath + &#39;&quot;&#39;);
 
     var self = this;
     function execCallback(err, stdout, stderr) {
@@ -170,10 +170,10 @@ Show.prototype.show = function show(options, callback) {
 exports.Show = Show;
 
 /*
- * Show an ADC output
+ * Show an ADX output
  *
  * @param {Command} program Commander object which hold the arguments pass to the program
- * @param {String} path Path of the ADC to directory
+ * @param {String} path Path of the ADX to directory
  */
 exports.show = function show(program, path) {
     var showInstance = new Show(path);
