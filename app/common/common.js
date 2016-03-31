@@ -52,7 +52,7 @@ exports.STATIC_DIR_NAME = "static";
 exports.SHARE_DIR_NAME = "share";
 
 // File name which contains the list of files to ignore
-exports.ADX_IGNORE_FILE_NAME = "ADCIgnore";
+exports.ADX_IGNORE_FILE_NAME = "ADXIgnore";
 // Ignore file list
 exports.adxIgnoreFiles = "";
 // Rules to ignore files
