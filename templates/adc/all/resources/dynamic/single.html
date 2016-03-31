@@ -1,12 +1,12 @@
 ﻿{%
-Dim useList   = (CurrentADC.PropValue("useList") = "1") ' Convert to boolean
+Dim useList   = CurrentADC.Var("useList")
 Dim inputName = CurrentQuestion.InputName()
 Dim inputValue
 Dim caption
 
 Dim i
 
-If useList Then %}
+If useList = True Then %}
     <select name="{%= inputName %}">
         <option value=""></option>
     {% 

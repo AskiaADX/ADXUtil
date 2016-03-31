@@ -5,19 +5,19 @@
          version="2.1.0"
          askiaCompat="5.4.3">
   <info>
-    <name>{{ADCName}}</name>
-    <guid>{{ADCGuid}}</guid>
+    <name>{{ADXName}}</name>
+    <guid>{{ADXGuid}}</guid>
     <version>1.0.0</version>
     <date>2000-01-01</date>
     <description>
-      <![CDATA[{{ADCDescription}}]]>
+      <![CDATA[{{ADXDescription}}]]>
     </description>
     <author>
-      <![CDATA[{{ADCAuthor}}]]>
+      <![CDATA[{{ADXAuthor}}]]>
     </author>
-    <company>{{ADCAuthor.Company}}</company>
+    <company>{{ADXAuthor.Company}}</company>
     <helpURL></helpURL>
-    <site>{{ADCAuthor.Website}}</site>
+    <site>{{ADXAuthor.Website}}</site>
     <categories>
       <category>General</category>
     </categories>

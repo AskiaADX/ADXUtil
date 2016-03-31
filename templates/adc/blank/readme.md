@@ -1,3 +1,3 @@
-# {{ADCName}}
+# {{ADXName}}
    
-{{ADCDescription}}
+{{ADXDescription}}
