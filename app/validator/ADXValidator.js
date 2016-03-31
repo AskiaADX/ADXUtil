@@ -180,7 +180,6 @@ zip|rar|sql|ini|dmg|iso|vcd|class|java|htaccess
 
 var fs           = require('fs');
 var pathHelper   = require('path');
-var xml2js       = require('xml2js');
 var util         = require('util');
 var common       = require('../common/common.js');
 var Configurator = require('../configurator/ADXConfigurator.js').Configurator;
