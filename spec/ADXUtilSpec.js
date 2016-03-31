@@ -15,7 +15,7 @@ describe('ADXUtil', function () {
                 'app/ADXUtil.js',
                 'generate',
                 'adc',
-                'adx/directory/path'
+                'adxname'
             ];
 
             var adxGenerator = require('../app/generator/ADXGenerator.js');
@@ -26,13 +26,36 @@ describe('ADXUtil', function () {
             expect(adxGenerator.generate).toHaveBeenCalled();
         });
 
+        it('should call the ADXGenerator#generate with the type and name arguments', function () {
+            process.argv = [
+                'node',
+                'app/ADXUtil.js',
+                'generate',
+                'adc',
+                'adxname'
+            ];
+
+            var adxGenerator = require('../app/generator/ADXGenerator.js'),
+                type, name;
+
+            spyOn(adxGenerator, 'generate').andCallFake(function (program, t, n) {
+                type = t;
+                name = n;
+            });
+
+            require("../app/ADXUtil.js");
+
+            expect(type).toBe('adc');
+            expect(name).toBe('adxname');
+        });
+
         it('should call the ADXGenerator#generate with the output property in `program` argument', function () {
             process.argv = [
                 'node',
                 'app/ADXUtil.js',
                 'generate',
                 'adc',
-                'adx/directory/path',
+                'adxname',
                 '-o',
                 'outputpath'
             ];
@@ -55,7 +78,7 @@ describe('ADXUtil', function () {
                 'app/ADXUtil.js',
                 'generate',
                 'adc',
-                'adx/directory/path',
+                'adxname',
                 '-t',
                 'templatename'
             ];
@@ -74,14 +97,12 @@ describe('ADXUtil', function () {
 
     });
 
-    return;
     describe('cmd `validate`', function () {
         it('should call ADXValidator#validate when the program args contains `validate`', function () {
             process.argv = [
                 'node',
                 'app/ADXUtil.js',
-                'validate',
-                'adx/directory/path'
+                'validate'
             ];
 
             var adxValidator = require('../app/validator/ADXValidator.js');
@@ -98,8 +119,7 @@ describe('ADXUtil', function () {
                     process.argv = [
                         'node',
                         'app/ADXUtil.js',
-                        'validate',
-                        'adx/directory/path'
+                        'validate'
                     ];
 
                     var adxValidator = require('../app/validator/ADXValidator.js');
@@ -115,8 +135,7 @@ describe('ADXUtil', function () {
                         'node',
                         'app/ADXUtil.js',
                         'validate',
-                        flag,
-                        'adx/directory/path'
+                        flag
                     ];
 
                     var adxValidator = require('../app/validator/ADXValidator.js');
@@ -137,8 +156,7 @@ describe('ADXUtil', function () {
                     process.argv = [
                         'node',
                         'app/ADXUtil.js',
-                        'validate',
-                        'adx/directory/path'
+                        'validate'
                     ];
 
                     var adxValidator = require('../app/validator/ADXValidator.js');
@@ -154,8 +172,7 @@ describe('ADXUtil', function () {
                         'node',
                         'app/ADXUtil.js',
                         'validate',
-                        flag,
-                        'adx/directory/path'
+                        flag
                     ];
 
                     var adxValidator = require('../app/validator/ADXValidator.js');
@@ -177,8 +194,7 @@ describe('ADXUtil', function () {
             process.argv = [
                 'node',
                 'app/ADXUtil.js',
-                'build',
-                'adx/directory/path'
+                'build'
             ];
 
             var adxBuilder = require('../app/builder/ADXBuilder.js');
@@ -199,8 +215,7 @@ describe('ADXUtil', function () {
                 'output:fallback',
                 'fixture:single.xml',
                 'masterPage:masterPage.html',
-                'properties:prop1=value1&prop2=value2',
-                'adx/directory/path'
+                'properties:prop1=value1&prop2=value2'
             ];
 
             var adxShow = require('../app/show/ADXShow.js');

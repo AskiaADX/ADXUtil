@@ -9,7 +9,7 @@ program
     .option('-o, --output <name>', 'name of the output to display or path to the output directory for the generation')
     .option('-f, --fixture <name>', 'name of the fixture to use for the `show` command')
     .option('-m, --masterPage <path>', 'path of the master page to use for the `show` command (for ADC)')
-    .option('-p, --properties <props>', 'ADC properties (in url query string format) to set for the `show` command')
+    .option('-p, --properties <props>', 'ADX properties (in url query string format) to set for the `show` command')
     // .option('-f, --force', 'overwrite the output directory when it exist')
     .option('-T, --no-test', 'skip the execution of ADX unit tests')
     .option('-X, --no-xml', 'skip the validation of the config.xml file')
@@ -31,29 +31,26 @@ program
 
 program
     .command('validate [<path>]')
-    .description('validate the uncompressed ADC structure')
-    .action(function validateADC(path) {
-        return;
-        var adcValidator = require('./validator/ADCValidator.js');
-        adcValidator.validate(program, path);
+    .description('validate the uncompressed ADX structure')
+    .action(function validateADX(path) {
+        var adxValidator = require('./validator/ADXValidator.js');
+        adxValidator.validate(program, path);
     });
 
 program
     .command('build [<path>]')
-    .description('build the ADC file')
-    .action(function buildADC(path) {
-        return;
-        var adcBuilder = require('./builder/ADCBuilder.js');
-        adcBuilder.build(program, path);
+    .description('build the ADX file')
+    .action(function buildADX(path) {
+        var adxBuilder = require('./builder/ADXBuilder.js');
+        adxBuilder.build(program, path);
     });
 
 program
     .command('show [<path>]')
-    .description('show the output of the ADC')
-    .action(function showADC(path) {
-        return;
-        var adcShow = require('./show/ADCShow.js');
-        adcShow.show(program, path);
+    .description('show the output of the ADX')
+    .action(function showADX(path) {
+        var adxShow = require('./show/ADXShow.js');
+        adxShow.show(program, path);
     });
 
 
@@ -61,11 +58,10 @@ program
     .command('config')
     .description('get or set the configuration (use the --authorXXX flags to set the config)')
     .action(function () {
-        return;
-        var adcPreferences = require('./preferences/ADCPreferences.js');
+        var adxPreferences = require('./preferences/ADXPreferences.js');
         // No option to set, so only read
         if (!program.authorName && !program.authorEmail && !program.authorCompany && !program.authorWebsite) {
-            adcPreferences.read();
+            adxPreferences.read();
         } else {
             var preferences = {
                 author : {}
@@ -83,7 +79,7 @@ program
             if ('authorWebsite' in program) {
                 preferences.author.website = program.authorWebsite;
             }
-            adcPreferences.write(preferences);
+            adxPreferences.write(preferences);
         }
     });
 
