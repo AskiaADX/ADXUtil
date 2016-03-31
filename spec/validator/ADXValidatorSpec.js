@@ -760,6 +760,21 @@ describe('ADXValidator', function () {
             spyOn(Validator.prototype, 'writeMessage');
         });
 
+        it('should run the xmllint process with the 2.0.0alpha/Config.xsd and the config.xml file with old ADC 2.0 namespace', function () {
+            spies.validateHook = function () {
+                this.adxConfigurator = new Configurator('/adx/path/dir');
+                this.adxConfigurator.fromXml('<control xmlns="http://www.askia.com/ADCSchema"></control>');
+            };
+
+            var childProc = require('child_process');
+            spyOn(childProc, 'exec').andCallFake(function (command) {
+                expect(command).toBe('"\\root\\lib\\libxml\\xmllint.exe" --noout --schema "\\root\\schema\\2.0.0alpha\\Config.xsd" "\\adx\\path\\dir\\config.xml"');
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(childProc.exec).toHaveBeenCalled();
+        });
+
         it('should run the xmllint process with the 2.0.0/ADCSchema.xsd and the config.xml file with ADC 2.0', function () {
             spies.validateHook = function () {
                 this.adxConfigurator = new Configurator('/adx/path/dir');
