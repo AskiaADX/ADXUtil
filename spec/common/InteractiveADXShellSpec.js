@@ -39,19 +39,19 @@ describe('InteractiveADXShell', function () {
 
     describe('#constructor', function () {
         it("save the `path` arg in #path", function () {
-            var adxShell = new InteractiveADXShell('/adc/path');
-            expect(adxShell.path).toEqual('/adc/path');
+            var adxShell = new InteractiveADXShell('/adx/path');
+            expect(adxShell.path).toEqual('/adx/path');
         });
     });
 
     describe('#exec', function () {
         it("should spawn the ADXShell process with the `interactive` command", function () {
-            var adxShell = new InteractiveADXShell('/adc/path');
+            var adxShell = new InteractiveADXShell('/adx/path');
             adxShell.exec('');
             var processPath = '.\\' + common.ADX_UNIT_PROCESS_NAME;
             var processArgs = [
                 'interactive',
-                '/adc/path'
+                '/adx/path'
             ];
             var processOptions = {
                 cwd   : pathHelper.join(pathHelper.resolve(__dirname, '../../'), common.ADX_UNIT_DIR_PATH),
@@ -81,7 +81,7 @@ describe('InteractiveADXShell', function () {
                 };
                 return mock;
             });
-            var adxShell = new InteractiveADXShell('/adc/path');
+            var adxShell = new InteractiveADXShell('/adx/path');
             adxShell.exec('this is the command');
             mock.stdout.emit('data', 'first data');
             expect(writeData).toBe('this is the command\n');
@@ -100,7 +100,7 @@ describe('InteractiveADXShell', function () {
                     mock = new ChildProcessFake();
                     return mock;
                 });
-                var adxShell = new InteractiveADXShell('/adc/path');
+                var adxShell = new InteractiveADXShell('/adx/path');
                 adxShell.exec('hello');
                 expect(mock[obj.prop].listeners('data').length).toEqual(1);
             });
@@ -111,7 +111,7 @@ describe('InteractiveADXShell', function () {
                     stub = new ChildProcessFake();
                     return stub;
                 });
-                var adxShell = new InteractiveADXShell('/adc/path');
+                var adxShell = new InteractiveADXShell('/adx/path');
                 adxShell.exec('hello', function (err, data) {
                     if (obj.prop === 'stdout') {
                         result = data;
@@ -134,7 +134,7 @@ describe('InteractiveADXShell', function () {
                     mock = new ChildProcessFake();
                     return mock;
                 });
-                var adxShell = new InteractiveADXShell('/adc/path');
+                var adxShell = new InteractiveADXShell('/adx/path');
                 adxShell.exec('hello');
                 if (obj.prop === 'stdout') {
                     mock[obj.prop].emit('data', "first call");
@@ -152,7 +152,7 @@ describe('InteractiveADXShell', function () {
                 stub = new ChildProcessFake();
                 return stub;
             });
-            var adxShell = new InteractiveADXShell('/adc/path');
+            var adxShell = new InteractiveADXShell('/adx/path');
             adxShell.exec('hello', function (err, data) {
                result += data;
             });

@@ -1,22 +1,22 @@
-describe('ADCUtilAPI', function () {
+describe('ADXUtilAPI', function () {
     var fs = require('fs');
     var pathHelper = require('path');
     var InteractiveADXShell = require('../app/common/InteractiveADXShell.js').InteractiveADXShell;
     var wrench = require('wrench');
-    var ADC,
-        adcUtilApi,
+    var ADX,
+        adxUtilApi,
         errMsg,
-        adcValidator,
+        adxValidator,
         Validator,
-        adcBuilder,
+        adxBuilder,
         Builder,
-        adcShow,
+        adxShow,
         Show,
-        adcGenerator,
+        adxGenerator,
         Generator,
-        adcConfigurator,
+        adxConfigurator,
         Configurator,
-        adcPreferences,
+        adxPreferences,
         preferences,
         spies = {},
         common;
@@ -34,13 +34,13 @@ describe('ADCUtilAPI', function () {
     }
 
     beforeEach(function () {
-        adcUtilApi = require.resolve('../app/ADCUtilAPI.js');
-        if (adcUtilApi) {
-            delete require.cache[adcUtilApi];
+        adxUtilApi = require.resolve('../app/ADXUtilAPI.js');
+        if (adxUtilApi) {
+            delete require.cache[adxUtilApi];
         }
 
-        adcUtilApi = require('../app/ADCUtilAPI.js');
-        ADC = adcUtilApi.ADC;
+        adxUtilApi = require('../app/ADXUtilAPI.js');
+        ADX = adxUtilApi.ADX;
 
         common = require('../app/common/common.js');
         errMsg     = common.messages.error;
@@ -56,28 +56,28 @@ describe('ADCUtilAPI', function () {
             mkdir       : spyOn(fs, 'mkdir')
         };
 
-        adcValidator = require('../app/validator/ADCValidator.js');
-        Validator = adcValidator.Validator;
+        adxValidator = require('../app/validator/ADXValidator.js');
+        Validator = adxValidator.Validator;
         spies.validate = spyOn(Validator.prototype, 'validate');
 
-        adcBuilder = require('../app/builder/ADCBuilder.js');
-        Builder = adcBuilder.Builder;
+        adxBuilder = require('../app/builder/ADXBuilder.js');
+        Builder = adxBuilder.Builder;
         spies.build = spyOn(Builder.prototype, 'build');
 
-        adcShow = require('../app/show/ADCShow.js');
-        Show = adcShow.Show;
+        adxShow = require('../app/show/ADXShow.js');
+        Show = adxShow.Show;
         spies.show = spyOn(Show.prototype, 'show');
 
-        adcGenerator = require('../app/generator/ADCGenerator.js');
-        Generator = adcGenerator.Generator;
+        adxGenerator = require('../app/generator/ADXGenerator.js');
+        Generator = adxGenerator.Generator;
         spies.generate = spyOn(Generator.prototype, 'generate');
 
-        adcConfigurator = require('../app/configurator/ADCConfigurator.js');
-        Configurator = adcConfigurator.Configurator;
+        adxConfigurator = require('../app/configurator/ADXConfigurator.js');
+        Configurator = adxConfigurator.Configurator;
         spies.load = spyOn(Configurator.prototype, 'load');
 
-        adcPreferences = require('../app/preferences/ADCPreferences.js');
-        preferences = adcPreferences.preferences;
+        adxPreferences = require('../app/preferences/ADXPreferences.js');
+        preferences = adxPreferences.preferences;
 
         // Court-circuit wrench
         spies.wrench = {
@@ -86,53 +86,53 @@ describe('ADCUtilAPI', function () {
         };
 
         spies.getTemplatePath = spyOn(common, 'getTemplatePath');
-        spies.getTemplatePath.andCallFake(function (name, cb) {
-            cb(null, pathHelper.join(common.TEMPLATES_PATH, name));
+        spies.getTemplatePath.andCallFake(function (type, name, cb) {
+            cb(null, pathHelper.join(common.TEMPLATES_PATH, type, name));
         });
     });
 
-    describe(".ADC", function () {
+    describe(".ADX", function () {
         beforeEach(function () {
             spies.fs.statSync = spyOn(fs, 'statSync');
         });
 
         describe("#constructor", function () {
             it("should be a function", function () {
-                expect(typeof ADC).toBe('function');
+                expect(typeof ADX).toBe('function');
             });
 
             it("should initialize the #path property with the value in `arg`", function () {
-                var adc = new ADC('some/path');
-                expect(adc.path).toBe('some\\path');
+                var adx = new ADX('some/path');
+                expect(adx.path).toBe('some\\path');
             });
 
-            it("should throw an exception when the `adcDir` argument is not defined", function () {
+            it("should throw an exception when the `adxDir` argument is not defined", function () {
                 expect(function () {
-                    var adc = new ADC();
+                    var adx = new ADX();
                 }).toThrow(errMsg.invalidPathArg);
             });
 
-            it("should throw an exception when the `adcdir` is invalid path", function () {
+            it("should throw an exception when the `adxdir` is invalid path", function () {
                 spies.fs.statSync.andThrow("No such file or directory");
                 expect(function () {
-                    var adc = new ADC('/invalid/path');
+                    var adx = new ADX('/invalid/path');
                 }).toThrow("No such file or directory");
             });
 
             it("should initialize a new instance of the InteractiveADXShell in #_adxShell", function () {
-                var adc = new ADC('some/path');
-                expect(adc._adxShell instanceof InteractiveADXShell).toBe(true);
+                var adx = new ADX('some/path');
+                expect(adx._adxShell instanceof InteractiveADXShell).toBe(true);
             });
         });
 
         describe("#load", function () {
-            it("should instantiate a new Configurator object with the path of the ADC", function () {
+            it("should instantiate a new Configurator object with the path of the ADX", function () {
                 var firstInstance, firstInstancePath, secondInstance, secondInstancePath;
                 spies.load.andCallFake(function () {
                     firstInstance = this;
                     firstInstancePath = this.path;
                 });
-                var first = new ADC('first/path');
+                var first = new ADX('first/path');
                 first.load();
 
                 spies.load.andCallFake(function () {
@@ -140,7 +140,7 @@ describe('ADCUtilAPI', function () {
                     secondInstancePath = this.path;
                 });
 
-                var second = new ADC('second/path');
+                var second = new ADX('second/path');
                 second.load();
 
 
@@ -149,8 +149,8 @@ describe('ADCUtilAPI', function () {
                 expect(secondInstancePath).toEqual('second\\path');
             });
             it("should call the Configurator#load", function () {
-                var adc = new ADC('some/path');
-                adc.load();
+                var adx = new ADX('some/path');
+                adx.load();
                 expect(spies.load).toHaveBeenCalled();
             });
             it("should call the `callback` with Error when the configurator#load failed", function () {
@@ -158,9 +158,9 @@ describe('ADCUtilAPI', function () {
                 spies.load.andCallFake(function (cb) {
                     cb(err);
                 });
-                var adc = new ADC('some/path');
+                var adx = new ADX('some/path');
                 var callbackErr;
-                adc.load(function (e) {
+                adx.load(function (e) {
                     callbackErr = e;
                 });
                 expect(callbackErr).toBe(err);
@@ -172,9 +172,9 @@ describe('ADCUtilAPI', function () {
                     conf = this;
                     cb(null);
                 });
-                var adc = new ADC('some/path');
-                adc.load(function (e) {
-                    expect(adc.configurator).toBe(conf);
+                var adx = new ADX('some/path');
+                adx.load(function (e) {
+                    expect(adx.configurator).toBe(conf);
                     hasBeenCalled = true;
                 });
                 expect(hasBeenCalled).toBe(true);
@@ -182,21 +182,21 @@ describe('ADCUtilAPI', function () {
         });
 
         describe("#validate", function () {
-            it("should instantiate a new Validator object with the path of the ADC", function () {
+            it("should instantiate a new Validator object with the path of the ADX", function () {
                 var firstInstance, firstInstancePath, secondInstance, secondInstancePath;
                 spies.validate.andCallFake(function () {
                     firstInstance = this;
-                    firstInstancePath = this.adcDirectoryPath;
+                    firstInstancePath = this.adxDirectoryPath;
                 });
-                var first = new ADC('first/path');
+                var first = new ADX('first/path');
                 first.validate();
 
                 spies.validate.andCallFake(function () {
                     secondInstance= this;
-                    secondInstancePath = this.adcDirectoryPath;
+                    secondInstancePath = this.adxDirectoryPath;
                 });
 
-                var second = new ADC('second/path');
+                var second = new ADX('second/path');
                 second.validate();
 
 
@@ -205,31 +205,31 @@ describe('ADCUtilAPI', function () {
                 expect(secondInstancePath).toEqual('second\\path');
             });
             it("should call the Validator#validate with the arguments", function () {
-                var adc = new ADC('some/path');
+                var adx = new ADX('some/path');
                 var cb = function () {};
-                adc.validate({}, cb);
+                adx.validate({}, cb);
                 expect(spies.validate).toHaveBeenCalledWith({
-                    adxShell : adc._adxShell
+                    adxShell : adx._adxShell
                 }, cb);
             });
         });
 
         describe("#build", function () {
-            it("should instantiate a new Builder object with the path of the ADC", function () {
+            it("should instantiate a new Builder object with the path of the ADX", function () {
                 var firstInstance, firstInstancePath, secondInstance, secondInstancePath;
                 spies.build.andCallFake(function () {
                     firstInstance = this;
-                    firstInstancePath = this.adcDirectoryPath;
+                    firstInstancePath = this.adxDirectoryPath;
                 });
-                var first = new ADC('first/path');
+                var first = new ADX('first/path');
                 first.build();
 
                 spies.build.andCallFake(function () {
                     secondInstance= this;
-                    secondInstancePath = this.adcDirectoryPath;
+                    secondInstancePath = this.adxDirectoryPath;
                 });
 
-                var second = new ADC('second/path');
+                var second = new ADX('second/path');
                 second.build();
 
 
@@ -238,31 +238,31 @@ describe('ADCUtilAPI', function () {
                 expect(secondInstancePath).toEqual('second\\path');
             });
             it("should call the Builder#build with the arguments", function () {
-                var adc = new ADC('some/path');
+                var adx = new ADX('some/path');
                 var cb = function () {};
-                adc.build({}, cb);
+                adx.build({}, cb);
                 expect(spies.build).toHaveBeenCalledWith({
-                    adxShell : adc._adxShell
+                    adxShell : adx._adxShell
                 }, cb);
             });
         });
 
         describe("#show", function () {
-            it("should instantiate a new Show object with the path of the ADC", function () {
+            it("should instantiate a new Show object with the path of the ADX", function () {
                 var firstInstance, firstInstancePath, secondInstance, secondInstancePath;
                 spies.show.andCallFake(function () {
                     firstInstance = this;
-                    firstInstancePath = this.adcDirectoryPath;
+                    firstInstancePath = this.adxDirectoryPath;
                 });
-                var first = new ADC('first/path');
+                var first = new ADX('first/path');
                 first.show();
 
                 spies.show.andCallFake(function () {
                     secondInstance= this;
-                    secondInstancePath = this.adcDirectoryPath;
+                    secondInstancePath = this.adxDirectoryPath;
                 });
 
-                var second = new ADC('second/path');
+                var second = new ADX('second/path');
                 second.show();
 
 
@@ -271,11 +271,11 @@ describe('ADCUtilAPI', function () {
                 expect(secondInstancePath).toEqual('second\\path');
             });
             it("should call the Show#show with the arguments", function () {
-                var adc = new ADC('some/path');
+                var adx = new ADX('some/path');
                 var cb = function () {};
-                adc.show({}, cb);
+                adx.show({}, cb);
                 expect(spies.show).toHaveBeenCalledWith({
-                    adxShell : adc._adxShell
+                    adxShell : adx._adxShell
                 }, cb);
             });
         });
@@ -289,9 +289,9 @@ describe('ADCUtilAPI', function () {
                         cb(new Error('No such file or directory'));
                     }
                 });
-                var adc = new ADC('some/path');
+                var adx = new ADX('some/path');
                 var wasCalled = false;
-                adc.getFixtureList(function (err, list) {
+                adx.getFixtureList(function (err, list) {
                     wasCalled = true;
                     expect(list).toEqual(['fixture1.xml', 'fixture2.xml', 'fixture3.xml','fixture4.xml'])
                 });
@@ -300,7 +300,50 @@ describe('ADCUtilAPI', function () {
         });
 
         describe('#checkFixtures', function () {
-            it("should copy `tests/fixtures` directory of the `blank` template if it  doesn't exist", function () {
+            beforeEach(function () {
+                spies.load.andCallFake(function (cb) {
+                    cb();
+                });
+            });
+
+            it("should init the #configurator using the #load method when the #configurator is not defined", function () {
+                var adx = new ADX('adx/path');
+                adx.checkFixtures();
+                expect(spies.load).toHaveBeenCalled();
+            });
+
+            it("should call the callback with an error when the #load return an error", function () {
+                var adx = new ADX('adx/path');
+                spies.load.andCallFake(function (cb) {
+                    cb(new Error('Fake error'));
+                });
+                runSync(function (done) {
+                    adx.checkFixtures(function (err) {
+                        expect(err).toEqual(new Error('Fake error'));
+                        done();
+                    });
+                });
+            });
+
+            it("should not init the #configurator using the #load method when the #configurator is not defined", function () {
+                var adx = new ADX('adx/path');
+                adx.configurator = new Configurator('adx/path');
+                adx.checkFixtures();
+                expect(spies.load).not.toHaveBeenCalled();
+            });
+
+            it("should call the callback with an error when the #configurator#projectType is not define", function () {
+                var adx = new ADX('adx/path');
+                adx.configurator = new Configurator('adx/path');
+                runSync(function (done) {
+                    adx.checkFixtures(function (err) {
+                        expect(err).toEqual(new Error(errMsg.incorrectADXType));
+                        done();
+                    });
+                });
+            });
+
+            it("should copy `tests/fixtures` directory of the `blank` ADC template if it  doesn't exist", function () {
                 spyOn(common, 'dirExists').andCallFake(function (p, cb) {
                     cb(null, false);
                 });
@@ -310,13 +353,37 @@ describe('ADCUtilAPI', function () {
 
                 runSync(function (done) {
                     spies.wrench.copyDirRecursive.andCallFake(function (source, dest) {
-                        expect(source).toEqual(pathHelper.join(pathHelper.resolve(__dirname, "../"), common.TEMPLATES_PATH, common.DEFAULT_TEMPLATE_NAME, common.FIXTIRES_DIR_PATH));
+                        expect(source).toEqual(pathHelper.join(pathHelper.resolve(__dirname, "../"), common.TEMPLATES_PATH, 'adc', common.DEFAULT_TEMPLATE_NAME, common.FIXTIRES_DIR_PATH));
                         expect(dest).toEqual(pathHelper.join('adc/path', common.FIXTIRES_DIR_PATH));
                         done();
                     });
 
-                    var adc= new ADC('adc/path');
+                    var adc = new ADX('adc/path');
+                    adc.configurator = new Configurator('adc/path');
+                    adc.configurator.projectType = 'adc';
                     adc.checkFixtures();
+                });
+            });
+
+            it("should copy `tests/fixtures` directory of the `blank` ADP template if it  doesn't exist", function () {
+                spyOn(common, 'dirExists').andCallFake(function (p, cb) {
+                    cb(null, false);
+                });
+                spies.fs.mkdir.andCallFake(function (p, cb) {
+                    cb();
+                });
+
+                runSync(function (done) {
+                    spies.wrench.copyDirRecursive.andCallFake(function (source, dest) {
+                        expect(source).toEqual(pathHelper.join(pathHelper.resolve(__dirname, "../"), common.TEMPLATES_PATH, 'adp', common.DEFAULT_TEMPLATE_NAME, common.FIXTIRES_DIR_PATH));
+                        expect(dest).toEqual(pathHelper.join('adp/path', common.FIXTIRES_DIR_PATH));
+                        done();
+                    });
+
+                    var adp = new ADX('adp/path');
+                    adp.configurator = new Configurator('adp/path');
+                    adp.configurator.projectType = 'adp';
+                    adp.checkFixtures();
                 });
             });
 
@@ -333,8 +400,10 @@ describe('ADCUtilAPI', function () {
 
 
                 runSync(function (done) {
-                    var adc= new ADC('adc/path');
-                    adc.checkFixtures(function () {
+                    var adx = new ADX('adx/path');
+                    adx.configurator = new Configurator('adx/path');
+                    adx.configurator.projectType = 'adc';
+                    adx.checkFixtures(function () {
                         expect(true).toBe(true);
                         done();
                     });
@@ -345,69 +414,73 @@ describe('ADCUtilAPI', function () {
         describe(".generate", function () {
 
             it("should be a static function", function () {
-               expect(typeof ADC.generate).toBe('function');
+               expect(typeof ADX.generate).toBe('function');
             });
 
-            it("should call the Generator#generate with the `name` and `options` arguments", function () {
-                var opt = {}, n = 'test', options, name;
-                spies.generate.andCallFake(function (a, b) {
-                    name = a;
-                    options = b;
+            it("should call the Generator#generate with the `type`, `name` and `options` arguments", function () {
+                var opt = {}, t = 'adc', n = 'test', options, name, type;
+                spies.generate.andCallFake(function (a, b, c) {
+                    type = a;
+                    name = b;
+                    options = c;
                 });
-                ADC.generate(n, opt);
+                ADX.generate(t, n, opt);
+                expect(type).toBe(t);
                 expect(name).toBe(n);
                 expect(options).toBe(opt);
             });
 
-            it("should not call the Generator#generate with the `callback` with the `options` is not defined", function () {
-                var cb = function () {}, n = 'test', callback, name;
-                spies.generate.andCallFake(function (a, b) {
-                    name = a;
-                    callback = b;
+            it("should not call the Generator#generate with the `callback` when  the `options` is not defined", function () {
+                var cb = function () {}, t = 'adc', n = 'test', callback, name, type;
+                spies.generate.andCallFake(function (a, b, c) {
+                    type = a;
+                    name = b;
+                    callback = c;
                 });
-                ADC.generate(n, cb);
+                ADX.generate(t, n, cb);
+                expect(type).toBe(t);
                 expect(name).toBe(n);
                 expect(callback).not.toBe(cb);
             });
 
             it("should call the Generator#generate with different `callback` arguments", function () {
                 var cb = function (){}, callback;
-                spies.generate.andCallFake(function (a, b, c) {
-                    callback = c;
+                spies.generate.andCallFake(function (a, b, c, d) {
+                    callback = d;
                 });
-                ADC.generate('', {}, cb);
+                ADX.generate('', '', {}, cb);
                 expect(typeof callback).toBe('function');
                 expect(callback).not.toBe(cb);
             });
 
             it("should call the callback with a Error from the generator", function () {
                 var err = new Error("fake");
-                spies.generate.andCallFake(function (a, b, c) {
-                    c(err);
+                spies.generate.andCallFake(function (a, b, c, d) {
+                    d(err);
                 });
                 var callbackErr;
-                ADC.generate('', {}, function (e) {
+                ADX.generate('', '', {}, function (e) {
                     callbackErr = e;
                 });
                 expect(err).toBe(callbackErr);
             });
 
-            it("should call the callback with a new instance of the ADC initialize with the outputPath", function () {
-                spies.generate.andCallFake(function (a, b, c) {
-                    c(null, '/output/path');
+            it("should call the callback with a new instance of the ADX initialize with the outputPath", function () {
+                spies.generate.andCallFake(function (a, b, c, d) {
+                    d(null, '/output/path');
                 });
-                var adc;
-                ADC.generate('', {}, function (err, inst) {
-                    adc = inst;
+                var adx;
+                ADX.generate('', '', {}, function (err, inst) {
+                    adx = inst;
                 });
-                expect(adc instanceof ADC).toBe(true);
-                expect(adc.path).toBe('\\output\\path');
+                expect(adx instanceof ADX).toBe(true);
+                expect(adx.path).toBe('\\output\\path');
             });
         });
 
         describe(".getTemplateList", function () {
            it("should return the list of template", function () {
-               spies.getTemplateList.andCallFake(function (cb) {
+               spies.getTemplateList.andCallFake(function (type, cb) {
                   cb(null, [{
                       name : 'template1',
                       path : 'path/of/template1'
@@ -416,7 +489,7 @@ describe('ADCUtilAPI', function () {
                       path : 'path/of/template2'
                   }]);
                });
-               ADC.getTemplateList(function (err, dirs) {
+               ADX.getTemplateList('adc', function (err, dirs) {
                   expect(dirs).toEqual([{
                       name : 'template1',
                       path : 'path/of/template1'
@@ -430,7 +503,7 @@ describe('ADCUtilAPI', function () {
 
         describe('.preferences', function () {
             it("should be an instance of the Preferences object", function () {
-                expect(ADC.preferences).toBe(preferences);
+                expect(ADX.preferences).toBe(preferences);
             });
         });
 

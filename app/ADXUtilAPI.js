@@ -3,42 +3,42 @@ var path    = require('path');
 var wrench  = require('wrench');
 var common  = require('./common/common.js');
 var errMsg  = common.messages.error;
-var Validator    = require('./validator/ADCValidator.js').Validator;
-var Builder      = require('./builder/ADCBuilder.js').Builder;
-var Show         = require('./show/ADCShow.js').Show;
-var Generator    = require('./generator/ADCGenerator.js').Generator;
-var Configurator = require('./configurator/ADCConfigurator.js').Configurator;
+var Validator    = require('./validator/ADXValidator.js').Validator;
+var Builder      = require('./builder/ADXBuilder.js').Builder;
+var Show         = require('./show/ADXShow.js').Show;
+var Generator    = require('./generator/ADXGenerator.js').Generator;
+var Configurator = require('./configurator/ADXConfigurator.js').Configurator;
 var InteractiveADXShell = require('./common/InteractiveADXShell.js').InteractiveADXShell;
-var preferences = require('./preferences/ADCPreferences.js').preferences;
+var preferences = require('./preferences/ADXPreferences.js').preferences;
 
 
 /**
- * Object used to generate, validate, show and build an ADC
+ * Object used to generate, validate, show and build an ADX
  *
  *
- * Example of usage of existing ADC
+ * Example of usage of existing ADX
  *
- *      var ADC = require('adcutil').ADC;
- *      var myAdc = new ADC('path/to/adc/dir');
+ *      var ADX = require('adxutil').ADX;
+ *      var myAdx = new ADX('path/to/adx/dir');
  *
- *      // Validate an ADC
- *      myAdc.validate({test : false, autoTest : false}, function (err, report) {
- *          // Callback when the ADC structure has been validated
+ *      // Validate an ADX
+ *      myAdx.validate({test : false, autoTest : false}, function (err, report) {
+ *          // Callback when the ADX structure has been validated
  *      });
  *
- *      // Show the output of an ADC
- *      myAdc.show({ output : 'fallback', fixture : 'single.xml'  },  function (err, output) {
- *          // Callback with the output of the ADC
+ *      // Show the output of an ADX
+ *      myAdx.show({ output : 'fallback', fixture : 'single.xml'  },  function (err, output) {
+ *          // Callback with the output of the ADX
  *      });
  *
- *      // Build the ADC (package it)
- *      myAdc.build({test : false, autoTest : false}, function (err, path, report) {
- *          // Callback when the ADC has been built
+ *      // Build the ADX (package it)
+ *      myAdx.build({test : false, autoTest : false}, function (err, path, report) {
+ *          // Callback when the ADX has been built
  *      });
  *
- * Generate and use the new ADC instance
+ * Generate and use the new ADX instance
  *
- *      ADC.generate('myNewADC', {output : '/path/of/parent/dir', template : 'blank'}, function (err, adc) {
+ *      ADX.generate('adc', 'myNewADC', {output : '/path/of/parent/dir', template : 'blank'}, function (err, adc) {
  *          console.log(adc.path);
  *          adc.load(function (err) {
  *              if (err) {
@@ -50,27 +50,27 @@ var preferences = require('./preferences/ADCPreferences.js').preferences;
  *      });
  *
  *
- * @class ADC
+ * @class ADX
  */
-function ADC(adcDirPath) {
-    if (!adcDirPath) {
+function ADX(adxDirPath) {
+    if (!adxDirPath) {
         throw new Error(errMsg.invalidPathArg);
     }
 
     // Let it throw an exception
-    fs.statSync(adcDirPath);
+    fs.statSync(adxDirPath);
 
     /**
-     * Path to the ADC directory
+     * Path to the ADX directory
      * @type {string}
      */
-    this.path = path.normalize(adcDirPath);
+    this.path = path.normalize(adxDirPath);
 
     /**
-     * Configurator of the ADC
+     * Configurator of the ADX
      * Expose the object to manipulate the config.xml
      *
-     * @type {ADC.Configurator}
+     * @type {ADX.Configurator}
      */
     this.configurator = null;
 
@@ -84,33 +84,33 @@ function ADC(adcDirPath) {
 }
 
 /**
- * Create a new instance of ADC object
+ * Create a new instance of ADX object
  *
  *
- *      var ADC = require('adcutil').ADC;
- *      var myAdc = new ADC('path/to/adc/dir');
+ *      var ADX = require('adxutil').ADX;
+ *      var myAdx = new ADX('path/to/adx/dir');
  *
  * @constructor
- * @param {String} adcDirPath Path of the ADC directory
+ * @param {String} adxDirPath Path of the ADX directory
  */
-ADC.prototype.constructor = ADC;
+ADX.prototype.constructor = ADX;
 
 /**
- * Load the config of the current ADC instance
+ * Load the config of the current ADX instance
  *
  *
- *      var ADC = require('adcutil').ADC;
- *      var myAdc = new ADC('path/to/adc/dir');
+ *      var ADX = require('adxutil').ADX;
+ *      var myAdx = new ADX('path/to/adx/dir');
  *
- *      // Load an ADC
- *      myAdc.load(function (err) {
- *          // Callback when the ADC has been loaded
+ *      // Load an ADX
+ *      myAdx.load(function (err) {
+ *          // Callback when the ADX has been loaded
  *      });
  *
  * @param {Function} [callback] Callback function
  * @param {Error} [callback.err] Error
  */
-ADC.prototype.load = function load(callback) {
+ADX.prototype.load = function load(callback) {
     var configurator = new Configurator(this.path),
         self        = this;
     callback = callback || function (){};
@@ -125,15 +125,15 @@ ADC.prototype.load = function load(callback) {
 };
 
 /**
- * Validate the current ADC instance
+ * Validate the current ADX instance
  *
  *
- *      var ADC = require('adcutil').ADC;
- *      var myAdc = new ADC('path/to/adc/dir');
+ *      var ADX = require('adxutil').ADX;
+ *      var myAdx = new ADX('path/to/adx/dir');
  *
- *      // Validate an ADC
- *      myAdc.validate({test : false, autoTest : false}, function (err, report) {
- *          // Callback when the ADC structure has been validated
+ *      // Validate an ADX
+ *      myAdx.validate({test : false, autoTest : false}, function (err, report) {
+ *          // Callback when the ADX structure has been validated
  *      });
  *
  * @param {Object} [options] Options of validation
@@ -149,7 +149,7 @@ ADC.prototype.load = function load(callback) {
  * @param {Error} [callback.err] Error
  * @param {Object} [callback.report] Validation report
  */
-ADC.prototype.validate = function validate(options, callback) {
+ADX.prototype.validate = function validate(options, callback) {
     var validator = new Validator(this.path);
     options = options || {};
     options.adxShell = this._adxShell;
@@ -157,20 +157,19 @@ ADC.prototype.validate = function validate(options, callback) {
 };
 
 /**
- * Build the ADC
+ * Build the ADX
  *
- *      var ADC = require('adcutil').ADC;
- *      var myAdc = new ADC('path/to/adc/dir');
+ *      var ADX = require('adxutil').ADX;
+ *      var myAdx = new ADX('path/to/adx/dir');
  *
- *      // Build the ADC (package it)
- *      myAdc.build({test : false, autoTest : false}, function (err, path, report) {
- *          // Callback when the ADC has been built
+ *      // Build the ADX (package it)
+ *      myAdx.build({test : false, autoTest : false}, function (err, path, report) {
+ *          // Callback when the ADX has been built
  *      });
  *
  * @param {Object} [options] Options of validation
  * @param {Boolean} [options.test=true] Run unit tests
  * @param {Boolean} [options.autoTest=true] Run auto unit tests
- * @param {Boolean} [options.xml=true] Validate the config.xml file
  * @param {Object} [options.logger] Logger
  * @param {Function} [options.writeMessage] Function where regular messages will be print
  * @param {Function} [options.writeSuccess] Function where success messages will be print
@@ -181,7 +180,7 @@ ADC.prototype.validate = function validate(options, callback) {
  * @param {String} [callback.outputPath] Path of the output
  * @param {Object} [callback.report] Validation report
  */
-ADC.prototype.build = function build(options, callback){
+ADX.prototype.build = function build(options, callback){
     var builder = new Builder(this.path);
     options = options || {};
     options.adxShell = this._adxShell;
@@ -189,26 +188,26 @@ ADC.prototype.build = function build(options, callback){
 };
 
 /**
- * Show the ADC output
+ * Show the ADX output
  *
- *      var ADC = require('adcutil').ADC;
- *      var myAdc = new ADC('path/to/adc/dir');
+ *      var ADX = require('adxutil').ADX;
+ *      var myAdx = new ADX('path/to/adx/dir');
  *
- *      // Show the output of an ADC
- *      myAdc.show({ output : 'fallback', fixture : 'single.xml'  },  function (err, output) {
- *          // Callback with the output of the ADC
+ *      // Show the output of an ADX
+ *      myAdx.show({ output : 'fallback', fixture : 'single.xml'  },  function (err, output) {
+ *          // Callback with the output of the ADX
  *      });
  *
  * @param {Object} options Options
- * @param {String} options.output Name of the ADC Output to use
- * @param {String} options.fixture FileName of the ADC fixture to use
- * @param {String} [options.masterPage] Path of the master page to use
+ * @param {String} options.output Name of the ADX Output to use
+ * @param {String} options.fixture FileName of the ADX fixture to use
+ * @param {String} [options.masterPage] Path of the master page to use (ADC Only)
  * @param {Boolean} [options.silent=false] Silent mode: Don't message in the console but only through the callback
  * @param {Function} callback Callback function
  * @param {Error} callback.err Error
  * @param {String} callback.output Output string
  */
-ADC.prototype.show = function show(options, callback) {
+ADX.prototype.show = function show(options, callback) {
     var show = new Show(this.path);
     options = options || {};
     options.adxShell = this._adxShell;
@@ -218,11 +217,11 @@ ADC.prototype.show = function show(options, callback) {
 /**
  * Returns the list of fixtures
  *
- *      var ADC = require('adcutil').ADC;
- *      var myAdc = new ADC('path/to/adc/dir');
+ *      var ADX = require('adxutil').ADX;
+ *      var myAdx = new ADX('path/to/adx/dir');
  *
- *      // List all fixtures on the ADC
- *      myAdc.getFixtureList(function (err, list) {
+ *      // List all fixtures on the ADX
+ *      myAdx.getFixtureList(function (err, list) {
  *          console.log(list[0]); // -> "Single.xml"
  *      });
  *
@@ -230,7 +229,7 @@ ADC.prototype.show = function show(options, callback) {
  * @param {Error} callback.err Error
  * @param {String[]} callback.list List of fixtures
  */
-ADC.prototype.getFixtureList = function getFixtureList(callback) {
+ADX.prototype.getFixtureList = function getFixtureList(callback) {
     var fixturePath = path.join(this.path, common.FIXTIRES_DIR_PATH);
     fs.readdir(fixturePath, function (err, files) {
         if (err) {
@@ -250,46 +249,77 @@ ADC.prototype.getFixtureList = function getFixtureList(callback) {
 /**
  * Verify if the fixture exist and create it if it doesn't
  * @param {Function} callback Callback when the operation is complete
+ * @param {Error} callback.err Error that occured during the operation
  */
-ADC.prototype.checkFixtures = function checkFixtures(callback) {
-    var fixturePath = path.join(this.path, common.FIXTIRES_DIR_PATH);
+ADX.prototype.checkFixtures = function checkFixtures(callback) {
     var self = this;
-    common.dirExists(fixturePath, function (err, isExist) {
-        if (isExist) {
+
+    function check(loadErr) {
+        if (loadErr) {
             if (typeof callback === 'function') {
-                callback();
+                callback(loadErr);
             }
             return;
         }
-        var testPath =  path.join(fixturePath, '../');
-        var sourcePath = path.join(path.resolve(__dirname, "../"), common.TEMPLATES_PATH, common.DEFAULT_TEMPLATE_NAME, common.FIXTIRES_DIR_PATH);
+        var projectType = self.configurator.projectType;
+        if (projectType !== 'adc' && projectType !== 'adp') {
+            if (typeof callback === 'function') {
+                callback(new Error(errMsg.incorrectADXType));
+            }
+            return;
+        }
 
-        fs.mkdir(testPath, function () {
-            wrench.copyDirRecursive(sourcePath, fixturePath, {
-                forceDelete       : false,
-                excludeHiddenUnix : true,
-                preserveFiles     : true
-            }, function () {
+        var fixturePath = path.join(self.path, common.FIXTIRES_DIR_PATH);
+        common.dirExists(fixturePath, function (err, isExist) {
+            if (isExist) {
                 if (typeof callback === 'function') {
                     callback();
                 }
+                return;
+            }
+            var testPath =  path.join(fixturePath, '../');
+            var sourcePath = path.join(path.resolve(__dirname, "../"), common.TEMPLATES_PATH, projectType, common.DEFAULT_TEMPLATE_NAME, common.FIXTIRES_DIR_PATH);
+
+            fs.mkdir(testPath, function () {
+                wrench.copyDirRecursive(sourcePath, fixturePath, {
+                    forceDelete       : false,
+                    excludeHiddenUnix : true,
+                    preserveFiles     : true
+                }, function () {
+                    if (typeof callback === 'function') {
+                        callback();
+                    }
+                });
             });
         });
-    });
+    }
+
+    // If the adx was not loaded, load it now
+    if (!this.configurator) {
+        this.load(check);
+    } else {
+        check(null);
+    }
 };
 
 /**
- * Generate a new ADC structure
+ * Generate a new ADX structure
  *
  *      // Generate the ADC structure in '/path/of/parent/dir/myNewADC'
- *      ADC.generate('myNewADC', {output : '/path/of/parent/dir', template : 'blank'}, function (err, adc) {
+ *      ADX.generate('adc', 'myNewADC', {output : '/path/of/parent/dir', template : 'blank'}, function (err, adc) {
  *          console.log(adc.path);
  *      });
  *
- * @param {String} name Name of the ADC to generate
+ *      // Generate the ADP structure in '/path/of/parent/dir/myMewADP'
+ *      ADX.generate('adp', 'myNewADP', {output : '/path/of/parent/dir', template : 'blank', function (err, adp) {
+ *          console.log(adp.path);
+ *      });
+ *
+ * @param {'adc'|'adp'} type Type of the ADX ('adc' or 'adp')
+ * @param {String} name Name of the ADX to generate
  * @param {Object} [options] Options
- * @param {String} [options.description=''] Description of the ADC
- * @param {Object} [options.author] Author of the ADC
+ * @param {String} [options.description=''] Description of the ADX
+ * @param {Object} [options.author] Author of the ADX
  * @param {String} [options.author.name=''] Author name
  * @param {String} [options.author.email=''] Author email
  * @param {String} [options.author.company=''] Author Company
@@ -298,10 +328,10 @@ ADC.prototype.checkFixtures = function checkFixtures(callback) {
  * @param {String} [options.template="blank"] Name of the template to use
  * @param {Function} [callback]
  * @param {Error} [callback.err] Error
- * @param {ADC} [callback.adc] Instance of the new generated ADC
+ * @param {ADX} [callback.adx] Instance of the new generated ADX
  * @static
  */
-ADC.generate = function generate(name, options, callback) {
+ADX.generate = function generate(type, name, options, callback) {
     var generator = new Generator();
     // Swap the options
     if (typeof  options === 'function') {
@@ -310,18 +340,19 @@ ADC.generate = function generate(name, options, callback) {
     }
     callback = callback || function () {};
 
-    generator.generate(name, options, function (err, outputPath) {
+    generator.generate(type, name, options, function (err, outputPath) {
         if (err) {
             callback(err, null);
             return;
         }
-        callback(null, new ADC(outputPath));
+        callback(null, new ADX(outputPath));
     });
 };
 
 /**
  * Returns the list of templates directory
  *
+ * @param {"adc"|"adp"} type Type of the template list to obtain (`adc` or `adp`)
  * @param {Function} callback Callback
  * @param {Error} callback.err Error
  * @param {Object[]} callback.dirs List of template
@@ -329,19 +360,19 @@ ADC.generate = function generate(name, options, callback) {
  * @param {String} callback.dirs[].path Path of the template directory
  * @static
  */
-ADC.getTemplateList = function getTemplateList(callback) {
-    common.getTemplateList(callback);
+ADX.getTemplateList = function getTemplateList(type, callback) {
+    common.getTemplateList(type, callback);
 };
 
 /**
  * Instance of the object to manage the preferences
  *
- * @type {ADC.Preferences}
+ * @type {ADX.Preferences}
  */
-ADC.preferences = preferences;
+ADX.preferences = preferences;
 
 
 // Make it public
-exports.ADC = ADC;
+exports.ADX = ADX;
 exports.Configurator = Configurator;
 

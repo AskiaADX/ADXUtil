@@ -20,7 +20,7 @@ function InteractiveADXShell(dir) {
  * Create an interactive spawn process with the ADXShell
  *
  * @constructor
- * @param {String} dir Path of the ADC directory
+ * @param {String} dir Path of the ADX directory
  */
 InteractiveADXShell.prototype.constructor = InteractiveADXShell;
 
