@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="http://www.askia.com/ADCUnitTestSchema"
-            xmlns="http://www.askia.com/ADCUnitTestSchema"
+            targetNamespace="http://www.askia.com/2.1.0/ADXUnitTestSchema"
+            xmlns="http://www.askia.com/2.1.0/ADXUnitTestSchema"
             elementFormDefault="qualified">
 
   <!-- DEFINITION -->
@@ -155,6 +155,20 @@
     </xsd:restriction>
   </xsd:simpleType>
 
+  
+  <!-- Tests cases -->
+  <xsd:element name="testCases">
+    <xsd:annotation>
+      <xsd:documentation>
+        Definied a collection of cases to create a loop of tests
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence >
+        <xsd:element ref="cases" minOccurs="1" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
 
   <!-- Fixtures -->
   <xsd:element name="fixture">
@@ -204,6 +218,73 @@
         <xsd:annotation>
           <xsd:documentation>
             Fixture file to use for all tests
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:attribute>
+    </xsd:complexType>
+  </xsd:element>
+  
+  <!-- Cases -->
+  <xsd:element name="cases">
+    <xsd:annotation>
+      <xsd:documentation>
+        List of cases to create a loop of tests.
+        Also used to aggregate cases.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="case" minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
+      <xsd:attribute name="id" type="xsd:normalizedString" use="required">
+        <xsd:annotation>
+          <xsd:documentation>
+            Id of the cases
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:attribute>
+      <xsd:attribute name="description" type="xsd:normalizedString">
+        <xsd:annotation>
+          <xsd:documentation>
+            Description of the cases
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:attribute>
+      <xsd:attribute name="cases" type="xsd:normalizedString">
+        <xsd:annotation>
+          <xsd:documentation>
+            Id(s) of cases (separate with coma delimiter) to aggregate with the current cases.
+            All aggregated cases will run before the case defined in the current node
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:attribute>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!-- Case -->
+  <xsd:element name="case">
+    <xsd:annotation>
+      <xsd:documentation>
+        Define a re-usable case
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:all>
+        <xsd:element ref="arrange" minOccurs="0" maxOccurs="1" />
+        <xsd:element ref="asserts" minOccurs="0" maxOccurs="1" />
+      </xsd:all>
+
+      <xsd:attribute name="description" type="xsd:normalizedString" use="required">
+        <xsd:annotation>
+          <xsd:documentation>
+            Description of the case, it will prefix the final test description.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:attribute>
+      <xsd:attribute name="fixture" type="xsd:normalizedString">
+        <xsd:annotation>
+          <xsd:documentation>
+            Name of the fixture file to use, it will be extended by the final fixture defined in the &lt;units&gt; or &lt;test&gt; node.
           </xsd:documentation>
         </xsd:annotation>
       </xsd:attribute>
@@ -291,7 +372,7 @@
                 <xsd:attribute name="id" use="required" type="xsd:normalizedString">
                   <xsd:annotation>
                     <xsd:documentation>
-                      Id of the propeprty to access
+                      Id of the property to access
                     </xsd:documentation>
                   </xsd:annotation>
                 </xsd:attribute>
@@ -477,9 +558,9 @@
     </xsd:annotation>
     <xsd:complexType>
       <xsd:all>
-        <xsd:element ref="arrange" />
+        <xsd:element ref="arrange" minOccurs="0" maxOccurs="1" />
         <xsd:element ref="fake_output" minOccurs="0" maxOccurs="1" />
-        <xsd:element ref="asserts" />
+        <xsd:element ref="asserts" minOccurs="0" maxOccurs="1" />
       </xsd:all>
 
       <xsd:attribute name="id" type="xsd:normalizedString" use="required">
@@ -503,6 +584,14 @@
           </xsd:documentation>
         </xsd:annotation>
       </xsd:attribute>
+      <xsd:attribute name="cases" type="xsd:normalizedString">
+        <xsd:annotation>
+          <xsd:documentation>
+            Ids of cases (separate with coma delimiter) on which the test should loop through.
+            The test will run for each specified cases.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:attribute>
     </xsd:complexType>
   </xsd:element>
 
@@ -519,24 +608,31 @@
     <xsd:complexType>
       <xsd:sequence minOccurs="0" maxOccurs="unbounded">
         <xsd:choice>
+          <xsd:element name="page" type="xsd:string">
+            <xsd:annotation>
+              <xsd:documentation>
+                Fake the output of the page (mostly used for ADP)
+              </xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
           <xsd:element name="head" type="xsd:string">
             <xsd:annotation>
               <xsd:documentation>
-                Fake the output of the head section
+                Fake the output of the head section (ADC only)
               </xsd:documentation>
             </xsd:annotation>  
           </xsd:element>
           <xsd:element name="placeholder" type="xsd:string">
             <xsd:annotation>
               <xsd:documentation>
-                Fake the output of the placeholder section
+                Fake the output of the placeholder section (ADC only)
               </xsd:documentation>
             </xsd:annotation>
           </xsd:element>
           <xsd:element name="foot" type="xsd:string">
             <xsd:annotation>
               <xsd:documentation>
-                Fake the output of the foot section
+                Fake the output of the foot section (ADC only)
               </xsd:documentation>
             </xsd:annotation>
           </xsd:element>
@@ -581,6 +677,7 @@
         <xsd:element ref="assert_match" minOccurs="0" maxOccurs="1" />
         <xsd:element ref="assert_not_match" minOccurs="0" maxOccurs="1" />
 
+        <xsd:element ref="page" minOccurs="0" maxOccurs="1"/>
         <xsd:element ref="head" minOccurs="0" maxOccurs="1" />
         <xsd:element ref="placeholder" minOccurs="0" maxOccurs="1" />
         <xsd:element ref="foot" minOccurs="0" maxOccurs="1" />
@@ -647,7 +744,10 @@
     </xsd:annotation>
   </xsd:element>
 
-  <!-- Assert by section (head, placeholder, foot) -->
+  <!-- Assert by section
+    For ADC: head, placeholder, foot
+    For ADP: page
+  -->
   <xsd:complexType name="assertsBySection">
     <xsd:annotation>
       <xsd:documentation>
@@ -674,6 +774,7 @@
   </xsd:complexType>
 
   <!-- Section -->
+  <xsd:element name="page" type="assertsBySection" />
   <xsd:element name="head" type="assertsBySection" />
   <xsd:element name="placeholder" type="assertsBySection" />
   <xsd:element name="foot" type="assertsBySection" />
