@@ -648,6 +648,13 @@
           </xsd:documentation>
         </xsd:annotation>
       </xsd:attribute>
+      <xsd:attribute name="ignore" type="xsd:boolean">
+        <xsd:annotation>
+          <xsd:documentation>
+            Ignore the test
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:attribute>
     </xsd:complexType>
   </xsd:element>
 
