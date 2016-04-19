@@ -56,6 +56,30 @@
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
+      <xsd:enumeration value="infiniteLoop">
+        <xsd:annotation>
+          <xsd:documentation>
+            Infinite loop.
+            Code error: -6
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="noPage">
+        <xsd:annotation>
+          <xsd:documentation>
+            No page.
+            Code error: -7
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="missingQuestion">
+        <xsd:annotation>
+          <xsd:documentation>
+            No page.
+            Code error: -8
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
       <xsd:enumeration value="invalidZip">
         <xsd:annotation>
           <xsd:documentation>
@@ -149,6 +173,38 @@
           <xsd:documentation>
             Text content could not be static or share.
             Code error: 12
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="missingAskiaHeadTag">
+        <xsd:annotation>
+          <xsd:documentation>
+            Missing askia-head tag.
+            Code error: 13
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="missingAskiaFormTag">
+        <xsd:annotation>
+          <xsd:documentation>
+            Missing askia-form tag.
+            Code error: 14
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="missingAskiaQuestionsTag">
+        <xsd:annotation>
+          <xsd:documentation>
+            Missing askia-questions tag.
+            Code error: 15
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="missingAskiaFootTag">
+        <xsd:annotation>
+          <xsd:documentation>
+            Missing askia-foot tag.
+            Code error: 16
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
