@@ -3,6 +3,7 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             targetNamespace="http://www.askia.com/2.1.0/ADXUnitTestSchema"
             xmlns="http://www.askia.com/2.1.0/ADXUnitTestSchema"
+            xmlns:adx="http://www.askia.com/2.1.0/ADXUnitTestSchema"
             elementFormDefault="qualified">
 
   <!-- DEFINITION -->
@@ -211,6 +212,21 @@
     </xsd:restriction>
   </xsd:simpleType>
 
+  <!-- Insensitive asserts -->
+  <xsd:complexType name="insensitiveAssert">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string">
+        <xsd:attribute name="insensitive" type="xsd:boolean">
+          <xsd:annotation>
+            <xsd:documentation>
+              Allow or not insensitive case comparison
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:attribute>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  
   
   <!-- Tests cases -->
   <xsd:element name="testCases">
@@ -1032,14 +1048,14 @@
   </xsd:element>
 
   <!-- Assert contains -->
-  <xsd:element name="assert_contains" type="xsd:string">
+  <xsd:element name="assert_contains" type="adx:insensitiveAssert">
     <xsd:annotation>
       <xsd:documentation>
         Assert that the section or the html nodes contains the specified value
       </xsd:documentation>
     </xsd:annotation>
   </xsd:element>
-  <xsd:element name="assert_not_contains" type="xsd:string">
+  <xsd:element name="assert_not_contains" type="adx:insensitiveAssert">
     <xsd:annotation>
       <xsd:documentation>
         Assert that the section or the html nodes doesn't contains the specified value
@@ -1048,14 +1064,14 @@
   </xsd:element>
 
   <!-- Assert equals -->
-  <xsd:element name="assert_equals" type="xsd:string">
+  <xsd:element name="assert_equals" type="adx:insensitiveAssert">
     <xsd:annotation>
       <xsd:documentation>
         Assert that the section is equals to specified value
       </xsd:documentation>
     </xsd:annotation>
   </xsd:element>
-  <xsd:element name="assert_not_equals" type="xsd:string">
+  <xsd:element name="assert_not_equals" type="adx:insensitiveAssert">
     <xsd:annotation>
       <xsd:documentation>
         Assert that the section is not equals to the specified value
@@ -1064,14 +1080,14 @@
   </xsd:element>
 
   <!-- Assert match -->
-  <xsd:element name="assert_match" type="xsd:string">
+  <xsd:element name="assert_match" type="adx:insensitiveAssert">
     <xsd:annotation>
       <xsd:documentation>
         Assert that the specified section match the specified regular expression pattern
       </xsd:documentation>
     </xsd:annotation>
   </xsd:element>
-  <xsd:element name="assert_not_match" type="xsd:string">
+  <xsd:element name="assert_not_match" type="adx:insensitiveAssert">
     <xsd:annotation>
       <xsd:documentation>
         Assert that the specified section don't match the specified regular expression  pattern
