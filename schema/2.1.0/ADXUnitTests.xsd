@@ -293,6 +293,13 @@
           </xsd:documentation>
         </xsd:annotation>
       </xsd:attribute>
+      <xsd:attribute name="ignore" type="xsd:boolean">
+        <xsd:annotation>
+          <xsd:documentation>
+            Ignore the hole tests
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:attribute>
     </xsd:complexType>
   </xsd:element>
   
