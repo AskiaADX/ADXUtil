@@ -13,7 +13,6 @@
         <xsd:annotation>
           <xsd:documentation>
             No error.
-            Code: 0
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -21,7 +20,6 @@
         <xsd:annotation>
           <xsd:documentation>
             No questionnaire.
-            Code error: -1
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -29,7 +27,6 @@
         <xsd:annotation>
           <xsd:documentation>
             No ADC control.
-            Code error: -2
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -37,7 +34,6 @@
         <xsd:annotation>
           <xsd:documentation>
             Error during the AskiaScript interpretation.
-            Code error: -3
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -45,7 +41,6 @@
         <xsd:annotation>
           <xsd:documentation>
             Missing property.
-            Code error: -4
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -53,7 +48,6 @@
         <xsd:annotation>
           <xsd:documentation>
             Missing content.
-            Code error: -5
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -61,7 +55,6 @@
         <xsd:annotation>
           <xsd:documentation>
             Infinite loop.
-            Code error: -6
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -69,23 +62,20 @@
         <xsd:annotation>
           <xsd:documentation>
             No page.
-            Code error: -7
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
       <xsd:enumeration value="missingQuestion">
         <xsd:annotation>
           <xsd:documentation>
-            No page.
-            Code error: -8
+            Missing question.
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
       <xsd:enumeration value="invalidZip">
         <xsd:annotation>
           <xsd:documentation>
-            ADC zip file is not valid.
-            Code error: 1
+            ADX zip file is not valid.
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -93,7 +83,6 @@
         <xsd:annotation>
           <xsd:documentation>
             Invalid config.xml file.
-            Code error: 2
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -101,7 +90,6 @@
         <xsd:annotation>
           <xsd:documentation>
             Invalid SWF file, could not extract it.
-            Code error: 3
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -109,7 +97,6 @@
         <xsd:annotation>
           <xsd:documentation>
             Missing file.
-            Code error: 4
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -117,7 +104,6 @@
         <xsd:annotation>
           <xsd:documentation>
             Invalid XML string.
-            Code error: 5
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -125,7 +111,6 @@
         <xsd:annotation>
           <xsd:documentation>
             Missing cached file.
-            Code error: 6
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -133,7 +118,6 @@
         <xsd:annotation>
           <xsd:documentation>
             No output.
-            Code error: 7
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -141,7 +125,6 @@
         <xsd:annotation>
           <xsd:documentation>
             Output condition error.
-            Code error: 8
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -149,7 +132,6 @@
         <xsd:annotation>
           <xsd:documentation>
             Binary file could not be dynamic.
-            Code error: 9
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -157,15 +139,13 @@
         <xsd:annotation>
           <xsd:documentation>
             Binary file require the &lt;yield&gt; element.
-            Code error: 10
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
       <xsd:enumeration value="cannotCreateDirectory">
         <xsd:annotation>
           <xsd:documentation>
-            Cannot create the ADC directory.
-            Code error: 11
+            Cannot create the ADX directory.
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -173,7 +153,6 @@
         <xsd:annotation>
           <xsd:documentation>
             Text content could not be static or share.
-            Code error: 12
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -181,7 +160,6 @@
         <xsd:annotation>
           <xsd:documentation>
             Missing askia-head tag.
-            Code error: 13
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -189,7 +167,13 @@
         <xsd:annotation>
           <xsd:documentation>
             Missing askia-form tag.
-            Code error: 14
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="missingAskiaFormCloseTag">
+        <xsd:annotation>
+          <xsd:documentation>
+            Missing askia-form close tag.
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -197,7 +181,6 @@
         <xsd:annotation>
           <xsd:documentation>
             Missing askia-questions tag.
-            Code error: 15
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
@@ -205,7 +188,6 @@
         <xsd:annotation>
           <xsd:documentation>
             Missing askia-foot tag.
-            Code error: 16
           </xsd:documentation>
         </xsd:annotation>
       </xsd:enumeration>
