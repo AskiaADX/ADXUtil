@@ -781,8 +781,11 @@ Validator.prototype.initConfigXMLDoc = function initConfigXMLDoc() {
  */
 Validator.prototype.validateXMLAgainstXSD = function validateXMLAgainstXSD() {
     var projectType     = this.adxConfigurator.projectType,
-        schemaName      = projectType === &#39;adp&#39; ? common.SCHEMA_ADP : common.SCHEMA_ADC,
-        projectVersion  = this.adxConfigurator.projectVersion,
+        rootEl          = this.adxConfigurator.xmldoc.getroot(),
+        xmlns           = rootEl.get(&#39;xmlns&#39;),
+        isOldConfig     = xmlns === &quot;http://www.askia.com/ADCSchema&quot;,
+        schemaName      = projectType === &#39;adp&#39; ? common.SCHEMA_ADP : (isOldConfig ? &#39;Config.xsd&#39; : common.SCHEMA_ADC),
+        projectVersion  = this.adxConfigurator.projectVersion + (isOldConfig ? &#39;alpha&#39; : &#39;&#39;),
         exec            = require(&#39;child_process&#39;).exec,
         xmlLintPath     = pathHelper.join(this.rootdir, common.XML_LINT_PATH),
         xmlSchemaPath   = pathHelper.join(this.rootdir, common.SCHEMA_PATH, projectVersion, schemaName),
