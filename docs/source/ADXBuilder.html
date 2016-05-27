@@ -273,7 +273,7 @@ Builder.prototype.createBinDir =  function createBinDir() {
  */
 Builder.prototype.compressADX =  function compressADX() {
     var self = this;
-    common.getDirStructure(self.adcDirectoryPath, function callbackGetStructure(err, structure) {
+    common.getDirStructure(self.adxDirectoryPath, function callbackGetStructure(err, structure) {
         if (err) {
             return self.sequence.resume(err);
         }
