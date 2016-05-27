@@ -137,6 +137,7 @@ ADX.prototype.load = function load(callback) {
  *      });
  *
  * @param {Object} [options] Options of validation
+ * @param {String|'default'|'html'} [options.printMode='default'] Print mode (default console or html)
  * @param {Boolean} [options.test=true] Run unit tests
  * @param {Boolean} [options.autoTest=true] Run auto unit tests
  * @param {Boolean} [options.xml=true] Validate the config.xml file
@@ -168,6 +169,7 @@ ADX.prototype.validate = function validate(options, callback) {
  *      });
  *
  * @param {Object} [options] Options of validation
+ * @param {String|'default'|'html'} [options.printMode='default'] Print mode (default console or html)
  * @param {Boolean} [options.test=true] Run unit tests
  * @param {Boolean} [options.autoTest=true] Run auto unit tests
  * @param {Object} [options.logger] Logger

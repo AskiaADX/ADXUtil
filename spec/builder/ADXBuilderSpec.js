@@ -137,6 +137,14 @@ describe('ADXBuilder', function () {
             expect(p.logger).toBe(logger);
         });
 
+        it("should set the #printMode when it's defined in the options arg", function () {
+            var builderInstance = new Builder('test');
+            builderInstance.build({
+                printMode : 'html'
+            });
+            expect(builderInstance.printMode).toBe('html');
+        });
+
         describe("create `bin` directory", function () {
             beforeEach(function () {
                 spies.validateHook.andCallFake(function (options, callback) {
@@ -625,18 +633,21 @@ describe('ADXBuilder', function () {
     });
 
     function testLogger(method) {
+        var className = method.toLowerCase().replace('write', '');
         describe('#'  + method, function () {
             it('should call the `common.' + method + '` when no #logger is defined', function () {
                 var builderInstance = new Builder('test');
                 builderInstance[method]('a message', 'arg 1', 'arg 2');
                 expect(common[method]).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
             });
+
             it('should call the `common.' + method + '` when the #logger is defined but without the ' + method + ' method.', function () {
                 var builderInstance = new Builder('test');
                 builderInstance.logger = {};
                 builderInstance[method]('a message', 'arg 1', 'arg 2');
                 expect(common[method]).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
             });
+
             it('should not call the `common.' + method + '` when the #logger is defined with the ' + method + ' method.', function () {
                 var builderInstance = new Builder('test');
                 builderInstance.logger = {};
@@ -654,6 +665,12 @@ describe('ADXBuilder', function () {
                 expect(spy).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
             });
 
+            it('should wrap the message inside a div with the `' + className + '` when the printMode=html', function () {
+                var builderInstance = new Builder('test');
+                builderInstance.printMode = 'html';
+                builderInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(common[method]).toHaveBeenCalledWith('<div class="' + className + '">a message</div>', 'arg 1', 'arg 2');
+            });
         });
     }
 

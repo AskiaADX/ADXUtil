@@ -355,6 +355,12 @@ function Validator(adxDirPath) {
      * @type {{writeMessage : Function, writeSuccess : Function, writeWarning: Function, writeError : Function}}
      */
     this.logger = null;
+
+<span id='ADX-Validator-property-printMode'>    /**
+</span>     * Print mode
+     * @type {String}
+     */
+    this.printMode = &#39;default&#39;;
 }
 
 <span id='ADX-Validator-method-constructor'>/**
@@ -369,6 +375,7 @@ Validator.prototype.constructor = Validator;
 </span> * Validate the current ADX instance
  *
  * @param {Object} [options] Options of validation
+ * @param {String|&#39;default&#39;|&#39;html&#39;} [options.printMode=&#39;default&#39;] Print mode (default console or html)
  * @param {Boolean} [options.test=true] Run unit tests
  * @param {Boolean} [options.autoTest=true] Run auto unit tests
  * @param {Boolean} [options.xml=true] Validate the config.xml file
@@ -386,6 +393,9 @@ Validator.prototype.validate = function validate(options, callback) {
 
     // Start timer
     this.report.startTime  = new Date().getTime();
+
+    // Reset the print mode
+    this.printMode = &#39;default&#39;;
 
     // Swap optional options arguments
     if (typeof options === &#39;function&#39;) {
@@ -437,6 +447,10 @@ Validator.prototype.validate = function validate(options, callback) {
             ]);
         }
 
+        // print mode
+        if (options.printMode) {
+            this.printMode = options.printMode || &#39;default&#39;;
+        }
     }
 
     this.report.total = this.validators.sequence.length;
@@ -543,10 +557,14 @@ Validator.prototype.resume = function resume(err) {
  * @param {String} text Text to write in the console
  */
 Validator.prototype.writeError = function writeError(text) {
+    var args = Array.prototype.slice.call(arguments);
+    if (this.printMode === &#39;html&#39; &amp;&amp; args.length) {
+        args[0] = &#39;&lt;div class=&quot;error&quot;&gt;&#39; + args[0] + &#39;&lt;/div&gt;&#39;;
+    }
     if (this.logger &amp;&amp; typeof this.logger.writeError === &#39;function&#39;) {
-        this.logger.writeError.apply(this.logger, arguments);
+        this.logger.writeError.apply(this.logger, args);
     } else {
-        common.writeError.apply(common, arguments);
+        common.writeError.apply(common, args);
     }
 };
 
@@ -555,10 +573,14 @@ Validator.prototype.writeError = function writeError(text) {
  * @param {String} text Text to write in the console
  */
 Validator.prototype.writeWarning = function writeWarning(text) {
+    var args = Array.prototype.slice.call(arguments);
+    if (this.printMode === &#39;html&#39; &amp;&amp; args.length) {
+        args[0] = &#39;&lt;div class=&quot;warning&quot;&gt;&#39; + args[0] + &#39;&lt;/div&gt;&#39;;
+    }
     if (this.logger &amp;&amp; typeof this.logger.writeWarning === &#39;function&#39;) {
-        this.logger.writeWarning.apply(this.logger, arguments);
+        this.logger.writeWarning.apply(this.logger, args);
     } else {
-        common.writeWarning.apply(common, arguments);
+        common.writeWarning.apply(common, args);
     }
 };
 
@@ -567,10 +589,14 @@ Validator.prototype.writeWarning = function writeWarning(text) {
  * @param {String} text Text to write in the console
  */
 Validator.prototype.writeSuccess = function writeSuccess(text) {
+    var args = Array.prototype.slice.call(arguments);
+    if (this.printMode === &#39;html&#39; &amp;&amp; args.length) {
+        args[0] = &#39;&lt;div class=&quot;success&quot;&gt;&#39; + args[0] + &#39;&lt;/div&gt;&#39;;
+    }
     if (this.logger &amp;&amp; typeof this.logger.writeSuccess === &#39;function&#39;) {
-        this.logger.writeSuccess.apply(this.logger, arguments);
+        this.logger.writeSuccess.apply(this.logger, args);
     } else {
-        common.writeSuccess.apply(common, arguments);
+        common.writeSuccess.apply(common, args);
     }
 };
 
@@ -579,10 +605,14 @@ Validator.prototype.writeSuccess = function writeSuccess(text) {
  * @param {String} text Text to write in the console
  */
 Validator.prototype.writeMessage = function writeMessage(text) {
+    var args = Array.prototype.slice.call(arguments);
+    if (this.printMode === &#39;html&#39; &amp;&amp; args.length) {
+        args[0] = &#39;&lt;div class=&quot;message&quot;&gt;&#39; + args[0] + &#39;&lt;/div&gt;&#39;;
+    }
     if (this.logger &amp;&amp; typeof this.logger.writeMessage === &#39;function&#39;) {
-        this.logger.writeMessage.apply(this.logger, arguments);
+        this.logger.writeMessage.apply(this.logger, args);
     } else {
-        common.writeMessage.apply(common, arguments);
+        common.writeMessage.apply(common, args);
     }
 };
 
@@ -1349,6 +1379,10 @@ Validator.prototype.runTests = function runTests(args, message) {
                 self.writeSuccess(successMsg.adxUnitSucceed);
             }
             self.resume(null);
+        }
+
+        if (self.printMode === &#39;html&#39; &amp;&amp; args.indexOf(&#39;--html&#39;) === -1) {
+            args.unshift(&#39;--html&#39;);
         }
 
         if (!self._adxShell) {

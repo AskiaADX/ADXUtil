@@ -351,6 +351,18 @@ describe('ADXValidator', function () {
             }, '/adx/path/dir');
             expect(instance.logger).toBe(logger);
         });
+
+        it("should set the #printMode when it's defined in the options arg", function () {
+            var instance;
+            spies.validateHook = function () {
+                this.validators.sequence = [];
+                instance = this;
+            };
+            adxValidator.validate({
+                printMode : 'html'
+            }, '/adx/path/dir');
+            expect(instance.printMode).toBe('html');
+        });
     });
 
     describe('#validatePathArg', function () {
@@ -2203,7 +2215,7 @@ describe('ADXValidator', function () {
         });
 
 
-        it('should run the ADXShell process with the path of the ADC directory in arguments and the flag --auto', function () {
+        it('should run the ADXShell process with the path of the ADX directory in arguments and the flag --auto', function () {
             spies.fs.stat.andCallFake(function (path, callback) {
                 callback(null);
             });
@@ -2212,6 +2224,21 @@ describe('ADXValidator', function () {
                 expect(args).toEqual(['--auto', '\\adx\\path\\dir']);
             });
             adxValidator.validate(null, '/adx/path/dir');
+
+            expect(childProc.execFile).toHaveBeenCalled();
+        });
+
+        it('should run the ADXShell process with the flag --html when options.printMode="html"', function () {
+            spies.fs.stat.andCallFake(function (path, callback) {
+                callback(null);
+            });
+            spyExec.andCallFake(function (file, args) {
+                expect(file).toBe('.\\ADXShell.exe');
+                expect(args).toEqual(['--html', '--auto', '\\adx\\path\\dir']);
+            });
+            adxValidator.validate({
+                printMode : 'html'
+            }, '/adx/path/dir');
 
             expect(childProc.execFile).toHaveBeenCalled();
         });
@@ -2362,23 +2389,27 @@ describe('ADXValidator', function () {
     });
 
     function testLogger(method) {
+        var className = method.toLowerCase().replace('write', '');
         describe('#'  + method, function () {
             beforeEach(function () {
                 spies.validateHook = function () {
                     this.validators.sequence = [];
                 };
             });
+
             it('should call the `common.' + method + '` when no #logger is defined', function () {
                 var validatorInstance = new Validator('test');
                 validatorInstance[method]('a message', 'arg 1', 'arg 2');
                 expect(common[method]).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
             });
+
             it('should call the `common.' + method + '` when the #logger is defined but without the ' + method + ' method.', function () {
                 var validatorInstance = new Validator('test');
                 validatorInstance.logger = {};
                 validatorInstance[method]('a message', 'arg 1', 'arg 2');
                 expect(common[method]).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
             });
+
             it('should not call the `common.' + method + '` when the #logger is defined with the ' + method + ' method.', function () {
                 var validatorInstance = new Validator('test');
                 validatorInstance.logger = {};
@@ -2396,6 +2427,12 @@ describe('ADXValidator', function () {
                 expect(spy).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
             });
 
+            it('should wrap the message inside a div with the `' + className + '` when the printMode=html', function () {
+                var validatorInstance = new Validator('test');
+                validatorInstance.printMode = 'html';
+                validatorInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(common[method]).toHaveBeenCalledWith('<div class="' + className + '">a message</div>', 'arg 1', 'arg 2');
+            });
         });
     }
 

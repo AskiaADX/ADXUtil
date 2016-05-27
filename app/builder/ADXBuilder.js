@@ -68,6 +68,12 @@ function Builder(adxDirPath) {
      * @type {{writeMessage : Function, writeSuccess : Function, writeWarning: Function, writeError : Function}}
      */
     this.logger = null;
+
+    /**
+     * Print mode
+     * @type {String}
+     */
+    this.printMode = 'default';
 }
 
 /**
@@ -82,6 +88,7 @@ Builder.prototype.constructor = Builder;
  * Build the ADX
  *
  * @param {Object} [options] Options of validation
+ * @param {String|'default'|'html'} [options.printMode='default'] Print mode (default console or html)
  * @param {Boolean} [options.test=true] Run unit tests
  * @param {Boolean} [options.autoTest=true] Run auto unit tests
  * @param {Boolean} [options.xml=true] Validate the config.xml file
@@ -97,6 +104,9 @@ Builder.prototype.constructor = Builder;
  * @param {Object} [callback.report] Validation report
  */
 Builder.prototype.build = function build(options, callback) {
+
+    // Reset the print mode
+    this.printMode = 'default';
 
     // Swap the options
     if (typeof  options === 'function') {
@@ -114,6 +124,9 @@ Builder.prototype.build = function build(options, callback) {
     options.autoTest = true;
     if (options.logger) {
         this.logger = options.logger;
+    }
+    if (options.printMode) {
+        this.printMode = options.printMode || 'default';
     }
 
     this.validator.validate(options, function validateCallback(err, report) {
@@ -135,10 +148,14 @@ Builder.prototype.build = function build(options, callback) {
  * @param {String} text Text to write in the console
  */
 Builder.prototype.writeError = function writeError(text) {
+    var args = Array.prototype.slice.call(arguments);
+    if (this.printMode === 'html' && args.length) {
+        args[0] = '<div class="error">' + args[0] + '</div>';
+    }
     if (this.logger && typeof this.logger.writeError === 'function') {
-        this.logger.writeError.apply(this.logger, arguments);
+        this.logger.writeError.apply(this.logger, args);
     } else {
-        common.writeError.apply(common, arguments);
+        common.writeError.apply(common, args);
     }
 };
 
@@ -147,10 +164,14 @@ Builder.prototype.writeError = function writeError(text) {
  * @param {String} text Text to write in the console
  */
 Builder.prototype.writeWarning = function writeWarning(text) {
+    var args = Array.prototype.slice.call(arguments);
+    if (this.printMode === 'html' && args.length) {
+        args[0] = '<div class="warning">' + args[0] + '</div>';
+    }
     if (this.logger && typeof this.logger.writeWarning === 'function') {
-        this.logger.writeWarning.apply(this.logger, arguments);
+        this.logger.writeWarning.apply(this.logger, args);
     } else {
-        common.writeWarning.apply(common, arguments);
+        common.writeWarning.apply(common, args);
     }
 };
 
@@ -159,10 +180,14 @@ Builder.prototype.writeWarning = function writeWarning(text) {
  * @param {String} text Text to write in the console
  */
 Builder.prototype.writeSuccess = function writeSuccess(text) {
+    var args = Array.prototype.slice.call(arguments);
+    if (this.printMode === 'html' && args.length) {
+        args[0] = '<div class="success">' + args[0] + '</div>';
+    }
     if (this.logger && typeof this.logger.writeSuccess === 'function') {
-        this.logger.writeSuccess.apply(this.logger, arguments);
+        this.logger.writeSuccess.apply(this.logger, args);
     } else {
-        common.writeSuccess.apply(common, arguments);
+        common.writeSuccess.apply(common, args);
     }
 };
 
@@ -171,10 +196,14 @@ Builder.prototype.writeSuccess = function writeSuccess(text) {
  * @param {String} text Text to write in the console
  */
 Builder.prototype.writeMessage = function writeMessage(text) {
+    var args = Array.prototype.slice.call(arguments);
+    if (this.printMode === 'html' && args.length) {
+        args[0] = '<div class="message">' + args[0] + '</div>';
+    }
     if (this.logger && typeof this.logger.writeMessage === 'function') {
-        this.logger.writeMessage.apply(this.logger, arguments);
+        this.logger.writeMessage.apply(this.logger, args);
     } else {
-        common.writeMessage.apply(common, arguments);
+        common.writeMessage.apply(common, args);
     }
 };
 
