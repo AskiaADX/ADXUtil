@@ -12,8 +12,17 @@ var common       = require('./common.js');
  * @class InteractiveADXShell
  * @private
  */
-function InteractiveADXShell(dir) {
+function InteractiveADXShell(dir, options) {
     this.path = dir;
+    this.mode = 'interactive';
+    if (options) {
+        if (options.mode) {
+            if (options.mode !== 'interactive' && options.mode !== 'interview') {
+                throw new Error("Expected the interactive ADX shell mode to be `interactive` or `interview`");
+            }
+            this.mode = options.mode;
+        }
+    }
 }
 
 /**
@@ -21,6 +30,8 @@ function InteractiveADXShell(dir) {
  *
  * @constructor
  * @param {String} dir Path of the ADX directory
+ * @param {Object} [options] Options
+ * @param {"interactive"|"interview} [options.mode='interactive'] Interactive mode
  */
 InteractiveADXShell.prototype.constructor = InteractiveADXShell;
 
@@ -39,21 +50,31 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
 
     if (!self._process) {
         var root =  path.resolve(__dirname, "../../");
-        self._process = childProcess.spawn('.\\' + common.ADX_UNIT_PROCESS_NAME, [
-            'interactive',
-            self.path
-        ], {
+        var args = [];
+        switch (self.mode) {
+            case 'interactive':
+                args.push('interactive', self.path);
+                break;
+            case 'interview':
+                args.push('startInterview', command, self.path);
+                break;
+        }
+
+        self._process = childProcess.spawn('.\\' + common.ADX_UNIT_PROCESS_NAME, args, {
             cwd   : path.join(root, common.ADX_UNIT_DIR_PATH),
             env   : process.env
         });
+
         self._process._firstData = true;
     }
 
     function onOutput(data) {
         if (self._process._firstData) {
             self._process._firstData = false;
-            self._process.stdin.write(command + '\n');
-            return;
+            if (self.mode === 'interactive') {
+                self._process.stdin.write(command + '\n');
+                return;
+            }
         }
         var str = data.toString();
         if (!/^\[ADXShell:End\]/m.test(str)) {
@@ -100,10 +121,10 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
 
     self._process.stdout.on('data', onOutput);
     self._process.stderr.on('data', onError);
+
     if (!self._process._firstData) {
         self._process.stdin.write(command  + '\n');
     }
-
 };
 
 exports.InteractiveADXShell = InteractiveADXShell;

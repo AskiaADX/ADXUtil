@@ -377,4 +377,5 @@ ADX.preferences = preferences;
 // Make it public
 exports.ADX = ADX;
 exports.Configurator = Configurator;
+exports.InteractiveADXShell = InteractiveADXShell;
 
