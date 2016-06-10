@@ -307,6 +307,24 @@ describe('InteractiveADXShell', function () {
                 stub.stdout.emit('data', "\r\n[ADXShell:End]");
                 expect(result).toBe('first call, second call');
             });
+
+            it("should properly use the command arg if it's an array", function () {
+                var adxShell = new InteractiveADXShell('/adx/path', {mode : 'interview'});
+                adxShell.exec(['-extra', '-command', '-options']);
+                var processPath = '.\\' + common.ADX_UNIT_PROCESS_NAME;
+                var processArgs = [
+                    'startInterview',
+                    '-extra',
+                    '-command',
+                    '-options',
+                    '/adx/path'
+                ];
+                var processOptions = {
+                    cwd   : pathHelper.join(pathHelper.resolve(__dirname, '../../'), common.ADX_UNIT_DIR_PATH),
+                    env   : process.env
+                };
+                expect(spies.spawn).toHaveBeenCalledWith(processPath, processArgs, processOptions);
+            });
         });
     });
 });

@@ -46,7 +46,13 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
     var self = this;
     var message = [],
         errorMessage = [],
-        errTimeout;
+        errTimeout,
+        commandAsString = command;
+
+    if (Array.isArray(command)) {
+        commandAsString = commandAsString.join(' ');
+    }
+
 
     if (!self._process) {
         var root =  path.resolve(__dirname, "../../");
@@ -56,7 +62,13 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
                 args.push('interactive', self.path);
                 break;
             case 'interview':
-                args.push('startInterview', command, self.path);
+                args.push('startInterview');
+                if (Array.isArray(command)) {
+                    args = args.concat(command);
+                } else {
+                    args.push(command);
+                }
+                args.push(self.path);
                 break;
         }
 
@@ -72,7 +84,7 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
         if (self._process._firstData) {
             self._process._firstData = false;
             if (self.mode === 'interactive') {
-                self._process.stdin.write(command + '\n');
+                self._process.stdin.write(commandAsString + '\n');
                 return;
             }
         }
@@ -123,7 +135,7 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
     self._process.stderr.on('data', onError);
 
     if (!self._process._firstData) {
-        self._process.stdin.write(command  + '\n');
+        self._process.stdin.write(commandAsString  + '\n');
     }
 };
 
