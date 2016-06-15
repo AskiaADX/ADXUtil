@@ -244,11 +244,11 @@ describe('ADXInterviews', function () {
 
                 expect(spies.interactiveExec).toHaveBeenCalledWith([
                     'command',
-                    '-fixture:"a_fixture"',
-                    '-output:"an_output"',
-                    '-properties:"someproperties"',
-                    '-parameters:"someparameters"',
-                    '-themes:"somethemesvariables"'
+                    '"-fixture:a_fixture"',
+                    '"-output:an_output"',
+                    '"-properties:someproperties"',
+                    '"-parameters:someparameters"',
+                    '"-themes:somethemesvariables"'
                 ], cb);
             });
 

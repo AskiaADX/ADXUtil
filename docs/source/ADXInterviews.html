@@ -78,19 +78,19 @@ Interview.prototype.execCommand = function execCommand(command, options, callbac
     }
 
     if (&#39;fixture&#39; in options) {
-        args.push(&#39;-fixture:&quot;&#39; + options.fixture + &#39;&quot;&#39;);
+        args.push(&#39;&quot;-fixture:&#39; + options.fixture + &#39;&quot;&#39;);
     }
     if (&#39;output&#39; in options) {
-        args.push(&#39;-output:&quot;&#39; + options.output + &#39;&quot;&#39;);
+        args.push(&#39;&quot;-output:&#39; + options.output + &#39;&quot;&#39;);
     }
     if (&#39;properties&#39; in options) {
-        args.push(&#39;-properties:&quot;&#39; + options.properties + &#39;&quot;&#39;);
+        args.push(&#39;&quot;-properties:&#39; + options.properties + &#39;&quot;&#39;);
     }
     if (&#39;parameters&#39; in options) {
-        args.push(&#39;-parameters:&quot;&#39; + options.parameters + &#39;&quot;&#39;)
+        args.push(&#39;&quot;-parameters:&#39; + options.parameters + &#39;&quot;&#39;)
     }
     if (&#39;themes&#39; in options) {
-        args.push(&#39;-themes:&quot;&#39; + options.themes + &#39;&quot;&#39;);
+        args.push(&#39;&quot;-themes:&#39; + options.themes + &#39;&quot;&#39;);
     }
 
     this.shell.exec(args, callback);

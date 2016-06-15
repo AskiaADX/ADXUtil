@@ -61,19 +61,19 @@ Interview.prototype.execCommand = function execCommand(command, options, callbac
     }
 
     if ('fixture' in options) {
-        args.push('-fixture:"' + options.fixture + '"');
+        args.push('"-fixture:' + options.fixture + '"');
     }
     if ('output' in options) {
-        args.push('-output:"' + options.output + '"');
+        args.push('"-output:' + options.output + '"');
     }
     if ('properties' in options) {
-        args.push('-properties:"' + options.properties + '"');
+        args.push('"-properties:' + options.properties + '"');
     }
     if ('parameters' in options) {
-        args.push('-parameters:"' + options.parameters + '"')
+        args.push('"-parameters:' + options.parameters + '"')
     }
     if ('themes' in options) {
-        args.push('-themes:"' + options.themes + '"');
+        args.push('"-themes:' + options.themes + '"');
     }
 
     this.shell.exec(args, callback);
