@@ -16,6 +16,8 @@ describe('ADXUtilAPI', function () {
         Generator,
         adxConfigurator,
         Configurator,
+        adxInterviews,
+        InterviewsFactory,
         adxPreferences,
         preferences,
         spies = {},
@@ -76,6 +78,9 @@ describe('ADXUtilAPI', function () {
         Configurator = adxConfigurator.Configurator;
         spies.load = spyOn(Configurator.prototype, 'load');
 
+        adxInterviews = require('../app/interviews/ADXInterviews.js');
+        InterviewsFactory = adxInterviews.InterviewsFactory;
+
         adxPreferences = require('../app/preferences/ADXPreferences.js');
         preferences = adxPreferences.preferences;
 
@@ -122,6 +127,11 @@ describe('ADXUtilAPI', function () {
             it("should initialize a new instance of the InteractiveADXShell in #_adxShell", function () {
                 var adx = new ADX('some/path');
                 expect(adx._adxShell instanceof InteractiveADXShell).toBe(true);
+            });
+
+            it("should initialize a new instance of InterviewsFactory in #interviews", function () {
+                var adx = new ADX('some/path');
+                expect(adx.interviews instanceof InterviewsFactory).toBe(true);
             });
         });
 
@@ -409,6 +419,24 @@ describe('ADXUtilAPI', function () {
                     });
                 });
             });
+        });
+
+        describe('#destroy', function () {
+
+            it('should call the #destroy method of the #_adxShell', function () {
+                var adx = new ADX('some/path');
+                var spy = spyOn(adx._adxShell, 'destroy');
+                adx.destroy();
+                expect(spy).toHaveBeenCalled();
+            });
+
+            it('should call the #clear method of the #interviews', function () {
+                var adx = new ADX('some/path');
+                var spy = spyOn(adx.interviews, 'clear');
+                adx.destroy();
+                expect(spy).toHaveBeenCalled();
+            });
+
         });
 
         describe(".generate", function () {

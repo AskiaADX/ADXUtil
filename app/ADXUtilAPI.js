@@ -9,6 +9,7 @@ var Show         = require('./show/ADXShow.js').Show;
 var Generator    = require('./generator/ADXGenerator.js').Generator;
 var Configurator = require('./configurator/ADXConfigurator.js').Configurator;
 var InteractiveADXShell = require('./common/InteractiveADXShell.js').InteractiveADXShell;
+var InterviewsFactory   = require('./interviews/ADXInterviews.js').InterviewsFactory;
 var preferences = require('./preferences/ADXPreferences.js').preferences;
 
 
@@ -77,10 +78,17 @@ function ADX(adxDirPath) {
     /**
      * Interactive ADX Shell
      *
-     * @type {*|InteractiveADXShell}
+     * @type {InteractiveADXShell}
      * @private
      */
     this._adxShell = new InteractiveADXShell(this.path);
+
+    /**
+     * Factory of interviews
+     *
+     * @type {ADX.InterviewsFactory}
+     */
+    this.interviews = new InterviewsFactory(this.path);
 }
 
 /**
@@ -302,6 +310,14 @@ ADX.prototype.checkFixtures = function checkFixtures(callback) {
     } else {
         check(null);
     }
+};
+
+/**
+ * Release all resources
+ */
+ADX.prototype.destroy = function destroy() {
+    this._adxShell.destroy();
+    this.interviews.clear();
 };
 
 /**

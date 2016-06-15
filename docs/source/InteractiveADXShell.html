@@ -29,8 +29,17 @@ var common       = require(&#39;./common.js&#39;);
  * @class InteractiveADXShell
  * @private
  */
-function InteractiveADXShell(dir) {
+function InteractiveADXShell(dir, options) {
     this.path = dir;
+    this.mode = &#39;interactive&#39;;
+    if (options) {
+        if (options.mode) {
+            if (options.mode !== &#39;interactive&#39; &amp;&amp; options.mode !== &#39;interview&#39;) {
+                throw new Error(&quot;Expected the interactive ADX shell mode to be `interactive` or `interview`&quot;);
+            }
+            this.mode = options.mode;
+        }
+    }
 }
 
 <span id='InteractiveADXShell-method-constructor'>/**
@@ -38,6 +47,8 @@ function InteractiveADXShell(dir) {
  *
  * @constructor
  * @param {String} dir Path of the ADX directory
+ * @param {Object} [options] Options
+ * @param {&quot;interactive&quot;|&quot;interview&quot;} [options.mode=&#39;interactive&#39;] Interactive mode
  */
 InteractiveADXShell.prototype.constructor = InteractiveADXShell;
 
@@ -52,25 +63,47 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
     var self = this;
     var message = [],
         errorMessage = [],
-        errTimeout;
+        errTimeout,
+        commandAsString = command;
+
+    if (Array.isArray(command)) {
+        commandAsString = commandAsString.join(&#39; &#39;);
+    }
+
 
     if (!self._process) {
         var root =  path.resolve(__dirname, &quot;../../&quot;);
-        self._process = childProcess.spawn(&#39;.\\&#39; + common.ADX_UNIT_PROCESS_NAME, [
-            &#39;interactive&#39;,
-            self.path
-        ], {
+        var args = [];
+        switch (self.mode) {
+            case &#39;interactive&#39;:
+                args.push(&#39;interactive&#39;, self.path);
+                break;
+            case &#39;interview&#39;:
+                args.push(&#39;startInterview&#39;);
+                if (Array.isArray(command)) {
+                    args = args.concat(command);
+                } else {
+                    args.push(command);
+                }
+                args.push(self.path);
+                break;
+        }
+
+        self._process = childProcess.spawn(&#39;.\\&#39; + common.ADX_UNIT_PROCESS_NAME, args, {
             cwd   : path.join(root, common.ADX_UNIT_DIR_PATH),
             env   : process.env
         });
+
         self._process._firstData = true;
     }
 
     function onOutput(data) {
         if (self._process._firstData) {
             self._process._firstData = false;
-            self._process.stdin.write(command + &#39;\n&#39;);
-            return;
+            if (self.mode === &#39;interactive&#39;) {
+                self._process.stdin.write(commandAsString + &#39;\n&#39;);
+                return;
+            }
         }
         var str = data.toString();
         if (!/^\[ADXShell:End\]/m.test(str)) {
@@ -117,10 +150,21 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
 
     self._process.stdout.on(&#39;data&#39;, onOutput);
     self._process.stderr.on(&#39;data&#39;, onError);
-    if (!self._process._firstData) {
-        self._process.stdin.write(command  + &#39;\n&#39;);
-    }
 
+    if (!self._process._firstData) {
+        self._process.stdin.write(commandAsString  + &#39;\n&#39;);
+    }
+};
+
+<span id='InteractiveADXShell-method-destroy'>/**
+</span> * Destroy the internal reference of current object
+ */
+InteractiveADXShell.prototype.destroy = function destroy() {
+    if (!this._process) {
+        return;
+    }
+    this._process.kill();
+    delete this._process;
 };
 
 exports.InteractiveADXShell = InteractiveADXShell;</pre>

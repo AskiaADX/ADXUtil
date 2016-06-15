@@ -20,6 +20,7 @@ describe('InteractiveADXShell', function () {
         };
         self.stdout = new StandardIO();
         self.stderr = new StandardIO();
+        self.kill   = function () {};
     }
 
     beforeEach(function () {
@@ -325,6 +326,23 @@ describe('InteractiveADXShell', function () {
                 };
                 expect(spies.spawn).toHaveBeenCalledWith(processPath, processArgs, processOptions);
             });
+        });
+    });
+
+    describe('#destroy', function () {
+        it("should call the spawn#kill to exit the process", function () {
+            var adxShell = new InteractiveADXShell('/adc/path');
+            var wasCalled = false;
+            spies.spawn.andCallFake(function () {
+                var p = new ChildProcessFake();
+                p.kill = function () {
+                    wasCalled = true;
+                };
+                return p;
+            });
+            adxShell.exec('');
+            adxShell.destroy();
+            expect(wasCalled).toBe(true);
         });
     });
 });

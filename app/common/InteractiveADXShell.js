@@ -31,7 +31,7 @@ function InteractiveADXShell(dir, options) {
  * @constructor
  * @param {String} dir Path of the ADX directory
  * @param {Object} [options] Options
- * @param {"interactive"|"interview} [options.mode='interactive'] Interactive mode
+ * @param {"interactive"|"interview"} [options.mode='interactive'] Interactive mode
  */
 InteractiveADXShell.prototype.constructor = InteractiveADXShell;
 
@@ -137,6 +137,17 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
     if (!self._process._firstData) {
         self._process.stdin.write(commandAsString  + '\n');
     }
+};
+
+/**
+ * Destroy the internal reference of current object
+ */
+InteractiveADXShell.prototype.destroy = function destroy() {
+    if (!this._process) {
+        return;
+    }
+    this._process.kill();
+    delete this._process;
 };
 
 exports.InteractiveADXShell = InteractiveADXShell;

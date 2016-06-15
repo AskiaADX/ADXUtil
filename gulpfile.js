@@ -39,6 +39,7 @@ gulp.task('document', ['clean:docs'], function (cb) {
         SRC + 'generator/ADXGenerator.js',
         SRC + 'show/ADXShow.js',
         SRC + 'validator/ADXValidator.js',
+        SRC + 'interviews/ADXInterviews.js',
         SRC + 'ADXUtilAPI.js'
     ];
 

@@ -26,6 +26,7 @@ var Show         = require(&#39;./show/ADXShow.js&#39;).Show;
 var Generator    = require(&#39;./generator/ADXGenerator.js&#39;).Generator;
 var Configurator = require(&#39;./configurator/ADXConfigurator.js&#39;).Configurator;
 var InteractiveADXShell = require(&#39;./common/InteractiveADXShell.js&#39;).InteractiveADXShell;
+var InterviewsFactory   = require(&#39;./interviews/ADXInterviews.js&#39;).InterviewsFactory;
 var preferences = require(&#39;./preferences/ADXPreferences.js&#39;).preferences;
 
 
@@ -94,10 +95,17 @@ function ADX(adxDirPath) {
 <span id='ADX-property-_adxShell'>    /**
 </span>     * Interactive ADX Shell
      *
-     * @type {*|InteractiveADXShell}
+     * @type {InteractiveADXShell}
      * @private
      */
     this._adxShell = new InteractiveADXShell(this.path);
+
+<span id='ADX-property-interviews'>    /**
+</span>     * Factory of interviews
+     *
+     * @type {ADX.InterviewsFactory}
+     */
+    this.interviews = new InterviewsFactory(this.path);
 }
 
 <span id='ADX-method-constructor'>/**
@@ -321,6 +329,14 @@ ADX.prototype.checkFixtures = function checkFixtures(callback) {
     }
 };
 
+<span id='ADX-method-destroy'>/**
+</span> * Release all resources
+ */
+ADX.prototype.destroy = function destroy() {
+    this._adxShell.destroy();
+    this.interviews.clear();
+};
+
 <span id='ADX-static-method-generate'>/**
 </span> * Generate a new ADX structure
  *
@@ -394,6 +410,7 @@ ADX.preferences = preferences;
 // Make it public
 exports.ADX = ADX;
 exports.Configurator = Configurator;
+exports.InteractiveADXShell = InteractiveADXShell;
 
 </pre>
 </body>
