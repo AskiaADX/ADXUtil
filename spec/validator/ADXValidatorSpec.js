@@ -2214,6 +2214,18 @@ describe('ADXValidator', function () {
             spyOn(Validator.prototype, 'writeMessage');
         });
 
+        it('should run the ADXShell process with the environment from the common.getChildProcessEnv', function () {
+            spies.fs.stat.andCallFake(function (path, callback) {
+                callback(null);
+            });
+            spyExec.andCallFake(function (file, args, options) {
+                expect(file).toBe('.\\ADXShell.exe');
+                expect(options.env).toEqual(common.getChildProcessEnv());
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(childProc.execFile).toHaveBeenCalled();
+        });
 
         it('should run the ADXShell process with the path of the ADX directory in arguments and the flag --auto', function () {
             spies.fs.stat.andCallFake(function (path, callback) {
@@ -2336,6 +2348,19 @@ describe('ADXValidator', function () {
 
             adxValidator.validate(null, '/adx/path/dir');
             expect(Validator.prototype.writeWarning).not.toHaveBeenCalled();
+        });
+
+        it('should run the ADXShell process with the environment from the common.getChildProcessEnv', function () {
+            spies.fs.stat.andCallFake(function (path, callback) {
+                callback(null);
+            });
+            spyExec.andCallFake(function (file, args, options) {
+                expect(file).toBe('.\\ADXShell.exe');
+                expect(options.env).toEqual(common.getChildProcessEnv());
+            });
+            adxValidator.validate(null, '/adx/path/dir');
+
+            expect(childProc.execFile).toHaveBeenCalled();
         });
 
         it('should run the ADXShell process with the path of the ADX directory in arguments', function () {

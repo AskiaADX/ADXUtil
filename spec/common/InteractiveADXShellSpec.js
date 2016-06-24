@@ -84,7 +84,7 @@ describe('InteractiveADXShell', function () {
                 ];
                 var processOptions = {
                     cwd   : pathHelper.join(pathHelper.resolve(__dirname, '../../'), common.ADX_UNIT_DIR_PATH),
-                    env   : process.env
+                    env   : common.getChildProcessEnv()
                 };
                 expect(spies.spawn).toHaveBeenCalledWith(processPath, processArgs, processOptions);
             });
@@ -204,7 +204,7 @@ describe('InteractiveADXShell', function () {
                 ];
                 var processOptions = {
                     cwd   : pathHelper.join(pathHelper.resolve(__dirname, '../../'), common.ADX_UNIT_DIR_PATH),
-                    env   : process.env
+                    env   : common.getChildProcessEnv()
                 };
                 expect(spies.spawn).toHaveBeenCalledWith(processPath, processArgs, processOptions);
             });
@@ -322,7 +322,7 @@ describe('InteractiveADXShell', function () {
                 ];
                 var processOptions = {
                     cwd   : pathHelper.join(pathHelper.resolve(__dirname, '../../'), common.ADX_UNIT_DIR_PATH),
-                    env   : process.env
+                    env   : common.getChildProcessEnv()
                 };
                 expect(spies.spawn).toHaveBeenCalledWith(processPath, processArgs, processOptions);
             });

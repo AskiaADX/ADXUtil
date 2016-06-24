@@ -1,47 +1,19 @@
 /*
- * Those tests are done before all others, otherwise it breaks!!!
- * Please keep it there
+ // process.arch is read-only use the propertyDescriptor to override it's value
+ var descriptor = Object.getOwnPropertyDescriptor(process, 'arch');
+ Object.defineProperty(process, 'arch', {
+ value : 'ia32',
+ configurable : true,
+ enumerable : true
+ });
+ var commonKey = require.resolve('../../app/common/common.js');
+ delete require.cache[commonKey];
+
+ var common = require('../../app/common/common.js');
+ expect(common.ADX_UNIT_DIR_PATH).toEqual('/lib/adxshell_x86/');
+ // Restore the original value
+ Object.defineProperty(process, 'arch', descriptor);
  */
-describe('common.ADX_UNIT_DIR_PATH', function () {
-    it('should be `/lib/adxshell_x86/` when the environment is a 32bit machine', function () {
-        // process.arch is read-only use the propertyDescriptor to override it's value
-        var descriptor = Object.getOwnPropertyDescriptor(process, 'arch');
-        Object.defineProperty(process, 'arch', {
-            value : 'ia32',
-            configurable : true,
-            enumerable : true
-        });
-        var commonKey = require.resolve('../../app/common/common.js');
-        delete require.cache[commonKey];
-
-        var common = require('../../app/common/common.js');
-        expect(common.ADX_UNIT_DIR_PATH).toEqual('/lib/adxshell_x86/');
-        // Restore the original value
-        Object.defineProperty(process, 'arch', descriptor);
-    });
-    it('should be `/lib/adxshell_x64/` when the environment is a 64bit machine', function () {
-        // process.arch is read-only use the propertyDescriptor to override it's value
-        var descriptor = Object.getOwnPropertyDescriptor(process, 'arch');
-        Object.defineProperty(process, 'arch', {
-            value : 'x64',
-            configurable : true,
-            enumerable : true
-        });
-        var commonKey = require.resolve('../../app/common/common.js');
-        delete require.cache[commonKey];
-
-        Object.defineProperty(process, 'arch', {
-            value : 'x64',
-            configurable : true,
-            enumerable : true
-        });
-        var common = require('../../app/common/common.js');
-        expect(common.ADX_UNIT_DIR_PATH).toEqual('/lib/adxshell_x64/');
-        // Restore the original value
-        Object.defineProperty(process, 'arch', descriptor);
-    });
-});
-
 describe('common', function () {
 
     var fs              = require('fs'),
@@ -82,6 +54,23 @@ describe('common', function () {
         waitsFor(function () {
             return wasCalled;
         });
+    }
+
+    // Run the test in a given architecture (x64, ia32)
+    function runInArch(arch, fn) {
+        // process.arch is read-only use the propertyDescriptor to override it's value
+        var descriptor = Object.getOwnPropertyDescriptor(process, 'arch');
+        Object.defineProperty(process, 'arch', {
+            value : arch,
+            configurable : true,
+            enumerable : true
+        });
+
+        // Run the test
+        fn();
+
+        // Restore the original value
+        Object.defineProperty(process, 'arch', descriptor);
     }
 
     describe('#getTemplateList', function () {
@@ -507,6 +496,40 @@ describe('common', function () {
         it("should return a new zip object", function () {
             var zip = common.getNewZip();
             expect(typeof zip.file).toBe('function');
+        });
+    });
+
+    describe('#getChildProcessEnv', function () {
+        it("should return a copy process environment with adxshell/sys64 in the path for x64 arch", function () {
+            runInArch('x64', function () {
+                // Arrange
+                var root =  pathHelper.resolve(__dirname, "../../");
+                var adxShellSysPath = pathHelper.join(root, common.ADX_UNIT_DIR_PATH, 'sys64');
+                var expected = JSON.parse(JSON.stringify(process.env));
+                expected.Path += ';' + adxShellSysPath;
+
+                // Act
+                var actual = common.getChildProcessEnv();
+
+                // Assert
+                expect(actual).toEqual(expected);
+            });
+        });
+
+        it("should return a copy process environment with adxshell/sys32 in the path for ia32 arch", function () {
+            runInArch('ia32', function () {
+                // Arrange
+                var root =  pathHelper.resolve(__dirname, "../../");
+                var adxShellSysPath = pathHelper.join(root, common.ADX_UNIT_DIR_PATH, 'sys32');
+                var expected = JSON.parse(JSON.stringify(process.env));
+                expected.Path += ';' + adxShellSysPath;
+
+                // Act
+                var actual = common.getChildProcessEnv();
+
+                // Assert
+                expect(actual).toEqual(expected);
+            });
         });
     });
 

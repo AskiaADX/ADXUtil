@@ -6,7 +6,8 @@ describe('ADXShow', function () {
         Show,
         spies = {},
         errMsg,
-        successMsg;
+        successMsg,
+        pathHelper = require('path');
 
     beforeEach(function () {
         // Clean the cache, obtain a fresh instance of the adxShow each time
@@ -68,9 +69,11 @@ describe('ADXShow', function () {
 
             spyOn(process, 'cwd').andReturn('');
 
-            spyExec.andCallFake(function (file, args) {
+            spyExec.andCallFake(function (file, args, options) {
                 expect(file).toBe('.\\ADXShell.exe');
                 expect(args).toEqual(['show', '"-output:something"', '"-fixture:single.xml"', '"\\adx\\path\\dir"']);
+                expect(options.env).toEqual(common.getChildProcessEnv());
+                expect(options.cwd).toEqual(pathHelper.join(pathHelper.resolve(__dirname, "../../"), common.ADX_UNIT_DIR_PATH))
             });
             adxShow.show({
                 output : 'something',

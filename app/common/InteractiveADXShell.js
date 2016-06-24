@@ -74,7 +74,7 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
 
         self._process = childProcess.spawn('.\\' + common.ADX_UNIT_PROCESS_NAME, args, {
             cwd   : path.join(root, common.ADX_UNIT_DIR_PATH),
-            env   : process.env
+            env   : common.getChildProcessEnv()
         });
 
         self._process._firstData = true;

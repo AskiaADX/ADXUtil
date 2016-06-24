@@ -39,7 +39,7 @@ exports.SCHEMA_ADP = 'ADPSchema.xsd';
 // Name of the schema to validate the unit test file
 exports.SCHEMA_TEST_UNIT   = 'UnitTests.xsd';
 // Path to the directory of the ADXShell program
-exports.ADX_UNIT_DIR_PATH   = '/lib/adxshell_' + ((process.arch === 'x64') ? 'x64' : 'x86') + '/';
+exports.ADX_UNIT_DIR_PATH   = '/lib/adxshell/';
 // ADCUnit.exe
 exports.ADX_UNIT_PROCESS_NAME = 'ADXShell.exe';
 // Name of the `resources` directory
@@ -206,6 +206,22 @@ exports.writeSuccess = function writeSuccess(text) {
  */
 exports.writeMessage = function writeMessage(text) {
     console.log(util.format.apply(null, arguments));
+};
+
+/**
+ * Return the environment variables for the child process execution
+ * It mostly used to target the sys64/, sys32/ folders
+ */
+exports.getChildProcessEnv = function getChildProcessEnv() {
+    var root =  pathHelper.resolve(__dirname, "../../");
+    var arch = (process.arch === 'x64') ? '64' : '32';
+    var adxShellSysPath = pathHelper.join(root, exports.ADX_UNIT_DIR_PATH, 'sys' + arch);
+
+    var env = JSON.parse(JSON.stringify(process.env));
+    env.Path = env.Path || '';
+    env.Path += ';' + adxShellSysPath;
+
+    return env;
 };
 
 /*

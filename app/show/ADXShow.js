@@ -141,7 +141,7 @@ Show.prototype.show = function show(options, callback) {
     if (!options.adxShell) {
         execFile('.\\' + common.ADX_UNIT_PROCESS_NAME, args, {
             cwd   : pathHelper.join(self.rootdir, common.ADX_UNIT_DIR_PATH),
-            env   : process.env
+            env   : common.getChildProcessEnv()
         }, execCallback);
     } else {
         options.adxShell.exec(args.join(' '), execCallback);
