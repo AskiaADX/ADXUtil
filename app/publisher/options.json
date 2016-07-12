@@ -1,0 +1,9 @@
+{
+	username	:	'zendesk@askia.com',
+	token		:	'Mx9DJLsHVdBXu8SiUuAzfNkGW01ocYSOgXC7ELXW',
+	remoteUri	:	'https://askia1467714213.zendesk.com/api/v2/help_center',
+	helpcenter : true,
+	promoted : false,
+	comments_disabled : false,
+	section_title : 'test_section'
+};

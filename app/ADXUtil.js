@@ -30,6 +30,25 @@ program
     });
 
 program
+	.command('publish [<platform>]')
+	.description('publish an ADX on a platform')
+	.action(function publishADX(platform){
+    	var Configurator = require('./configurator/ADXConfigurator.js').Configurator;
+    	var configurator = new Configurator(process.cwd());
+    	
+        configurator.load(function(err){
+            
+                var adxPublisher = require('./publisher/ADXPublisher.js');
+                var publisher = new adxPublisher.Publisher(configurator);
+                publisher.publish(platform, null, function(){
+                    console.log(arguments);
+                });
+            
+        });
+        
+	});
+
+program
     .command('validate [<path>]')
     .description('validate the uncompressed ADX structure')
     .action(function validateADX(path) {

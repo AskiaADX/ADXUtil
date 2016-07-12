@@ -36,7 +36,7 @@ describe('ADXGenerator', function () {
 
         // Messages
         errMsg              = common.messages.error;
-        successMsg         = common.messages.success;
+        successMsg          = common.messages.success;
 
         // Court-circuit the validation outputs
         spies.writeError   = spyOn(common, 'writeError');

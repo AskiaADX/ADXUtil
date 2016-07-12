@@ -240,6 +240,70 @@ describe('common', function () {
         ['adc', 'adp'].forEach(forEachADXType);
 
     });
+    
+     describe("#evalTemplate", function () {
+            
+            function testReplacement(obj) {
+                it("should replace the `" + obj.pattern + "` by the right value", function () {
+                    var result;
+                
+                    spyOn(common, 'formatXmlDate').andReturn('2013-12-31');
+                    result = common.evalTemplate(obj.pattern, {
+                        info : {
+                            description : 'My description',
+                            name : 'adxname',
+                            guid : 'guid',
+                            author : 'MySelf',
+                            email : 'myself@test.com',
+                            company : 'My Company',
+                            site : 'http://my/web/site.com'
+                        }
+                    });
+                    expect(result).toBe(obj.replacement);
+                });
+            }
+
+            var replacement = [
+                {
+                    pattern : "{{ADXName}}",
+                    replacement : "adxname"
+                },
+                {
+                    pattern : "{{ADXGuid}}",
+                    replacement : "guid"
+                },
+                {
+                    pattern : "2000-01-01",
+                    replacement : "2013-12-31"
+                },
+                {
+                    pattern : '{{ADXDescription}}',
+                    replacement : 'My description'
+                },
+                {
+                    pattern : '{{ADXAuthor}}',
+                    replacement : 'MySelf <myself@test.com>'
+                },
+                {
+                    pattern : '{{ADXAuthor.Name}}',
+                    replacement : 'MySelf'
+                },
+                {
+                    pattern : '{{ADXAuthor.Email}}',
+                    replacement : 'myself@test.com'
+                },
+                {
+                    pattern : '{{ADXAuthor.Company}}',
+                    replacement : 'My Company'
+                },
+                {
+                    pattern : '{{ADXAuthor.website}}',
+                    replacement : 'http://my/web/site.com'
+                }
+            ];
+            replacement.forEach(testReplacement);
+
+        });
 
     describe('#getTemplatePath', function () {
 

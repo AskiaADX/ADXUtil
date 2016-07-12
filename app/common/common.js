@@ -7,7 +7,9 @@ var fs = require('fs'),
     // cli-color
     clc      = require('cli-color'),
     // Zip lib
-    Zip    = require('JSZip');
+    Zip    = require('JSZip'),
+    //uuid lib
+	uuid        = require('node-uuid');
 
 exports = module.exports;
 
@@ -126,7 +128,16 @@ exports.messages = {
 
         // Configurator
         invalidPathArg          : "Invalid `path` argument",
-        invalidConfigFile       : "Invalid `config.xml` file"
+        invalidConfigFile       : "Invalid `config.xml` file",
+        
+        // Publish
+        invalidPlatformArg		: "Invalid `platform` argument",
+        missingPlatformArg		: "Missing `platform` argument",
+        invalidConfiguratorArg	: "Invalid `configurator` argument",
+        invalidOptionsArg		: "Invalid `options` argument",
+        invalidSectionTitleArg	: "Invalid `title` argument",
+        unexistingSection		: "Unexisting section"
+        
     },
     warning : {
         // Validator
@@ -175,6 +186,12 @@ exports.messages = {
         noPreferences  : 'No preferences defined'
     }
 };
+
+//Publish
+
+exports.ZENDESK_ARTICLE_TEMPLATE_PATH = exports.TEMPLATES_PATH+'publish/zendesk/article.html';
+exports.PUBLISH_PLATFORMS = {'ZenDesk' : require('../../app/publisher/ADXPublisherZenDesk.js')};
+
 
 /*
  * Write an error output in the console
@@ -523,6 +540,32 @@ exports.getTemplatePath = function getTemplatePath(type, name, callback) {
         });
     });
 };
+
+//TODO : 
+exports.evalTemplate = function evalTemplate(input, config) {
+
+    var result = input, authorFullName = '';
+
+    result = result.replace(/\{\{ADXName\}\}/gi, (config.info && config.info.name) || "");
+    result = result.replace(/\{\{ADXGuid\}\}/gi, (config.info && config.info.guid) || uuid.v4());
+    result = result.replace(/\{\{ADXDescription\}\}/gi, (config.info && config.info.description) || "");
+    result = result.replace(/\{\{ADXAuthor.Name\}\}/gi, (config.info && config.info.author) || "");
+    result = result.replace(/\{\{ADXAuthor.Email\}\}/gi, (config.info && config.info.email) || "");
+    result = result.replace(/\{\{ADXAuthor.Company\}\}/gi, (config.info && config.info.company) || "");
+    result = result.replace(/\{\{ADXAuthor.website\}\}/gi, (config.info && config.info.site) || "");
+    authorFullName = (config.info && config.info.author) || "";
+    if (config.info && config.info.email) {
+        authorFullName += ' <' + config.info.email + '>';
+    }
+    result = result.replace(/\{\{ADXAuthor\}\}/gi, authorFullName);
+    result = result.replace(/2000-01-01/, exports.formatXmlDate());
+    result = result.replace('\ufeff', ''); // Remove the BOM characters (Marker of the UTF-8 in the string)
+
+    return result;
+    
+};
+
+
 
 /**
  * Create a new sequence of function to call

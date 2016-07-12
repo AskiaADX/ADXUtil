@@ -98,6 +98,7 @@ Configurator.prototype.constructor = Configurator;
  * @param {Error} [callback.err] Error
  */
 Configurator.prototype.load = function load(callback) {
+    
     callback = callback || function () {};
     var self = this;
 
@@ -112,13 +113,13 @@ Configurator.prototype.load = function load(callback) {
         }
 
         var filePath = path.join(self.path, common.CONFIG_FILE_NAME);
+        
 
         fs.readFile(filePath, function (err, data) {
             if (err) {
                 callback(err);
                 return;
             }
-
             self.fromXml(data.toString());
             callback(null);
 
@@ -581,7 +582,7 @@ ADXInfo.prototype.set = function set(data) {
 };
 
 
-(["name", "guid", "version", "date", "description", "company", "author", "site", "helpURL"].forEach(function (propName) {
+["name", "guid", "version", "date", "description", "company", "author", "site", "helpURL"].forEach(function (propName) {
     /**
      * Get or set the name of the ADX
      *
@@ -700,6 +701,7 @@ ADXInfo.prototype.set = function set(data) {
      * @param {String} [data] URL to set
      * @returns {String} Help URL
      */
+    
     ADXInfo.prototype[propName] = function (data) {
         var xmldoc = this.configurator.xmldoc;
         var elInfo = xmldoc.find('info');
@@ -726,7 +728,7 @@ ADXInfo.prototype.set = function set(data) {
         }
         return el.text;
     };
-}));
+});
 
 /**
  * Get or set the style
