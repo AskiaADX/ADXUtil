@@ -12,7 +12,7 @@
             <assert_count is="equal" value="5"/>
             <assert_has_attr name="type" value="checkbox"/>
             <assert_match>
-              <![CDATA[name="M1 [0-9]+"]]>
+              <![CDATA[name="M1_[0-9]+"]]>
             </assert_match>
           </select_nodes>
         </placeholder>

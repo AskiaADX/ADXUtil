@@ -30,7 +30,7 @@ If useList = True Then %}
             inputValue  = CurrentQuestion.AvailableResponses[i].InputValue()
             caption     = CurrentQuestion.AvailableResponses[i].Caption
         %}
-        <li>
+        <li class="askia-response">
             <input type="radio" name="{%= inputName %}" id="{%= inputId %}" value="{%= inputValue %}" {%:= attrChecked %} />
             <label for="{%= inputId %}">{%= caption %}</label>
         </li>

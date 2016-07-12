@@ -31,7 +31,7 @@ If useList = True Then
             attrChecked = On(CurrentQuestion.AvailableResponses[i].IsSelected, "checked=\"checked\"", "")
             caption     = CurrentQuestion.AvailableResponses[i].Caption
         %}
-        <li>
+        <li class="askia-response">
             <input type="checkbox" name="{%= inputName %}" id="{%= inputId %}" {%:= attrChecked %} />
             <label for="{%= inputId %}">{%= caption %}</label><br />
         </li>
