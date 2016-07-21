@@ -31,7 +31,7 @@ describe("ADXPublisherZenDesk", function(){
        
         it("should throw an error when the `configurator` argument is invalid or missing", function(){
             expect(function(){
-            	var publisherZenDesk = new PublisherZenDesk({});    
+            	var publisherZenDesk = new PublisherZenDesk();    
             }).toThrow(errMsg.invalidConfiguratorArg);
         });
         
@@ -55,12 +55,16 @@ describe("ADXPublisherZenDesk", function(){
             expect(id).toMatch(/[0-9]+/);
         });
 
-        it("should throw an error when the section doesn't exist", function(){
-            expect(function(){
+        it("should output an error when the section doesn't exist", function(){
+                var theError = new Error("A fake error");
                 var config = new Configurator('.');
+                spies.findSectionIdByTitle = spyOn(PublisherZenDesk.prototype, 'findSectionIdByTitle').andCallFake(function(title, callback){
+                    callback(theError);
+                });
                 publisherZenDesk = new PublisherZenDesk(config, options);
-                publisherZenDesk.findSectionIdByTitle("|||\\]]]\!@#$^%^^^PQQ");
-            }).toThrow(errMsg.unexistingSection);
+                publisherZenDesk.findSectionIdByTitle("|||\\]]]\!@#$^%^^^PQQ", function(err, id){
+                    expect(err).toBe(theError);
+                });
         });
         
     });
@@ -79,23 +83,18 @@ describe("ADXPublisherZenDesk", function(){
             spies.fs.readFile.andReturn('the_body');
 			
             spies.fakeSectionId = spyOn(PublisherZenDesk.prototype, 'findSectionIdByTitle').andReturn(12);
-        	
-            var id = publisherZenDesk.findSectionIdByTitle('f');
-          
-            var actual = publisherZenDesk.createArticle();
-
-
-            expect(actual).toEqual({
-                article : {
-                    title:'test-adx',
-                    body:'the_body',
-                    promoted:false,
-                    comments_disabled : false,
-                    section_id: 12
-                }
+            
+            publisherZenDesk.createArticle(function(err, article){
+                expect(article).toEqual({
+                    article : {
+                        title:'test-adx',
+                        body:'the_body',
+                        promoted:false,
+                        comments_disabled : false,
+                        section_id: 12
+                    }
+                });
             });
-
         });
     });
-    
 });

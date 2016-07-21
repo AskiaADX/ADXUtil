@@ -1,31 +1,37 @@
-var zenDesk = require('node-zendesk');
-var fs		= require('fs');
-var common	= require('../common/common.js');
-var path = require('path');
-var errMsg	= common.messages.error;
-var Configurator		=	require('../configurator/ADXConfigurator.js').Configurator;
+var zenDesk         = require('node-zendesk');
+var fs              = require('fs');
+var common          = require('../common/common.js');
+var path            = require('path');
+var errMsg          = common.messages.error;
+var Configurator    = require('../configurator/ADXConfigurator.js').Configurator;
 
-//TODO : see where to put this, this is an example of a full object options
+
+
+/**
+ * This is an object which represents the default values.
+ * The values will be loaded if they are missing in the command(powershell)
+ */
 var default_options = {
     username	:	'zendesk@askia.com',
     token		:	'Mx9DJLsHVdBXu8SiUuAzfNkGW01ocYSOgXC7ELXW',
     remoteUri	:	'https://askia1467714213.zendesk.com/api/v2/help_center',
-    helpcenter : true,
+    helpcenter : true, //should be always true
     promoted : false,
     comments_disabled : false,
     section_title : 'test_section'
-}
+};
+
 
 /**
- * Publish to ZenDesk
+ * Instantiate a PublisherZendesk
  * @param {Configurator} configurator the configuration of the article
- * @param {Object} options Options of the platform
+ * @param {Object} options Options of the platform, if the options are not specified the default_options will be loaded.
  */
 function PublisherZenDesk(configurator, options){
 
-    /*  if(!(configurator instanceof Configurator)){
+    if(!configurator){
         throw new Error(errMsg.invalidConfiguratorArg);
-    }*/
+    }
 
     options = options || {} ;
     for(var option in default_options){
@@ -33,7 +39,6 @@ function PublisherZenDesk(configurator, options){
             options[option]=default_options[option];
         }
     }
-
 
     this.configurator = configurator ;
     this.options = options ;
@@ -44,12 +49,17 @@ function PublisherZenDesk(configurator, options){
         helpcenter 	:	this.options.helpcenter
     });
 
-
 }
 
+
+/**
+ * Publish the article on the ZenDesk platform
+ * @param {Function} callback
+ * @param {Error} [callback.err=null]
+*/
 PublisherZenDesk.prototype.publish = function(callback){
     
-   var  self = this ;
+    var  self = this ;
     
     this.findSectionIdByTitle(this.options.section_title, function(err, id){
         if(err){
@@ -58,13 +68,22 @@ PublisherZenDesk.prototype.publish = function(callback){
             }
             return;
         }
-        self.createArticle(id, function(err, article){
+        self.createArticle(function(err, article){
             if(err){
                 if(typeof callback === "function"){
                     callback(err);
                 }
                 return;
             }
+            self.checkIfArticleExists(article.article.title, id, function(err, req, result){
+                if(err){
+                    if(typeof callback === "function"){
+                        console.log(err);
+                        callback(err);
+                    }
+                    return;
+                }
+            });
             self.client.articles.create(id, article, function(err, req, result) {
                 if(err){
                     if(typeof callback === "function"){
@@ -74,7 +93,7 @@ PublisherZenDesk.prototype.publish = function(callback){
                     return;
                 }
                 if(typeof callback === "function"){
-                    callback(null, result);
+                     callback(null, result);
                 }
             });
         });
@@ -82,8 +101,48 @@ PublisherZenDesk.prototype.publish = function(callback){
 };
 
 
+/**
+ * Check if an article already exists in section and delete it
+ * pre-condition : there is the possiblity to have two articles with the same name but not in the same section
+ * @param {String} title The title of the article to check
+ * @param {Function} callback
+ * @param {Error} [callback.err=null]
+ */
+PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, callback){
+    
+    var self = this ;
+    
+    self.client.articles.listBySection(section_id, function(err, req, result){
+        if(err){
+            if(typeof callback === "function"){
+                callback(err);
+                console.log(err);
+            }
+            return;
+        } 
+        for(var article in result){
+            if(result[article].name === title){
+                self.client.articles.delete(result[article].id,function(err, req, result){
+                    if(err){
+                        if(typeof callback === "function"){
+                            callback(err);
+                            console.log(err);
+                        }
+                        return ;
+                    }
+                });
+            }
+        }
+    });
+};
 
-PublisherZenDesk.prototype.createArticle = function(id, callback){
+
+/**
+ * Create the JSON formated article
+ * @param {Function} callback
+ * @param {Error} [callback.err=null]
+ */
+PublisherZenDesk.prototype.createArticle = function(callback){
 
     var self = this ;
     
@@ -94,15 +153,16 @@ PublisherZenDesk.prototype.createArticle = function(id, callback){
             }
             return;
         }
-        var body = common.evalTemplate(data.toString(), self.configurator.get());
-
+      
+        
+        var body = common.evalTemplate(data, self.configurator.get());
+        
         var article = {
             "article": {
                 "title": self.configurator.info.name(),
                 "body": body,
                 "promoted": self.options.promoted,
                 "comments_disabled": self.options.comments_disabled
-                //"section_id": id
             }  
         };
         if(typeof callback === "function"){
@@ -112,6 +172,7 @@ PublisherZenDesk.prototype.createArticle = function(id, callback){
     });
 
 };
+
 
 /**
  * Find the section id of a section with the Title
@@ -146,35 +207,13 @@ PublisherZenDesk.prototype.findSectionIdByTitle = function(title, callback){
                 }
             }
         }
+        
+        console.log(errMsg.unexistingSection);
         callback(new Error(errMsg.unexistingSection));
     });
 
 
 };
 
-
+//Make it public
 exports.PublisherZenDesk = PublisherZenDesk ;
-
-
-
-/*client.users.auth(function (err, res, result) {
-  if (err) {
-    //console.log(err);
-    return;
-  }
-  console.log(JSON.stringify(result.verified, null, 2, true) + "ddd");
-});*/
-
-/*
-var newCategory = { 
-	"category":{
-    	"url": 'https://askia1467714213.zendesk.com/api/v2/help_center/en-us/categories/',
-   		"html_url": 'https://askia1467714213.zendesk.com/hc/en-us/categories/',
-    	"position": 0,
-    	"name": 'newCategoryWithoutCompleteURL',
-    	"description": 'fait depuis node.js, test in order to know if specify a full url is necessary',
-    	"locale": 'en-us',
-    	"source_locale": 'en-us',
-    	"outdated": false
-    }
-} ;*/

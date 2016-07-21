@@ -35,13 +35,12 @@ program
 	.action(function publishADX(platform){
     	var Configurator = require('./configurator/ADXConfigurator.js').Configurator;
     	var configurator = new Configurator(process.cwd());
-    	
         configurator.load(function(err){
             
                 var adxPublisher = require('./publisher/ADXPublisher.js');
                 var publisher = new adxPublisher.Publisher(configurator);
                 publisher.publish(platform, null, function(){
-                    console.log(arguments);
+                   //console.log(arguments);
                 });
             
         });

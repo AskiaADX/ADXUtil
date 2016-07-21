@@ -27,7 +27,6 @@ Publisher.prototype.publish = function(platform, options, callback){
         throw new Error(errMsg.missingPlatformArg);
     }
     
-    //TODO : add array with all platforms to test
     if(!common.PUBLISH_PLATFORMS[platform]){
         throw new Error(errMsg.invalidPlatformArg);
     }

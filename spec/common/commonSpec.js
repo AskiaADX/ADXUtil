@@ -18,8 +18,10 @@ describe('common', function () {
 
     var fs              = require('fs'),
         clc             = require('cli-color'),
+        Configurator    = require('../../app/configurator/ADXConfigurator.js').Configurator,
         pathHelper      = require('path'),
         util            = require('util'),
+        path            = require('path'),
         spies           = {},
         common,
         errMsg;
@@ -243,68 +245,78 @@ describe('common', function () {
     
      describe("#evalTemplate", function () {
             
-            function testReplacement(obj) {
-                it("should replace the `" + obj.pattern + "` by the right value", function () {
-                    var result;
-                
-                    spyOn(common, 'formatXmlDate').andReturn('2013-12-31');
-                    result = common.evalTemplate(obj.pattern, {
-                        info : {
-                            description : 'My description',
-                            name : 'adxname',
-                            guid : 'guid',
-                            author : 'MySelf',
-                            email : 'myself@test.com',
-                            company : 'My Company',
-                            site : 'http://my/web/site.com'
-                        }
-                    });
-                    expect(result).toBe(obj.replacement);
-                });
-            }
-
-            var replacement = [
-                {
-                    pattern : "{{ADXName}}",
-                    replacement : "adxname"
-                },
-                {
-                    pattern : "{{ADXGuid}}",
-                    replacement : "guid"
-                },
-                {
-                    pattern : "2000-01-01",
-                    replacement : "2013-12-31"
-                },
-                {
-                    pattern : '{{ADXDescription}}',
-                    replacement : 'My description'
-                },
-                {
-                    pattern : '{{ADXAuthor}}',
-                    replacement : 'MySelf <myself@test.com>'
-                },
-                {
-                    pattern : '{{ADXAuthor.Name}}',
-                    replacement : 'MySelf'
-                },
-                {
-                    pattern : '{{ADXAuthor.Email}}',
-                    replacement : 'myself@test.com'
-                },
-                {
-                    pattern : '{{ADXAuthor.Company}}',
-                    replacement : 'My Company'
-                },
-                {
-                    pattern : '{{ADXAuthor.website}}',
-                    replacement : 'http://my/web/site.com'
-                }
-            ];
-            replacement.forEach(testReplacement);
-
+         
+         //TODO : do this spec..
+         it("should replace all the replacement patterns", function () {
+           //  var configurator = new Configurator(path.normalize(path.join(__dirname, 'fakeADC')));
+             
+             
+             var configurator = new Configurator("adc/path");
+             configurator.load(function () {
+                configurator.info.set({
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL",
+                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
+                            style : {
+                                width : 300,
+                                height : 500
+                            },
+                            constraints : {
+                                questions : {
+                                    single : false,
+                                    numeric : true
+                                },
+                                controls : {
+                                    label :false,
+                                    checkbox : true
+                                },
+                                responses : {
+                                    min : 10
+                                }
+                            }
+                        });
+                 var result = configurator.info.get();
+                 console.log(result);
+             });
+            
+             
+             console.log(configurator);
+              fs.readFile(path.join(__dirname, "../../", common.ZENDESK_ARTICLE_TEMPLATE_PATH), 'utf-8', function (err, data) {
+                     if (err) {
+                         if (typeof callback === "function") {
+                             callback(err);
+                         }
+                         return;
+                     }
+                     var resSync = common.evalTemplate(data, configurator.get());
+                     console.log(resSync);
+                     expect(resSync.match(/{{.*}}/gi).length).toEqual(0);
+                 });
+         });
+    });
+    
+    describe("#propertiesToHTML", function(){
+        
+        it("should throw an error when the `properties` param missing", function(){
+            expect(function(){
+                common.propertiesToHTML();
+            }).toThrow(new Error(errMsg.missingPropertiesArg));
+        }) ;
+        
+         //TODO : do this spec
+         it("should return an html table", function(){
+            
         });
-
+    });
+    
+    
     describe('#getTemplatePath', function () {
 
         it('should throw an error when the `type` and `callback` arguments are not specified', function () {
