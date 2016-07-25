@@ -644,11 +644,40 @@
             }
         }
         
-        return result+".";
+        return result + ".";
         
     };
 
-    //TODO : 
+    /**
+     * Set the the link of a donwlable attachments
+     * @param {Object} article The article to be replaced.
+     * @param {Object} attachmentIDs An object containing all the ids of an article attachment.
+     */
+    exports.replaceDownloadURL = function(article, attachmentIDs){
+        
+        
+        var resArticle = article ;
+        var b = article.body ;
+        
+        
+        b = b.replace(/\{\{ADXQexFileURL\}\}/gi, '<a href="/hc/en-us/article_attachments/' + attachmentIDs.qexID + '/adc2-gender.zip">click here</a>');
+        b = b.replace(/\{\{ADXAdcFileURL\}\}/gi,  '<a href="/hc/en-us/article_attachments/' + attachmentIDs.adcID + '/adc2-gender.adc">click here</a>');
+        
+        resArticle.body = b ;
+        
+        
+        
+        return {
+            body: b
+        };
+    };
+
+
+    /**
+     * Transform the patterns of a string by their real values which are in a config
+     * @param {String} input The text to be replaced
+     * @param {Object} config The result of a call to method get of a configurator
+     */
     exports.evalTemplate = function evalTemplate(input, config) {
 
         var result = input,

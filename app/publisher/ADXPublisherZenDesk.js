@@ -4,7 +4,7 @@ var common          = require('../common/common.js');
 var path            = require('path');
 var errMsg          = common.messages.error;
 var Configurator    = require('../configurator/ADXConfigurator.js').Configurator;
-
+var restler         = require('restler');
 
 
 /**
@@ -75,7 +75,7 @@ PublisherZenDesk.prototype.publish = function(callback){
                 }
                 return;
             }
-            self.checkIfArticleExists(article.article.title, id, function(err, req, result){
+            self.checkIfArticleExists(article.article.title, id, function(err, result){
                 if(err){
                     if(typeof callback === "function"){
                         console.log(err);
@@ -83,23 +83,80 @@ PublisherZenDesk.prototype.publish = function(callback){
                     }
                     return;
                 }
-            });
-            self.client.articles.create(id, article, function(err, req, result) {
-                if(err){
-                    if(typeof callback === "function"){
-                        callback(err);
-                        console.log(err);
+                self.client.articles.create(id, article, function(err, req, result) {
+                    if(err){
+                        if(typeof callback === "function"){
+                            callback(err);
+                            console.log(err);
+                        }
+                        return;
                     }
-                    return;
-                }
-                if(typeof callback === "function"){
-                     callback(null, result);
-                }
+                    var fileADC = path.resolve(path.join(self.configurator.path, "/bin/adc2-gender.adc")) ;
+                    fs.stat(fileADC, function(err, stats) {
+                        if(err){
+                            callback(err);
+                        }
+                        else{
+                            restler.post(self.options.remoteUri + "/articles/" + result.id + "/attachments.json", {
+                                method: "post",
+                                username: "zendesk@askia.com",
+                                password: "Zendesk!98",
+                                multipart: true,
+                                data:{
+                                    "file": restler.file(fileADC, null, stats.size, null, "application/octet-stream")
+                                }
+                            }).on('complete', function(data){
+                                var article = common.replaceDownloadURL(result, {
+                                    qexID: 0,
+                                    adcID: data.article_attachment.id
+                                });
+                                self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res){
+                                    console.log(err, req, res);
+                                });
+                            });
+                        }
+                        
+                    });
+                    
+                    
+                    
+                });
             });
+            
         });
     });
 };
 
+
+
+
+
+/*console.log(result.id);
+                 //TODO : properly generate the attachment json object
+                 var adcAttachment = {
+                    "article_attachment": {
+                        "file_name":    "adc2-gender.adc",
+                        "content_type": "application/adc",
+                    }
+                 };
+            
+                var fileOptions = {
+                    filename: 'adc2-gender.adc'
+                };
+                console.log(fileOptions, adcAttachment);
+                self.client.articleattachments.create(path.resolve(path.join(self.configurator.path,'/bin/adc2-gender.adc')), fileOptions, result.id, adcAttachment, function(err, req, res){
+               if(err){
+                   console.log(err, req);
+               }
+                    if(typeof callback === "function"){
+                     callback(null, res);
+                }
+                console.log(req, res);
+            });*/
+
+
+
+//TODO : /!\ delete attachments if they exist.
 
 /**
  * Check if an article already exists in section and delete it
@@ -120,19 +177,26 @@ PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, ca
             }
             return;
         } 
+        var idToDelete = 0;
         for(var article in result){
             if(result[article].name === title){
-                self.client.articles.delete(result[article].id,function(err, req, result){
-                    if(err){
-                        if(typeof callback === "function"){
-                            callback(err);
-                            console.log(err);
-                        }
-                        return ;
-                    }
-                });
+                idToDelete = result[article].id ;
             }
         }
+        
+        if(idToDelete!==0){
+            self.client.articles.delete(idToDelete, function(err, req, result){
+                if(err){
+                    if(typeof callback === "function"){
+                        callback(err);
+                        console.log(err);
+                    }
+                    return ;
+                }
+            });
+        }
+        callback(null);
+        
     });
 };
 
