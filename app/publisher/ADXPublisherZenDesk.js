@@ -15,6 +15,7 @@ var default_options = {
     username	:	'zendesk@askia.com',
     token		:	'Mx9DJLsHVdBXu8SiUuAzfNkGW01ocYSOgXC7ELXW',
     remoteUri	:	'https://askia1467714213.zendesk.com/api/v2/help_center',
+    password    :   'Zendesk!98',
     helpcenter : true, //should be always true
     promoted : false,
     comments_disabled : false,
@@ -91,72 +92,101 @@ PublisherZenDesk.prototype.publish = function(callback){
                         }
                         return;
                     }
-                    var fileADC = path.resolve(path.join(self.configurator.path, "/bin/adc2-gender.adc")) ;
-                    fs.stat(fileADC, function(err, stats) {
-                        if(err){
-                            callback(err);
-                        }
-                        else{
-                            restler.post(self.options.remoteUri + "/articles/" + result.id + "/attachments.json", {
-                                method: "post",
-                                username: "zendesk@askia.com",
-                                password: "Zendesk!98",
-                                multipart: true,
-                                data:{
-                                    "file": restler.file(fileADC, null, stats.size, null, "application/octet-stream")
+                    
+                    fs.readdir(path.resolve(path.join(self.configurator.path, common.ADC_PATH)), function(errADC, adcItems){
+                        fs.readdir(path.resolve(path.join(self.configurator.path, common.QEX_PATH)), function(errQEX, qexItems){
+                            if(errQEX){
+                                callback(errQEX);
+                                return;
+                            }
+                            if(errADC){
+                                callback(errADC);
+                                return;
+                            }
+                            var theADCs = [], theQEXs = [];
+                            for(var i = 0; i<adcItems.length  ; i++){
+                                if(adcItems[i].match(/.+\.adc/)){
+                                    theADCs.push(adcItems[i]);
                                 }
-                            }).on('complete', function(data){
-                                var article = common.replaceDownloadURL(result, {
-                                    qexID: 0,
-                                    adcID: data.article_attachment.id
-                                });
-                                self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res){
-                                    console.log(err, req, res);
-                                });
+                            }
+                            for(var j = 0 ; j<qexItems.length ;  j++){
+                                if(qexItems[j].match(/.+\.qex/)){
+                                    theQEXs.push(qexItems[j]);
+                                }
+                            }
+                            if(theADCs.length !== 1 ){
+                                throw new Error(errMsg.badNumberOfADCFiles);
+                            }
+                            if(theQEXs.length > 1){
+                                throw new Error(errMsg.badNumberOfQEXFiles);
+                            }
+                            fileADC = path.resolve(path.join(self.configurator.path, common.ADC_PATH, theADCs[0]));
+                            fs.stat(fileADC, function(err, adcStats){
+                               if(err){
+                                   callback(err);
+                                   return;
+                               }
+                               if(theQEXs.length === 1){
+                                    fileQEX = path.resolve(path.join(self.configurator.path, common.QEX_PATH, theQEXs[0]));
+                                    fs.stat(fileQEX, function(err, qexStats){
+                                        restler.post(self.options.remoteUri + "/articles/" + result.id + "/attachments.json", {
+                                            username: self.options.username,
+                                            password: self.options.password,
+                                            multipart: true,
+                                            data:{
+                                                "file": restler.file(fileADC, null, adcStats.size, null, "application/octet-stream")
+                                            }
+                                        }).on('complete', function(adcRes){
+                                            restler.post(self.options.remoteUri + "/articles/" + result.id + "/attachments.json", {
+                                                username: self.options.username,
+                                                password: self.options.password,
+                                                multipart: true,
+                                                data:{
+                                                    "file": restler.file(fileQEX, null, qexStats.size, null, "application/octet-stream")
+                                                }
+                                            }).on('complete', function(qexRes){
+                                                var article = common.replaceDownloadURL(result, {
+                                                    qexID: qexRes.article_attachment.id,
+                                                    adcID: adcRes.article_attachment.id                                                    
+                                                });
+                                                self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res){
+                                                    if(err){
+                                                        callback(err);
+                                                    }
+                                                });
+                                            });
+                                        });
+                                    });  
+                                }
+                                else{
+                                    restler.post(self.options.remoteUri + "/articles/" + result.id + "/attachments.json", {
+                                        username: self.options.username,
+                                        password: self.options.password,
+                                        multipart: true,
+                                        data:{
+                                            "file": restler.file(fileADC, null, adcStats.size, null, "application/octet-stream")
+                                        }
+                                    }).on('complete', function(adcRes){
+                                        var article = common.replaceDownloadURL(result, {
+                                            adcID: adcRes.article_attachment.id                                                    
+                                        });
+                                        self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res){
+                                            if(err){
+                                                callback(err);
+                                            }
+                                        });
+                                    });
+                                }
                             });
-                        }
-                        
-                    });
-                    
-                    
-                    
+                        });
+                    });    
                 });
             });
-            
         });
     });
 };
 
 
-
-
-
-/*console.log(result.id);
-                 //TODO : properly generate the attachment json object
-                 var adcAttachment = {
-                    "article_attachment": {
-                        "file_name":    "adc2-gender.adc",
-                        "content_type": "application/adc",
-                    }
-                 };
-            
-                var fileOptions = {
-                    filename: 'adc2-gender.adc'
-                };
-                console.log(fileOptions, adcAttachment);
-                self.client.articleattachments.create(path.resolve(path.join(self.configurator.path,'/bin/adc2-gender.adc')), fileOptions, result.id, adcAttachment, function(err, req, res){
-               if(err){
-                   console.log(err, req);
-               }
-                    if(typeof callback === "function"){
-                     callback(null, res);
-                }
-                console.log(req, res);
-            });*/
-
-
-
-//TODO : /!\ delete attachments if they exist.
 
 /**
  * Check if an article already exists in section and delete it
@@ -219,7 +249,7 @@ PublisherZenDesk.prototype.createArticle = function(callback){
         }
       
         
-        var body = common.evalTemplate(data, self.configurator.get());
+        var body = common.evalTemplate(data, self.configurator);
         
         var article = {
             "article": {

@@ -9,7 +9,13 @@
         // Zip lib
         Zip = require('JSZip'),
         //uuid lib
-        uuid = require('node-uuid');
+        uuid = require('node-uuid'),
+        //markdown lib
+        md = require('markdown').markdown,
+        //path lib
+        path = require('path'),
+        //underscore lib
+        _ = require('underscore');
 
     exports = module.exports;
 
@@ -138,7 +144,9 @@
             invalidOptionsArg: "Invalid `options` argument",
             invalidSectionTitleArg: "Invalid `title` argument",
             unexistingSection: "Unexisting section",
-            missingConfiguratorArg: "Missing `configurator` argument"
+            missingConfiguratorArg: "Missing `configurator` argument",
+            badNumberOfADCFiles: "The number of .adc files is incorrect",
+            badNumverOfQEXFiles: "The number of .qex files is incorrect"
 
         },
         warning: {
@@ -195,6 +203,9 @@
     exports.PUBLISH_PLATFORMS = {
         'ZenDesk': require('../../app/publisher/ADXPublisherZenDesk.js')
     };
+    exports.ADC_PATH = '/bin';
+    exports.QEX_PATH = '/example';
+
     exports.DEFAULT_ZENDESK_OPTIONS = {
         username: 'zendesk@askia.com',
         token: 'Mx9DJLsHVdBXu8SiUuAzfNkGW01ocYSOgXC7ELXW',
@@ -639,8 +650,8 @@
                                                   + ". You cas use the following controls : "
         for(var control in constraints.controls){
             if(constraints.controls[control]){
-                result+=control;
-                result+=" ";
+                result += control;
+                result += " ";
             }
         }
         
@@ -660,8 +671,11 @@
         var b = article.body ;
         
         
-        b = b.replace(/\{\{ADXQexFileURL\}\}/gi, '<a href="/hc/en-us/article_attachments/' + attachmentIDs.qexID + '/adc2-gender.zip">click here</a>');
+        b = b.replace(/\{\{ADXQexFileURL\}\}/gi, (attachmentIDs.qexID)?  ('<li>To download the qex file,<a href="/hc/en-us/article_attachments/' + attachmentIDs.qexID + '/adc2-gender.qex">click here</a></li>') : "");
+       
         b = b.replace(/\{\{ADXAdcFileURL\}\}/gi,  '<a href="/hc/en-us/article_attachments/' + attachmentIDs.adcID + '/adc2-gender.adc">click here</a>');
+        
+        
         
         resArticle.body = b ;
         
@@ -673,16 +687,38 @@
     };
 
 
+    exports.mdNotesToHtml = function(p, callback){
+        
+        var file = fs.readFileSync(path.resolve(p), 'utf-8');
+        var tree = md.parse(file);
+        var res = "";
+        for(var i in tree){
+            if(_.isEqual(tree[i],['header', {level:2}, 'Notes'])){
+                res += tree[parseInt(i)+1][1];
+            }
+        }
+        res = res.replace(/\n\-\ /g, "<li></li>");
+        res = res.substring(2);
+        res = '<p><span class="wysiwyg-underline">Notes:</span></p><ul><li>' + res + '</li></ul>';
+        
+        return res;
+        
+    }
+    
+    
     /**
      * Transform the patterns of a string by their real values which are in a config
      * @param {String} input The text to be replaced
      * @param {Object} config The result of a call to method get of a configurator
      */
-    exports.evalTemplate = function evalTemplate(input, config) {
+    exports.evalTemplate = function evalTemplate(input, configurator) {
 
         var result = input,
             authorFullName = '';
-
+        
+        var config = configurator.get();
+        var markdown = exports.mdNotesToHtml(path.join(configurator.path, "Readme.md"));
+       
         result = result.replace(/\{\{ADXName\}\}/gi, (config.info && config.info.name) || "");
         result = result.replace(/\{\{ADXGuid\}\}/gi, (config.info && config.info.guid) || uuid.v4());
         result = result.replace(/\{\{ADXDescription\}\}/gi, (config.info && config.info.description) || "");
@@ -701,6 +737,7 @@
         result = result.replace(/\{\{ADXAuthor\}\}/gi, authorFullName);
         result = result.replace(/2000-01-01/, exports.formatXmlDate());
         result = result.replace('\ufeff', ''); // Remove the BOM characters (Marker of the UTF-8 in the string)
+        result = result.replace(/\{\{ADXNotes\}\}/gi, markdown);
 
         return result;
 
