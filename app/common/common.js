@@ -146,7 +146,8 @@
             unexistingSection: "Unexisting section",
             missingConfiguratorArg: "Missing `configurator` argument",
             badNumberOfADCFiles: "The number of .adc files is incorrect",
-            badNumverOfQEXFiles: "The number of .qex files is incorrect"
+            badNumverOfQEXFiles: "The number of .qex files is incorrect",
+            badNumberOfPicFiles: "The number of .png files is incorrect"
 
         },
         warning: {
@@ -664,45 +665,55 @@
      * @param {Object} article The article to be replaced.
      * @param {Object} attachmentIDs An object containing all the ids of an article attachment.
      */
-    exports.replaceDownloadURL = function(article, attachmentIDs){
+    exports.updateArticleAfterUploads = function(article, attachmentIDs){
         
         
-        var resArticle = article ;
         var b = article.body ;
-        
         
         b = b.replace(/\{\{ADXQexFileURL\}\}/gi, (attachmentIDs.qexID)?  ('<li>To download the qex file,<a href="/hc/en-us/article_attachments/' + attachmentIDs.qexID + '/adc2-gender.qex">click here</a></li>') : "");
        
         b = b.replace(/\{\{ADXAdcFileURL\}\}/gi,  '<a href="/hc/en-us/article_attachments/' + attachmentIDs.adcID + '/adc2-gender.adc">click here</a>');
         
         
-        
-        resArticle.body = b ;
-        
-        
+        if(!_.isUndefined(attachmentIDs.pngID)){
+            //TODO : /!\ change show and parameter SurveyName. See for the rules to establish
+            b = b.replace(/\{\{ADXQexPicture\}\}/gi, '<p><a href="http://show.askia.com/WebProd/cgi-bin/askiaext.dll?Action=StartSurvey&amp;SurveyName=ADC2_Gender" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentIDs.pngID + '/' + attachmentIDs.pngName + '" alt="" /> </a></p>');
+
+            b = b.replace(/\{\{ADXSentence:accesSurvey\}\}/gi, '<li>To access to the live survey, click on the picture above.</li>');
+        }
+        else{
+            b = b.replace(/\{\{ADXQexPicture\}\}/gi, "");
+            b = b.replace(/\{\{ADXSentence:accesSurvey\}\}/gi, "");
+        }
         
         return {
             body: b
         };
     };
 
-
-    exports.mdNotesToHtml = function(p, callback){
+    /**
+     * Parse the readme.md file to read notes and convert them to an html list
+     * @param {String | Buffer} p The path to the readme.md file
+     */
+    exports.mdNotesToHtml = function(p){
         
         var file = fs.readFileSync(path.resolve(p), 'utf-8');
         var tree = md.parse(file);
         var res = "";
         for(var i in tree){
             if(_.isEqual(tree[i],['header', {level:2}, 'Notes'])){
-                res += tree[parseInt(i)+1][1];
+                if(typeof tree[parseInt(i)+1][1] === "string"){
+                    res += tree[parseInt(i)+1][1];    
+                }
             }
         }
-        res = res.replace(/\n\-\ /g, "<li></li>");
-        res = res.substring(2);
-        res = '<p><span class="wysiwyg-underline">Notes:</span></p><ul><li>' + res + '</li></ul>';
-        
+        if(res.length > 0){
+            res = res.replace(/\n\-\ /g, "<li></li>");
+            res = res.substring(2);
+            res = '<p><span class="wysiwyg-underline">Notes:</span></p><ul><li>' + res + '</li></ul>';
+        }
+      
         return res;
-        
     }
     
     
@@ -719,6 +730,8 @@
         var config = configurator.get();
         var markdown = exports.mdNotesToHtml(path.join(configurator.path, "Readme.md"));
        
+        
+        result = result.replace(/\{\{ADXNotes\}\}/gi, markdown);
         result = result.replace(/\{\{ADXName\}\}/gi, (config.info && config.info.name) || "");
         result = result.replace(/\{\{ADXGuid\}\}/gi, (config.info && config.info.guid) || uuid.v4());
         result = result.replace(/\{\{ADXDescription\}\}/gi, (config.info && config.info.description) || "");
@@ -737,10 +750,8 @@
         result = result.replace(/\{\{ADXAuthor\}\}/gi, authorFullName);
         result = result.replace(/2000-01-01/, exports.formatXmlDate());
         result = result.replace('\ufeff', ''); // Remove the BOM characters (Marker of the UTF-8 in the string)
-        result = result.replace(/\{\{ADXNotes\}\}/gi, markdown);
-
+                
         return result;
-
     };
 
 
