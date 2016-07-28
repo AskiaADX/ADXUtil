@@ -670,13 +670,14 @@
         
         var b = article.body ;
         
-        b = b.replace(/\{\{ADXQexFileURL\}\}/gi, (attachmentIDs.qexID)?  ('<li>To download the qex file,<a href="/hc/en-us/article_attachments/' + attachmentIDs.qexID + '/adc2-gender.qex">click here</a></li>') : "");
+        b = b.replace(/\{\{ADXQexFileURL\}\}/gi, (attachmentIDs.qexID)?  ('<li>To download the qex file, <a href="/hc/en-us/article_attachments/' + attachmentIDs.qexID + '/' + attachmentIDs.qexName + '">click here</a></li>') : "");
        
-        b = b.replace(/\{\{ADXAdcFileURL\}\}/gi,  '<a href="/hc/en-us/article_attachments/' + attachmentIDs.adcID + '/adc2-gender.adc">click here</a>');
+        b = b.replace(/\{\{ADXAdcFileURL\}\}/gi,  '<a href="/hc/en-us/article_attachments/' + attachmentIDs.adcID + '/' + attachmentIDs.adcName + '">click here</a>');
         
         
         if(!_.isUndefined(attachmentIDs.pngID)){
-            //TODO : /!\ change show and parameter SurveyName. See for the rules to establish
+            // TODO : /!\ change show and parameter SurveyName. See for the rules to establish.
+            // maybe we should upload the file to the demo server from this app
             b = b.replace(/\{\{ADXQexPicture\}\}/gi, '<p><a href="http://show.askia.com/WebProd/cgi-bin/askiaext.dll?Action=StartSurvey&amp;SurveyName=ADC2_Gender" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentIDs.pngID + '/' + attachmentIDs.pngName + '" alt="" /> </a></p>');
 
             b = b.replace(/\{\{ADXSentence:accesSurvey\}\}/gi, '<li>To access to the live survey, click on the picture above.</li>');

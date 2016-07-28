@@ -1,6 +1,7 @@
 var common				=	require('../common/common.js');
 var errMsg				=	common.messages.error;
 var Configurator		=	require('../configurator/ADXConfigurator.js').Configurator;
+var _                   =   require('underscore');
 
 
 /**
@@ -27,7 +28,7 @@ Publisher.prototype.publish = function(platform, options, callback){
         throw new Error(errMsg.missingPlatformArg);
     }
     
-    if(!common.PUBLISH_PLATFORMS[platform]){
+    if(_.isUndefined(common.PUBLISH_PLATFORMS[platform])){
         throw new Error(errMsg.invalidPlatformArg);
     }
     

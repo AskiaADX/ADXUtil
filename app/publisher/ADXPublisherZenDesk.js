@@ -13,7 +13,6 @@ var restler         = require('restler');
  */
 var default_options = {
     username	:	'zendesk@askia.com',
-    token		:	'Mx9DJLsHVdBXu8SiUuAzfNkGW01ocYSOgXC7ELXW',
     remoteUri	:	'https://askia1467714213.zendesk.com/api/v2/help_center',
     password    :   'Zendesk!98',
     helpcenter : true, //should be always true
@@ -45,6 +44,7 @@ function PublisherZenDesk(configurator, options){
     this.options = options ;
     this.client = zenDesk.createClient({
         username	:	this.options.username,
+        password    :   this.options.password,
         token		:	this.options.token,
         remoteUri	:	this.options.remoteUri,
         helpcenter 	:	this.options.helpcenter
@@ -105,15 +105,15 @@ PublisherZenDesk.prototype.publish = function(callback){
                             }
                             var theADCs = [], theQEXs = [], thePics = [];
                             for(var i = 0; i<adcItems.length  ; i++){
-                                if(adcItems[i].match(/.+\.adc/)){
+                                if(adcItems[i].match(/.+\.adc/i)){
                                     theADCs.push(adcItems[i]);
                                 }
                             }
                             for(var j = 0 ; j<qexItems.length ;  j++){
-                                if(qexItems[j].match(/.+\.qex/)){
+                                if(qexItems[j].match(/.+\.qex/i)){
                                     theQEXs.push(qexItems[j]);
                                 }
-                                if(qexItems[j].match(/adc.+\.png/)){ // This regex allows to put other pic files in the example folder but they must not begin by'adc'
+                                if(qexItems[j].match(/adc.+\.png/i)){ // This regex allows to put other pic files in the example folder but they must not begin by'adc'
                                     thePics.push(qexItems[j]);
                                 }
                             }
@@ -164,6 +164,8 @@ PublisherZenDesk.prototype.publish = function(callback){
                                                         }).on('complete', function(pngRes){
                                                             var article = common.updateArticleAfterUploads(result, {
                                                                 qexID: qexRes.article_attachment.id,
+                                                                qexName: qexRes.article_attachment.file_name,
+                                                                adcName: adcRes.article_attachment.file_name,
                                                                 adcID: adcRes.article_attachment.id,
                                                                 pngID: pngRes.article_attachment.id,
                                                                 pngName: pngRes.article_attachment.file_name
@@ -179,6 +181,8 @@ PublisherZenDesk.prototype.publish = function(callback){
                                                 else{ // There is an .adc and a .qex to upload
                                                     var article = common.updateArticleAfterUploads(result, {
                                                         qexID: qexRes.article_attachment.id,
+                                                        qexName: qexRes.article_attachment.file_name,
+                                                        adcName: adcRes.article_attachment.file_name,
                                                         adcID: adcRes.article_attachment.id
                                                     });
                                                     self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res){
@@ -201,7 +205,8 @@ PublisherZenDesk.prototype.publish = function(callback){
                                         }
                                     }).on('complete', function(adcRes){
                                         var article = common.updateArticleAfterUploads(result, {
-                                            adcID: adcRes.article_attachment.id                                                    
+                                            adcID: adcRes.article_attachment.id,
+                                            adcName: adcRes.article_attachment.file_name,
                                         });
                                         self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res){
                                             if(err){
