@@ -202,21 +202,13 @@
 
     exports.ZENDESK_ARTICLE_TEMPLATE_PATH = exports.TEMPLATES_PATH + 'publish/zendesk/article.html';
     exports.PUBLISH_PLATFORMS = {
-        'ZenDesk': require('../../app/publisher/ADXPublisherZenDesk.js')
+        'ZenDesk'   :   require('../../app/publisher/ADXPublisherZenDesk.js'),
+        'GitHub'    :   require('../../app/publisher/ADXPublisherGitHub.js')
     };
     exports.ADC_PATH = '/bin';
     exports.QEX_PATH = '/example';
 
-    exports.DEFAULT_ZENDESK_OPTIONS = {
-        username: 'zendesk@askia.com',
-        token: 'Mx9DJLsHVdBXu8SiUuAzfNkGW01ocYSOgXC7ELXW',
-        remoteUri: 'https://askia1467714213.zendesk.com/api/v2/help_center',
-        helpcenter: true, //should be always true
-        promoted: false,
-        comments_disabled: false,
-        section_title: 'test_section'
-    };
-
+   
     /*
      * Write an error output in the console
      * @param {String} text Text to write in the console

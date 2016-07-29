@@ -15,7 +15,6 @@ var default_options = {
     username	:	'zendesk@askia.com',
     remoteUri	:	'https://askia1467714213.zendesk.com/api/v2/help_center',
     password    :   'Zendesk!98',
-    helpcenter : true, //should be always true
     promoted : false,
     comments_disabled : false,
     section_title : 'test_section'
@@ -47,7 +46,7 @@ function PublisherZenDesk(configurator, options){
         password    :   this.options.password,
         token		:	this.options.token,
         remoteUri	:	this.options.remoteUri,
-        helpcenter 	:	this.options.helpcenter
+        helpcenter 	:	true
     });
 
 }
@@ -104,12 +103,12 @@ PublisherZenDesk.prototype.publish = function(callback){
                                 return;
                             }
                             var theADCs = [], theQEXs = [], thePics = [];
-                            for(var i = 0; i<adcItems.length  ; i++){
+                            for(var i = 0; i < adcItems.length  ; i++){
                                 if(adcItems[i].match(/.+\.adc/i)){
                                     theADCs.push(adcItems[i]);
                                 }
                             }
-                            for(var j = 0 ; j<qexItems.length ;  j++){
+                            for(var j = 0 ; j < qexItems.length ;  j++){
                                 if(qexItems[j].match(/.+\.qex/i)){
                                     theQEXs.push(qexItems[j]);
                                 }
