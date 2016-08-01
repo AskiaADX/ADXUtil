@@ -4,6 +4,16 @@ var Command = require('../node_modules/commander').Command;
 var program = new Command();
 
 
+/*
+username	:	'zendesk@askia.com',
+    remoteUri	:	'https://askia1467714213.zendesk.com/api/v2/help_center',
+    password    :   'Zendesk!98',
+    promoted : false,
+    comments_disabled : false,
+    section_title : 'test_section'
+
+*/
+
 program
     .version('2.0.0')
     .option('-o, --output <name>', 'name of the output to display or path to the output directory for the generation')
@@ -19,7 +29,14 @@ program
     .option('--authorName <name>', 'default name of the author to set in the config')
     .option('--authorEmail <email>', 'default email of the author to set in the config')
     .option('--authorCompany <name>', 'default company of the author to set in the config')
-    .option('--authorWebsite <website>', 'default website of the author to set in the config');
+    .option('--authorWebsite <website>', 'default website of the author to set in the config')
+    // Options for the publisher
+    .option('--promoted', 'the article will be promoted (appear with a star in ZenDesk Platform)')
+    .option('--enableComments', 'the comments will be enabled on the article correponding to the ADC on ZenDesk')
+    .option('--username <name>', 'the username login to connect to the platform')
+    .option('--password <pwd>', 'the password login to connect to the platform')
+    .option('--token <token>', 'the token ...');
+
 
 program
     .command('generate <type> <name>')

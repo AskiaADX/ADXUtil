@@ -17,7 +17,7 @@ var default_options = {
     password    :   'Zendesk!98',
     promoted : false,
     comments_disabled : false,
-    section_title : 'test_section'
+    section_title : 'autre section'
 };
 
 
@@ -44,7 +44,7 @@ function PublisherZenDesk(configurator, options){
     this.client = zenDesk.createClient({
         username	:	this.options.username,
         password    :   this.options.password,
-        token		:	this.options.token,
+        token		:	this.options.token, //REMOCE ! (and test)
         remoteUri	:	this.options.remoteUri,
         helpcenter 	:	true
     });
@@ -91,7 +91,7 @@ PublisherZenDesk.prototype.publish = function(callback){
                         }
                         return;
                     }
-                    
+                    //TODO ; optimize with async eachSeries available files
                     fs.readdir(path.resolve(path.join(self.configurator.path, common.ADC_PATH)), function(errADC, adcItems){
                         fs.readdir(path.resolve(path.join(self.configurator.path, common.QEX_PATH)), function(errQEX, qexItems){
                             if(errQEX){
