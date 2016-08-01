@@ -17,7 +17,7 @@ var default_options = {
 
 git.add('./*'/*path.join(__dirname,'../../../ADCs/adc2_gender/')*/)
     .commit('first commit')
-    .addRemote('origin', 'https://github.com/LouisAskia/Gender')
-    .push('origin', 'master');
+    .addRemote('test', 'https://github.com/LouisAskia/Gender')
+    .push('test', 'master');
 
 
