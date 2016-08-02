@@ -44,7 +44,6 @@ function PublisherZenDesk(configurator, options){
     this.client = zenDesk.createClient({
         username	:	this.options.username,
         password    :   this.options.password,
-        token		:	this.options.token, //REMOCE ! (and test)
         remoteUri	:	this.options.remoteUri,
         helpcenter 	:	true
     });

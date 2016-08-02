@@ -4,16 +4,6 @@ var Command = require('../node_modules/commander').Command;
 var program = new Command();
 
 
-/*
-username	:	'zendesk@askia.com',
-    remoteUri	:	'https://askia1467714213.zendesk.com/api/v2/help_center',
-    password    :   'Zendesk!98',
-    promoted : false,
-    comments_disabled : false,
-    section_title : 'test_section'
-
-*/
-
 program
     .version('2.0.0')
     .option('-o, --output <name>', 'name of the output to display or path to the output directory for the generation')
@@ -34,8 +24,11 @@ program
     .option('--promoted', 'the article will be promoted (appear with a star in ZenDesk Platform)')
     .option('--enableComments', 'the comments will be enabled on the article correponding to the ADC on ZenDesk')
     .option('--username <name>', 'the username login to connect to the platform')
-    .option('--password <pwd>', 'the password login to connect to the platform')
-    .option('--token <token>', 'the token ...');
+    .option('--password <pwd>', 'the password login to connect to the platform(only for ZenDesk)')
+    .option('--sectionTitle <title>', 'The name of the section where the adc will be posted (ZenDesk)')
+    .option('--remoteUri <uri>', 'The remote URI of the platform')
+    .option('--useremail <email>', 'The email login to connect to the platform (GitHub Only)')
+    .option('--message <msg>', 'The commit message (GitHub only)');
 
 
 program
@@ -54,9 +47,22 @@ program
     	var configurator = new Configurator(process.cwd());
         configurator.load(function(err){
             
+                var options = {} ;
+                if('promoted' in program){
+                    options.promoted = true ;
+                }
+                if('enableComments' in program){
+                    options.comments_disabled = false ;
+                }
+                else{
+                    options.comments_disabled = true ;
+                }
+                if('sectionTitle' in program){
+                    options.section_title = program.sectionTitle ;
+                }
                 var adxPublisher = require('./publisher/ADXPublisher.js');
                 var publisher = new adxPublisher.Publisher(configurator);
-                publisher.publish(platform, null, function(){
+                publisher.publish(platform, options, function(){
                    //console.log(arguments);
                 });
             
