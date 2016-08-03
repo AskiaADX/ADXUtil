@@ -1,7 +1,6 @@
 var common				=	require('../common/common.js');
 var errMsg				=	common.messages.error;
 var Configurator		=	require('../configurator/ADXConfigurator.js').Configurator;
-var _                   =   require('underscore');
 
 
 /**
@@ -9,10 +8,10 @@ var _                   =   require('underscore');
  * @param {Configurator} configurator
  */
 function Publisher(configurator) {
-    if(!(configurator instanceof Configurator)){
+    if (!(configurator instanceof Configurator)) {
         throw errMsg.invalidConfiguratorArg;
     }
-    this.configurator = configurator ;
+    this.configurator = configurator;
 }
 
 /**
@@ -23,20 +22,18 @@ function Publisher(configurator) {
  * @param {Error} [callback.err=null]
  */
 Publisher.prototype.publish = function(platform, options, callback){
-    
-    if(!platform){
+    if (!platform) {
         throw new Error(errMsg.missingPlatformArg);
     }
     
-    if(_.isUndefined(common.PUBLISH_PLATFORMS[platform])){
+    if (!common.PUBLISH_PLATFORMS[platform]) {
         throw new Error(errMsg.invalidPlatformArg);
     }
     
     var SubPublisher = common.PUBLISH_PLATFORMS[platform]['Publisher' + platform];
     var subPublisher = new SubPublisher(this.configurator, options);
     subPublisher.publish(callback);
-    
-}
+};
 
-Publisher.prototype.constructor = Publisher ;
-exports.Publisher = Publisher ;
+Publisher.prototype.constructor = Publisher;
+exports.Publisher = Publisher;

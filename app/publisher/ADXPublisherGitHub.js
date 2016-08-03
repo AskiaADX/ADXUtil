@@ -5,70 +5,61 @@ var Configurator    = require('../configurator/ADXConfigurator.js').Configurator
 var fs              = require('fs');
 var path            = require('path');
 var async           = require('async');
-var _               = require('underscore');
-var git             = require('simple-git')(path.join(__dirname,'../../../ADCs/adc2_gender/').replace(/\\/g, "/"));
+var git             = require('simple-git');
 
+function PublisherGitHub(configurator, options) {
+    if (!(configurator instanceof Configurator)) {
+        throw errMsg.invalidConfiguratorArg;
+    }
 
+    var default_options = {
+        username: "LouisAskia",
+        useremail: "louis@askia.com",
+        message: "default_message",
+        baseURI: "https://github.com/LouisAskia/"
+    };
 
-
-/*git.branch(function(err, res){
-    console.log(res);
-});*/
-
-
-var default_options = {
-    username: "LouisAskia",
-    useremail: "louis@askia.com",
-    message: "default_message",
-    baseURI: "https://github.com/LouisAskia/"
-}
-
-function PublisherGitHub(configurator, options){
+    options = options || {};
     
-    if(_.isUndefined(configurator)){
-        throw new Error(errMsg.missingConfiguratorArg);
+     for (var option in default_options) {
+         if (default_options.hasOwnProperty(option)) {
+             if (!options[option]) {
+                 options[option] = default_options[option];
+             }
+         }
     }
     
-    
-    options = options || {} ;
-    
-     for(var option in default_options){
-        if(!options[option]){
-            options[option] = default_options[option];
-        }
-    }
-    
-    this.options = options ;
-    this.configurator = configurator ;
-    this.git    = require('simple-git')(this.configurator.path.replace(/\\/g, "/"));
-    
+    this.options        = options;
+    this.configurator   = configurator;
+    this.git            = git(this.configurator.path.replace(/\\/g, "/"));
 }
 
 
 PublisherGitHub.prototype.publish = function(callback){
-    
-    
     var self = this ;
-    
-    if(!_.contains(self.getDirectories(self.configurator.path), '.git')){
-        self.git.init();
-    }
-    
-    self.git.pull(self.options.baseURI+self.configurator.get().info.name, 'master');
-    self.git.addConfig('user.name', self.options.username)
+    var gitDir = path.join(self.configurator.path, '.git');
+
+    function commitPush() {
+        self.git.addConfig('user.name', self.options.username)
             .addConfig('user.email', self.options.useremail)
             .add("./*")
             .commit(self.options.message, './*')
-            .push([self.options.baseURI+self.configurator.get().info.name, 'master'], function(err, res){});                  
-}
+            .push([self.options.baseURI+self.configurator.get().info.name, 'master'], callback);
+    }
 
-PublisherGitHub.prototype.getDirectories = function(srcpath) {
-  return fs.readdirSync(srcpath).filter(function(file) {
-    return fs.statSync(path.join(srcpath, file)).isDirectory();
-  });
+    fs.stat(gitDir, function (err, stat) {
+        if (err) {
+            callback(err);
+            return;
+        }
+        if (!stat.isDirectory()) {
+            self.git.init(commitPush);
+            return;
+        }
+
+        commitPush();
+    });
 };
-
-
 
 //Make it public
 exports.PublisherGitHub = PublisherGitHub ;

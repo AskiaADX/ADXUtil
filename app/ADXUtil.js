@@ -22,7 +22,7 @@ program
     .option('--authorWebsite <website>', 'default website of the author to set in the config')
     // Options for the publisher
     .option('--promoted', 'the article will be promoted (appear with a star in ZenDesk Platform)')
-    .option('--enableComments', 'the comments will be enabled on the article correponding to the ADC on ZenDesk')
+    .option('--enableComments', 'the comments will be enabled on the article corresponding to the ADC on ZenDesk')
     .option('--username <name>', 'the username login to connect to the platform')
     .option('--password <pwd>', 'the password login to connect to the platform(only for ZenDesk)')
     .option('--sectionTitle <title>', 'The name of the section where the adc will be posted (ZenDesk)')
@@ -51,13 +51,8 @@ program
                 if('promoted' in program){
                     options.promoted = true ;
                 }
-                if('enableComments' in program){
-                    options.comments_disabled = false ;
-                }
-                else{
-                    options.comments_disabled = true ;
-                }
-                if('sectionTitle' in program){
+                options.comments_disabled = !('enableComments' in program);
+                if ('sectionTitle' in program){
                     options.section_title = program.sectionTitle ;
                 }
                 var adxPublisher = require('./publisher/ADXPublisher.js');
@@ -65,7 +60,6 @@ program
                 publisher.publish(platform, options, function(){
                    //console.log(arguments);
                 });
-            
         });
         
 	});
