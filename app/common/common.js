@@ -13,9 +13,7 @@
         //markdown lib
         md = require('markdown').markdown,
         //path lib
-        path = require('path'),
-        //underscore lib
-        _ = require('underscore');
+        path = require('path');
 
     exports = module.exports;
 
@@ -668,7 +666,7 @@
         b = b.replace(/\{\{ADXAdcFileURL\}\}/gi,  '<a href="/hc/en-us/article_attachments/' + attachmentIDs.adcID + '/' + attachmentIDs.adcName + '">click here</a>');
         
         
-        if(!_.isUndefined(attachmentIDs.pngID)){
+        if(attachmentIDs.pngID){
             // TODO : /!\ change show and parameter SurveyName. See for the rules to establish.
             // maybe we should upload the file to the demo server from this app
             b = b.replace(/\{\{ADXQexPicture\}\}/gi, '<p><a href="http://show.askia.com/WebProd/cgi-bin/askiaext.dll?Action=StartSurvey&amp;SurveyName=ADC2_Gender" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentIDs.pngID + '/' + attachmentIDs.pngName + '" alt="" /> </a></p>');
@@ -685,6 +683,10 @@
         };
     };
 
+    exports.isEqual = function isEqual() {
+        throw new Error("TODO::Implements common.isEqual");
+    };
+
     /**
      * Parse the readme.md file to read notes and convert them to an html list
      * @param {String | Buffer} p The path to the readme.md file
@@ -695,7 +697,7 @@
         var tree = md.parse(file);
         var res = "";
         for(var i in tree){
-            if(_.isEqual(tree[i],['header', {level:2}, 'Notes'])){
+            if (exports.isEqual(tree[i] == ['header', {level:2}, 'Notes'])){
                 if(typeof tree[parseInt(i)+1][1] === "string"){
                     res += tree[parseInt(i)+1][1];    
                 }
@@ -708,7 +710,7 @@
         }
       
         return res;
-    }
+    };
     
     
     /**

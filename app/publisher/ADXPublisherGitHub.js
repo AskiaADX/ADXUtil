@@ -1,4 +1,4 @@
-var Client          = require('../../node_modules/github/lib/index');
+var Client          = require('github');
 var common          = require('../common/common.js');
 var errMsg          = common.messages.error;
 var Configurator    = require('../configurator/ADXConfigurator.js').Configurator;
@@ -60,6 +60,7 @@ PublisherGitHub.prototype.publish = function(callback) {
                 callback(err);
                 return;
             }
+
             if (!stat.isDirectory()) {
                 self.git.init(commitPush);
                 return;
@@ -97,23 +98,26 @@ PublisherGitHub.prototype.publish = function(callback) {
 
 /**
  * Check if the repo exists and create it if it does not exist yet
- * @param {String} name The name of the repo to test
  * @param {Function} callback
  * @param {Error} [callback.err=null]
  */
 PublisherGitHub.prototype.checkIfRepoExists = function(callback) {
     
-    var self = this ;
-    var name = self.configurator.get().info.name;
-    var description = self.configurator.get().info.description.replace(/\n/g, "");
-    var created = false ;
+    var self        = this;
+
     self.github.repos.getAll({
         affiliation: "owner,collaborator,organization_member"
-    },function(err, repos){
-        if(err){
+    }, function(err, repos) {
+        if (err) {
             callback(err);
             return;
         }
+
+        var configInfo  = self.configurator.get();
+        var name        = configInfo.name;
+        var description = configInfo.description.replace(/\n/g, "");
+        var created     = false;
+
         for(var i in repos){
             if(repos[i].name === name){
                 created = true ;
@@ -136,3 +140,28 @@ PublisherGitHub.prototype.checkIfRepoExists = function(callback) {
 
 //Make it public
 exports.PublisherGitHub = PublisherGitHub ;
+
+exports.test = function () {
+    var options = {
+        username: "LouisAskia",
+        useremail: "louis@askia.com",
+        message: "default_message",
+        remoteUri: "https://github.com/LouisAskia/",
+        token: "0ab7d58b9d999349881ebdaca8933eac371b5b4a"
+    };
+
+    var github         = new Client({});
+
+    github.authenticate({
+        type: "oauth",
+        token: options.token
+    });
+
+
+    github.repos.get({
+        user        : options.username,
+        repo        : 'Gender26'
+    },function(err, res){
+        console.log(arguments);
+    });
+};
