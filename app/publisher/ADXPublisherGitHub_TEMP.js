@@ -10,7 +10,7 @@ var _               = require('underscore');
 
 var default_options = {
     username: 'LouisAskia', //
-    token: '3b94fab02e1cf926056ff07ce29ca4872287a8fd' //Must be a token with delete_repo permisssion
+    token: 'deleted token' //
 };
 
 /**
