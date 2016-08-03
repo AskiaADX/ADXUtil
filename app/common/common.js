@@ -146,8 +146,9 @@
             unexistingSection: "Unexisting section",
             missingConfiguratorArg: "Missing `configurator` argument",
             badNumberOfADCFiles: "The number of .adc files is incorrect",
-            badNumverOfQEXFiles: "The number of .qex files is incorrect",
-            badNumberOfPicFiles: "The number of .png files is incorrect"
+            badNumberOfQEXFiles: "The number of .qex files is incorrect",
+            badNumberOfPicFiles: "The number of .png files is incorrect",
+            tooManyArticlesExisting: "Error when updating or creating this article : There are already at least two instances of this article on ZenDesk (Check in draft mode if you don't see them in help_center mode)"
 
         },
         warning: {

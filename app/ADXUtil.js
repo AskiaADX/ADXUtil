@@ -28,7 +28,8 @@ program
     .option('--sectionTitle <title>', 'The name of the section where the adc will be posted (ZenDesk)')
     .option('--remoteUri <uri>', 'The remote URI of the platform')
     .option('--useremail <email>', 'The email login to connect to the platform (GitHub Only)')
-    .option('--message <msg>', 'The commit message (GitHub only)');
+    .option('--message <msg>', 'The commit message (GitHub only)')
+    .option('--force', 'The commit will be forced(GitHub only). If someone changed the article on github, and you really want to update with the local version');
 
 
 program
@@ -51,6 +52,9 @@ program
                 if('promoted' in program){
                     options.promoted = true ;
                 }
+                else{
+                    options.promoted = false ;
+                }
                 if('enableComments' in program){
                     options.comments_disabled = false ;
                 }
@@ -59,6 +63,27 @@ program
                 }
                 if('sectionTitle' in program){
                     options.section_title = program.sectionTitle ;
+                }
+                if('username' in program){
+                    options.username = program.username ;
+                }
+                if('message' in program){
+                    options.message = program.message ; 
+                }
+                if('remoteUri' in program){
+                    options.remoteUri = program.remoteUri;   
+                }
+                if('useremail' in program){
+                    options.useremail = program.useremail ;
+                }
+                if('password' in program){
+                    options.password = program.password ;
+                }
+                if('force' in program){
+                    options.force = true;
+                }
+                else{
+                    options.force=false;
                 }
                 var adxPublisher = require('./publisher/ADXPublisher.js');
                 var publisher = new adxPublisher.Publisher(configurator);
