@@ -9,6 +9,7 @@
     "elementtree": "^0.1.6",
     "jszip": "^2.2.2",
     "node-uuid": "^1.4.0",
+    "restler": "^3.4.0",
     "wrench": "^1.5.1"
   },
   "bin": {
