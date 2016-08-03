@@ -15,7 +15,7 @@ var default_options = {
     username	:	'zendesk@askia.com',
     remoteUri	:	'https://askia1467714213.zendesk.com/api/v2/help_center',
     password    :   'Zendesk!98',
-    promoted : false,
+    promoted    :    false,
     comments_disabled : false,
     section_title : 'autre section'
 };
@@ -242,12 +242,19 @@ PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, ca
                 console.log(err);
             }
             return;
-        } 
+        }
+        
+        var numberOfArticlesInstances = 0 ;
         var idToDelete = 0;
         for(var article in result){
             if(result[article].name === title){
                 idToDelete = result[article].id ;
+                numberOfArticlesInstances ++ ;
             }
+        }
+                
+        if(numberOfArticlesInstances > 1){
+            throw new Error(errMsg.tooManyArticlesExisting);
         }
         
         if(idToDelete!==0){
@@ -328,7 +335,6 @@ PublisherZenDesk.prototype.findSectionIdByTitle = function(title, callback){
             }
             return;
         }
-     
         for(var section in result){
             if(result[section].name === title){
                 if(typeof callback === "function"){

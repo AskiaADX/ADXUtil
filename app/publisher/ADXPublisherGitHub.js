@@ -4,7 +4,6 @@ var errMsg          = common.messages.error;
 var Configurator    = require('../configurator/ADXConfigurator.js').Configurator;
 var fs              = require('fs');
 var path            = require('path');
-var async           = require('async');
 var git             = require('simple-git');
 
 function PublisherGitHub(configurator, options) {
@@ -16,11 +15,12 @@ function PublisherGitHub(configurator, options) {
         username: "LouisAskia",
         useremail: "louis@askia.com",
         message: "default_message",
-        baseURI: "https://github.com/LouisAskia/"
+        remoteUri: "https://github.com/LouisAskia/",
+        token: "10f6c06b5c8a86c951682671b4d46d0ef90b9ffe"
     };
 
     options = options || {};
-    
+
      for (var option in default_options) {
          if (default_options.hasOwnProperty(option)) {
              if (!options[option]) {
@@ -28,36 +28,109 @@ function PublisherGitHub(configurator, options) {
              }
          }
     }
-    
+
     this.options        = options;
     this.configurator   = configurator;
     this.git            = git(this.configurator.path.replace(/\\/g, "/"));
+    this.github         = new Client({});
 }
 
 
-PublisherGitHub.prototype.publish = function(callback){
+/**
+ * Publish the article on the GitHub platform
+ * @param {Function} callback
+ * @param {Error} [callback.err=null]
+*/
+PublisherGitHub.prototype.publish = function(callback) {
     var self = this ;
-    var gitDir = path.join(self.configurator.path, '.git');
 
-    function commitPush() {
-        self.git.addConfig('user.name', self.options.username)
-            .addConfig('user.email', self.options.useremail)
-            .add("./*")
-            .commit(self.options.message, './*')
-            .push([self.options.baseURI+self.configurator.get().info.name, 'master'], callback);
-    }
+    self.github.authenticate({
+        type: "oauth",
+        token: self.options.token
+    }, function (err) {
 
-    fs.stat(gitDir, function (err, stat) {
         if (err) {
             callback(err);
             return;
         }
-        if (!stat.isDirectory()) {
-            self.git.init(commitPush);
+
+        var gitDir = path.join(self.configurator.path, '.git');
+        fs.stat(gitDir, function (err, stat) {
+            if (err) {
+                callback(err);
+                return;
+            }
+            if (!stat.isDirectory()) {
+                self.git.init(commitPush);
+                return;
+            }
+
+            commitPush();
+        });
+    });
+
+    function commitPush() {
+        self.checkIfRepoExists(function(err){
+            if(err){
+                callback(err);
+                return;
+            }
+            self.git.addConfig('user.name', self.options.username)
+                .addConfig('user.email', self.options.useremail)
+                .add("./*")
+                .commit(self.options.message, './*')
+            var params = [self.options.remoteUri+self.configurator.get().info.name, 'master'];
+            if(self.options.force){
+                params.push('-f');
+            }
+            self.git.push(params, function(err, res){
+                if(err){
+                    callback(err);
+                }
+            });
+        });
+    }
+
+
+};
+
+
+/**
+ * Check if the repo exists and create it if it does not exist yet
+ * @param {String} name The name of the repo to test
+ * @param {Function} callback
+ * @param {Error} [callback.err=null]
+ */
+PublisherGitHub.prototype.checkIfRepoExists = function(callback) {
+    
+    var self = this ;
+    var name = self.configurator.get().info.name;
+    var description = self.configurator.get().info.description.replace(/\n/g, "");
+    var created = false ;
+    self.github.repos.getAll({
+        affiliation: "owner,collaborator,organization_member"
+    },function(err, repos){
+        if(err){
+            callback(err);
             return;
         }
-
-        commitPush();
+        for(var i in repos){
+            if(repos[i].name === name){
+                created = true ;
+            }
+        }
+        if(!created){
+            self.github.repos.create({
+                name: name,
+                description: description
+            },function(err, res){
+                if(err){
+                    return;
+                }
+                callback(null);
+            });
+        }
+        callback(null);
     });
 };
 

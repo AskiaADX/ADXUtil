@@ -23,9 +23,11 @@ function PublisherGitHub(configurator, options){
     if(_.isUndefined(configurator)){
         throw new Error(errMsg.missingConfiguratorArg);
     }
+    
     /*if(!(configurator instanceof Configurator)){
         throw new Error(errMsg.invalidConfiguratorArg);
     }*/
+    
     options = options || {} ;
     
      for(var option in default_options){
@@ -136,7 +138,6 @@ PublisherGitHub.prototype.checkIfRepoExists = function(name, callback) {
         }
         for(var i in repos){
             if(repos[i].name === name){
-                console.log(repos[i].name);
                 self.github.repos.delete({
                     repo: repos[i].name,
                     user: self.options.username
