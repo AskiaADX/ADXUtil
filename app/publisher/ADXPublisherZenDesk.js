@@ -5,50 +5,55 @@ var path            = require('path');
 var errMsg          = common.messages.error;
 var Configurator    = require('../configurator/ADXConfigurator.js').Configurator;
 var restler         = require('restler');
+var preferences     = require('../preferences/ADXPreferences.js');
 
-
-/**
- * This is an object which represents the default values.
- * The values will be loaded if they are missing in the command(powershell)
- */
-var default_options = {
-    username	:	'zendesk@askia.com',
-    remoteUri	:	'https://askia1467714213.zendesk.com/api/v2/help_center',
-    password    :   'Zendesk!98',
-    promoted    :    false,
-    comments_disabled : false,
-    section_title : 'autre section'
-};
 
 
 /**
  * Instantiate a PublisherZendesk
  * @param {Configurator} configurator the configuration of the article
- * @param {Object} options Options of the platform, if the options are not specified the default_options will be loaded.
+ * @param {Object} options Options of the platform, if the options are not specified the user preferences will be loaded.
  */
 function PublisherZenDesk(configurator, options){
 
     if(!configurator){
+        throw new Error(errMsg.missingConfiguratorArg);
+    }
+    
+    if (!(configurator instanceof Configurator)) {
         throw new Error(errMsg.invalidConfiguratorArg);
     }
-
-    options = options || {} ;
-    for(var option in default_options){
-        if(!options[option]){
-            options[option]=default_options[option];
+    
+    //All of these options must be present either in the command line either in the preference file of the user
+    var neededOptions = ['username', 'password', 'remoteUri', 'promoted', 'comments_disabled', 'section_title'];
+    var self = this ;
+    self.options = options ;
+        
+    preferences.read( {silent: true}, function(preferences){
+        
+        self.options = self.options || {} ;
+        
+        for(var option in preferences.zendesk){
+            if (!options[option]) {
+                options[option]=preferences.zendesk[option];
+            }
         }
-    }
-
-    this.configurator = configurator ;
-    this.options = options ;
-    this.client = zenDesk.createClient({
-        username	:	this.options.username,
-        password    :   this.options.password,
-        remoteUri	:	this.options.remoteUri,
-        helpcenter 	:	true
+        for(var neededOption in neededOptions){
+            if( !options.hasOwnProperty(neededOptions[neededOption])) {
+                throw new Error(errMsg.missingPublishArgs);
+            }
+        }
+        
+        self.configurator = configurator ;
+        self.options = options ;
+        self.client = zenDesk.createClient({
+            username	:	self.options.username,
+            password    :   self.options.password,
+            remoteUri	:	self.options.remoteUri,
+            helpcenter 	:	true
+        });    
     });
-
-}
+};
 
 
 /**
@@ -60,7 +65,7 @@ PublisherZenDesk.prototype.publish = function(callback){
     
     var  self = this ;
     
-    this.findSectionIdByTitle(this.options.section_title, function(err, id){
+    self.findSectionIdByTitle(self.options.section_title, function(err, id){
         if(err){
             if(typeof callback === "function"){
                 callback(err);
@@ -90,7 +95,6 @@ PublisherZenDesk.prototype.publish = function(callback){
                         }
                         return;
                     }
-                    //TODO ; optimize with async eachSeries available files
                     fs.readdir(path.resolve(path.join(self.configurator.path, common.ADC_PATH)), function(errADC, adcItems){
                         fs.readdir(path.resolve(path.join(self.configurator.path, common.QEX_PATH)), function(errQEX, qexItems){
                             if(errQEX){
@@ -279,21 +283,20 @@ PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, ca
  * @param {Function} callback
  * @param {Error} [callback.err=null]
  */
-PublisherZenDesk.prototype.createArticle = function(callback){
+PublisherZenDesk.prototype.createArticle = function(callback) {
 
     var self = this ;
     
-    fs.readFile(path.join(__dirname,"../../",common.ZENDESK_ARTICLE_TEMPLATE_PATH),'utf-8', function(err, data){
-        if(err){
-            if(typeof callback === "function"){
-                callback(err);
-            }
+    
+    fs.readFile(path.join(__dirname,"../../",common.ZENDESK_ARTICLE_TEMPLATE_PATH), 'utf-8', function(err, data) {
+        if (err) {
+            callback(err);
             return;
         }
-      
+        
         
         var body = common.evalTemplate(data, self.configurator);
-        
+       
         var article = {
             "article": {
                 "title": self.configurator.info.name(),
@@ -302,10 +305,8 @@ PublisherZenDesk.prototype.createArticle = function(callback){
                 "comments_disabled": self.options.comments_disabled
             }  
         };
-        if(typeof callback === "function"){
-            callback(null,article);
-        }
-
+        callback(null, article);
+        
     });
 
 };
@@ -317,17 +318,19 @@ PublisherZenDesk.prototype.createArticle = function(callback){
  * @param {Function} callback
  * @param {Error} [callback.err=null]
  */
-PublisherZenDesk.prototype.findSectionIdByTitle = function(title, callback){
+PublisherZenDesk.prototype.findSectionIdByTitle = function(title, callback) {
  
     var self = this ;
+    
+    if(!title){
+        throw new Error(errMsg.missingSectionTitleArg);
+    }
     
     if(!(title instanceof String) && (typeof title !=='string')){
         throw new Error(errMsg.invalidSectionTitleArg);
     }
 
-	
     self.client.sections.list(function (err, req, result) {
-
         if(err){
             if(typeof callback === "function"){
                 callback(err);
@@ -343,12 +346,8 @@ PublisherZenDesk.prototype.findSectionIdByTitle = function(title, callback){
                 }
             }
         }
-        
-        console.log(errMsg.unexistingSection);
-        callback(new Error(errMsg.unexistingSection));
+        callback(errMsg.unexistingSection);
     });
-
-
 };
 
 //Make it public

@@ -1,16 +1,21 @@
 var Client          = require('github');
 var common          = require('../common/common.js');
 var errMsg          = common.messages.error;
-var Configurator    = require('../configurator/ADXConfigurator.js').Configurator;
+var Configurator	= require('../configurator/ADXConfigurator.js').Configurator;
 var fs              = require('fs');
 var path            = require('path');
 var git             = require('simple-git');
 
 function PublisherGitHub(configurator, options) {
-   
-    /*if (!(configurator instanceof Configurator)) {
+    
+    if(!configurator){
+        throw new Error(errMsg.invalidConfiguratorArg);
+    }
+    
+    if (!(configurator instanceof Configurator)) {
         throw errMsg.invalidConfiguratorArg;
-    }*/
+    }
+    
 
     var default_options = {
         username: "LouisAskia",

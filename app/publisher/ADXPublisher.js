@@ -3,11 +3,17 @@ var errMsg				=	common.messages.error;
 var Configurator		=	require('../configurator/ADXConfigurator.js').Configurator;
 
 
+var platforms = {
+        'ZenDesk'   :   require('./ADXPublisherZenDesk.js'),
+        'GitHub'    :   require('./ADXPublisherGitHub.js')
+};
+
 /**
  * Create a new instance of a publisher
  * @param {Configurator} configurator
  */
 function Publisher(configurator) {
+    
     if (!(configurator instanceof Configurator)) {
         throw errMsg.invalidConfiguratorArg;
     }
@@ -26,11 +32,11 @@ Publisher.prototype.publish = function(platform, options, callback){
         throw new Error(errMsg.missingPlatformArg);
     }
     
-    if (!common.PUBLISH_PLATFORMS[platform]) {
+    if (!platforms[platform]) {
         throw new Error(errMsg.invalidPlatformArg);
     }
     
-    var SubPublisher = common.PUBLISH_PLATFORMS[platform]['Publisher' + platform];
+    var SubPublisher = platforms[platform]['Publisher' + platform];
     var subPublisher = new SubPublisher(this.configurator, options);
     subPublisher.publish(callback);
 };

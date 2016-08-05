@@ -71,8 +71,6 @@ program
             if ('useremail' in program) {
                 options.useremail = program.useremail;
             }
-            
-            console.log(options);
             options.force = 'force' in program;
             var adxPublisher = require('./publisher/ADXPublisher.js');
             var publisher = new adxPublisher.Publisher(configurator);
