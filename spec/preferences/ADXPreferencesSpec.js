@@ -31,7 +31,7 @@ describe('ADXPreferences', function () {
 
         // Court-circuit the access of the filesystem
         spies.fs = {
-            readFile: spyOn(fs, 'readFile'),
+            readFile: spyOn(fs, 'readFileSync'),
             writeFile: spyOn(fs, 'writeFile'),
             mkdir: spyOn(fs, 'mkdir')
         };
@@ -50,6 +50,7 @@ describe('ADXPreferences', function () {
             spies.fs.readFile.andCallFake(function (filePath) {
                 fileRead = filePath;
             });
+            console.log(fileRead);
             adxPreferences.read();
             expect(fileRead).toEqual(path.join(process.env.APPDATA, common.APP_NAME, common.PREFERENCES_FILE_NAME));
         });

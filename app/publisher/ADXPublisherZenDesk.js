@@ -30,7 +30,6 @@ function PublisherZenDesk(configurator, options){
     self.options = options ;
         
     preferences.read( {silent: true}, function(preferences){
-        
         self.options = self.options || {} ;
         
         for(var option in preferences.zendesk){
@@ -50,7 +49,7 @@ function PublisherZenDesk(configurator, options){
             username	:	self.options.username,
             password    :   self.options.password,
             remoteUri	:	self.options.remoteUri,
-            helpcenter 	:	true
+            helpcenter 	:	true  //should be always set to true, otherwise the article methods are not available
         });    
     });
 };
@@ -79,7 +78,7 @@ PublisherZenDesk.prototype.publish = function(callback){
                 }
                 return;
             }
-            self.checkIfArticleExists(article.article.title, id, function(err, result){
+;            self.checkIfArticleExists(article.article.title, id, function(err, result){
                 if(err){
                     if(typeof callback === "function"){
                         console.log(err);
@@ -107,15 +106,15 @@ PublisherZenDesk.prototype.publish = function(callback){
                             }
                             var theADCs = [], theQEXs = [], thePics = [];
                             for(var i = 0; i < adcItems.length  ; i++){
-                                if(adcItems[i].match(/.+\.adc/i)){
+                                if(adcItems[i].match(/^.+\.adc$/i)){
                                     theADCs.push(adcItems[i]);
                                 }
                             }
                             for(var j = 0 ; j < qexItems.length ;  j++){
-                                if(qexItems[j].match(/.+\.qex/i)){
+                                if(qexItems[j].match(/^.+\.qex$/i)){
                                     theQEXs.push(qexItems[j]);
                                 }
-                                if(qexItems[j].match(/adc.+\.png/i)){ // This regex allows to put other pic files in the example folder but they must not begin by'adc'
+                                if(qexItems[j].match(/^adc.+\.png$/i)){ // This regex allows to put other pic files in the example folder but they must not begin by'adc'
                                     thePics.push(qexItems[j]);
                                 }
                             }
@@ -145,6 +144,7 @@ PublisherZenDesk.prototype.publish = function(callback){
                                                 "file": restler.file(fileADC, null, adcStats.size, null, "application/octet-stream")
                                             }
                                         }).on('complete', function(adcRes){
+                                            console.log(adcRes);
                                             restler.post(self.options.remoteUri + "/articles/" + result.id + "/attachments.json", {
                                                 username: self.options.username,
                                                 password: self.options.password,
@@ -293,7 +293,6 @@ PublisherZenDesk.prototype.createArticle = function(callback) {
             callback(err);
             return;
         }
-        
         
         var body = common.evalTemplate(data, self.configurator);
        
