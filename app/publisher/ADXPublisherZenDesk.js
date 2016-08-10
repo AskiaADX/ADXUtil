@@ -5,54 +5,53 @@ var path            = require('path');
 var errMsg          = common.messages.error;
 var Configurator    = require('../configurator/ADXConfigurator.js').Configurator;
 var restler         = require('restler');
-var preferences     = require('../preferences/ADXPreferences.js');
-
-
 
 /**
  * Instantiate a PublisherZendesk
  * @param {Configurator} configurator the configuration of the article
+ * @param {Object} preferences User preferences
  * @param {Object} options Options of the platform, if the options are not specified the user preferences will be loaded.
  */
-function PublisherZenDesk(configurator, options){
+function PublisherZenDesk(configurator, preferences, options) {
 
-    if(!configurator){
+    if (!configurator) {
         throw new Error(errMsg.missingConfiguratorArg);
     }
     
     if (!(configurator instanceof Configurator)) {
         throw new Error(errMsg.invalidConfiguratorArg);
     }
-    
-    //All of these options must be present either in the command line either in the preference file of the user
-    var neededOptions = ['username', 'password', 'remoteUri', 'promoted', 'comments_disabled', 'section_title'];
-    var self = this ;
-    self.options = options ;
-        
-    preferences.read( {silent: true}, function(preferences){
-        self.options = self.options || {} ;
-        
-        for(var option in preferences.zendesk){
-            if (!options[option]) {
-                options[option]=preferences.zendesk[option];
+
+    this.options = options || {};
+    this.configurator = configurator;
+
+    if (preferences) {
+        for (var option in preferences.zendesk) {
+            if (preferences.zendesk.hasOwnProperty(option)) {
+                if (!(option in this.options)) {
+                    this.options[option] = preferences.zendesk[option];
+                }
             }
         }
-        for(var neededOption in neededOptions){
-            if( !options.hasOwnProperty(neededOptions[neededOption])) {
+    }
+
+    // All of these options must be present either in the command line either in the preference file of the user
+    var neededOptions = ['username', 'password', 'remoteUri', 'promoted', 'comments_disabled', 'section_title'];
+    for (var neededOption in neededOptions) {
+        if (neededOptions.hasOwnProperty(neededOption)) {
+            if (!this.options.hasOwnProperty(neededOptions[neededOption])) {
                 throw new Error(errMsg.missingPublishArgs);
             }
         }
-        
-        self.configurator = configurator ;
-        self.options = options ;
-        self.client = zenDesk.createClient({
-            username	:	self.options.username,
-            password    :   self.options.password,
-            remoteUri	:	self.options.remoteUri,
-            helpcenter 	:	true  //should be always set to true, otherwise the article methods are not available
-        });    
+    }
+
+    this.client = zenDesk.createClient({
+        username	:	this.options.username,
+        password    :   this.options.password,
+        remoteUri	:	this.options.remoteUri,
+        helpcenter 	:	true  //should be always set to true, otherwise the article methods are not available
     });
-};
+}
 
 
 /**

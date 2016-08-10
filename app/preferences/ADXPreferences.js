@@ -77,9 +77,8 @@ Preferences.prototype.read = function read(options, callback) {
 
     var filePath = path.join(process.env.APPDATA, common.APP_NAME, common.PREFERENCES_FILE_NAME);
     var self = this;
-    var data = fs.readFileSync(filePath, 'utf-8');
-    
-        if (!data) {
+    fs.readFile(filePath, 'utf-8', function (err, data) {
+        if (err || !data) {
             if (!options || !options.silent) {
                 self.writeMessage(msg.noPreferences);
             }
@@ -88,7 +87,7 @@ Preferences.prototype.read = function read(options, callback) {
             }
             return;
         }
-        
+
         var json = JSON.parse(data.toString());
         if (!options || !options.silent) {
             self.writeMessage(JSON.stringify(json, null, 2));
@@ -96,7 +95,7 @@ Preferences.prototype.read = function read(options, callback) {
         if (typeof callback === 'function') {
             callback(json);
         }
-    
+    });
 };
 
 
@@ -134,7 +133,6 @@ Preferences.prototype.write = function write(preferences, callback) {
     this.read({silent : true}, function (currentPrefs) {
         currentPrefs = currentPrefs || {};
         currentPrefs.author = currentPrefs.author || {};
-        currentPrefs.zendesk = currentPrefs.zendesk || {};
         if ("name" in preferences.author) {
             currentPrefs.author.name  = preferences.author.name;
         }
@@ -147,18 +145,23 @@ Preferences.prototype.write = function write(preferences, callback) {
         if ("website" in preferences.author) {
             currentPrefs.author.website  = preferences.author.website;
         }
-        if ("username" in preferences.zendesk) {
-            currentPrefs.zendesk.username = preferences.zendesk.username;
+
+        if (preferences.zendesk) {
+            currentPrefs.zendesk = currentPrefs.zendesk || {};
+            if ("username" in preferences.zendesk) {
+                currentPrefs.zendesk.username = preferences.zendesk.username;
+            }
+            if ("remoteUri" in preferences.zendesk) {
+                currentPrefs.zendesk.remoteUri = preferences.zendesk.remoteUri;
+            }
+            if ("promoted" in preferences.zendesk) {
+                currentPrefs.zendesk.promoted = preferences.zendesk.promoted;
+            }
+            if ("comments_disabled" in preferences.zendesk) {
+                currentPrefs.zendesk.comments_disabled = preferences.zendesk.comments_disabled;
+            }
         }
-        if ("remoteUri" in preferences.zendesk) {
-            currentPrefs.zendesk.remoteUri = preferences.zendesk.remoteUri;
-        }
-        if ("promoted" in preferences.zendesk) {
-            currentPrefs.zendesk.promoted = preferences.zendesk.promoted;
-        }
-        if ("comments_disabled" in preferences.zendesk) {
-            currentPrefs.zendesk.comments_disabled = preferences.zendesk.comments_disabled;
-        }
+
         var filePath = path.join(process.env.APPDATA, common.APP_NAME, common.PREFERENCES_FILE_NAME);
         // Make sure the directory exist
         fs.mkdir(path.join(filePath, '../'), function () {

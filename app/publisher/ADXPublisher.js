@@ -1,11 +1,11 @@
 var common				=	require('../common/common.js');
 var errMsg				=	common.messages.error;
 var Configurator		=	require('../configurator/ADXConfigurator.js').Configurator;
+var preferences         =   require('../preferences/ADXPreferences.js');
 
-
-var platforms = {
-        'ZenDesk'   :   require('./ADXPublisherZenDesk.js'),
-        'GitHub'    :   require('./ADXPublisherGitHub.js')
+exports.platforms = {
+    'ZenDesk'   :   require('./ADXPublisherZenDesk.js'),
+    'GitHub'    :   require('./ADXPublisherGitHub.js')
 };
 
 /**
@@ -28,17 +28,26 @@ function Publisher(configurator) {
  * @param {Error} [callback.err=null]
  */
 Publisher.prototype.publish = function(platform, options, callback){
+    if (typeof callback !== 'function') {
+        callback = function () {};
+    }
+
     if (!platform) {
-        throw new Error(errMsg.missingPlatformArg);
+        callback(new Error(errMsg.missingPlatformArg));
+        return;
     }
     
-    if (!platforms[platform]) {
-        throw new Error(errMsg.invalidPlatformArg);
+    if (!exports.platforms[platform]) {
+        callback(new Error(errMsg.invalidPlatformArg));
+        return;
     }
-    
-    var SubPublisher = platforms[platform]['Publisher' + platform];
-    var subPublisher = new SubPublisher(this.configurator, options);
-    subPublisher.publish(callback);
+
+    var self = this;
+    preferences.read( {silent: true}, function(prefs) {
+        var SubPublisher = exports.platforms[platform]['Publisher' + platform];
+        var subPublisher = new SubPublisher(self.configurator, prefs, options);
+        subPublisher.publish(callback);
+    });
 };
 
 Publisher.prototype.constructor = Publisher;

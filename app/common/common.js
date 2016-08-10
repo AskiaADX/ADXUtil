@@ -712,17 +712,18 @@
      * Transform the patterns of a string by their real values which are in a config
      * @param {String} input The text to be replaced
      * @param {Object} config The result of a call to method get of a configurator
+     * @param {String} [adxPath] Path of the ADX project
      */
-    exports.evalTemplate = function evalTemplate(input, configurator) {
+    exports.evalTemplate = function evalTemplate(input, config, adxPath) {
 
         var result = input,
             authorFullName = '';
-        
-        var config = configurator.get();
-        var markdown = exports.mdNotesToHtml(path.join(configurator.path, "Readme.md"));
-       
-        
-        result = result.replace(/\{\{ADXNotes\}\}/gi, markdown);
+
+        if (adxPath) {
+            var markdown = exports.mdNotesToHtml(path.join(adxPath, "Readme.md"));
+            result = result.replace(/\{\{ADXNotes\}\}/gi, markdown);
+        }
+
         result = result.replace(/\{\{ADXName\}\}/gi, (config.info && config.info.name) || "");
         result = result.replace(/\{\{ADXGuid\}\}/gi, (config.info && config.info.guid) || uuid.v4());
         result = result.replace(/\{\{ADXDescription\}\}/gi, (config.info && config.info.description) || "");
@@ -730,10 +731,10 @@
         result = result.replace(/\{\{ADXAuthor.Email\}\}/gi, (config.info && config.info.email) || "");
         result = result.replace(/\{\{ADXAuthor.Company\}\}/gi, (config.info && config.info.company) || "");
         result = result.replace(/\{\{ADXAuthor.website\}\}/gi, (config.info && config.info.site) || "");
-        result = result.replace(/\{\{ADXProperties:HTML\}\}/gi, exports.propertiesToHTML(config.properties));
+        result = result.replace(/\{\{ADXProperties:HTML\}\}/gi, (config.properties && exports.propertiesToHTML(config.properties)) || "");
         result = result.replace(/\{\{ADXListKeyWords\}\}/gi, ("adc; adc2; javascript; control; design; askiadesign; " + ((config.info && config.info.name) || "")));
         result = result.replace(/\{\{ADXVersion\}\}/gi, (config.info && config.info.version) || "");
-        result = result.replace(/\{\{ADXConstraints\}\}/gi, exports.constraintsToSentence(config.info.constraints));
+        result = result.replace(/\{\{ADXConstraints\}\}/gi, (config.info.constraints && exports.constraintsToSentence(config.info.constraints)) || "");
         authorFullName = (config.info && config.info.author) || "";
         if (config.info && config.info.email) {
             authorFullName += ' <' + config.info.email + '>';

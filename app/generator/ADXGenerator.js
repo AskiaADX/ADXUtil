@@ -315,7 +315,7 @@ Generator.prototype.updateFiles = function updateFiles() {
                 return;
             }
 
-            var result = common.evalTemplate(data,{
+            var result = common.evalTemplate(data, {
                 info : {
                     name : self.adxName ,
                     type :	 self.adxType, 

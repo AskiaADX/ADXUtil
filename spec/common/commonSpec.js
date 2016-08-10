@@ -283,11 +283,9 @@ describe('common', function () {
                             }
                         });
                  var result = configurator.info.get();
-                 console.log(result);
              });
             
-             
-             console.log(configurator);
+
               fs.readFile(path.join(__dirname, "../../", common.ZENDESK_ARTICLE_TEMPLATE_PATH), 'utf-8', function (err, data) {
                      if (err) {
                          if (typeof callback === "function") {
@@ -296,7 +294,6 @@ describe('common', function () {
                          return;
                      }
                      var resSync = common.evalTemplate(data, configurator.get());
-                     console.log(resSync);
                      expect(resSync.match(/{{.*}}/gi).length).toEqual(0);
                  });
          });

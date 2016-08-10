@@ -1,41 +1,24 @@
-describe("ADXPublisherZenDesk", function(){
-   
-    //TODO : watch if all of these requires are really needed
+describe("ADXPublisherZenDesk", function() {
     var fs					=	require('fs'),
-        Publisher 			=	require("../../app/publisher/ADXPublisher.js").Publisher,
         spies				=	{},
-        options				=	{},
-        common				=	require('../../app/common/common.js'),
-        errMsg				=	common.messages.error,
-        Configurator 		=   require('../../app/configurator/ADXConfigurator.js').Configurator,
-        PublisherZenDesk	=	require('../../app/publisher/ADXPublisherZenDesk.js').PublisherZenDesk,
-        zenDesk             =   require('node-zendesk'),
-        client,
-        preferences         =   require('../../app/preferences/ADXPreferences.js');
-    
-    
-    var options = {
+        options				=	{
             username	:	'zendesk@askia.com',
             remoteUri	:	'https://uri',
             password    :   'mdp',
             promoted    :    false,
             comments_disabled : false,
             section_title : 'a_section'
-    };
-    
+        },
+        common				=	require('../../app/common/common.js'),
+        errMsg				=	common.messages.error,
+        Configurator 		=   require('../../app/configurator/ADXConfigurator.js').Configurator,
+        PublisherZenDesk	=	require('../../app/publisher/ADXPublisherZenDesk.js').PublisherZenDesk,
+        zenDesk             =   require('node-zendesk');
+
     beforeEach(function(){
         spies.fs = {
             readFile : spyOn(fs, 'readFile')
          };
-        
-         client = zenDesk.createClient({
-            username	:	"toto",
-            password    :   "pwd",
-            remoteUri	:	"https://uri",
-            helpcenter 	:	true
-        });
-        
-        
     });
     
     describe("#Constructor", function(){
@@ -58,19 +41,32 @@ describe("ADXPublisherZenDesk", function(){
                     username	:	'zendesk@askia.com',
                     remoteUri	:	'https://uri',
                     promoted    :    false,
-                    comments_disabled : false,
+                    comments_disabled : false
                 };
-                spies.readPreferences = spyOn(preferences, 'read').andCallFake(function(a, cb){
-                    cb('');
-                });
                 // neededOptions = ['username', 'password', 'remoteUri', 'promoted', 'comments_disabled', 'section_title'];
                 var config = new Configurator('.');
-                var publisherZenDesk = new PublisherZenDesk(config, notCompletedOptions);
+                var publisherZenDesk = new PublisherZenDesk(config, {}, notCompletedOptions);
             }).toThrow(errMsg.missingPublishArgs);
         });
+
+        it("should instantiate the zendesk client when everything is ok", function() {
+
+            var config = new Configurator('.');
+            var publisherZenDesk = new PublisherZenDesk(config, {}, {
+                username	: 'zendesk@askia.com',
+                password    : 'secret',
+                remoteUri	: 'https://uri',
+                promoted    : false,
+                comments_disabled : false,
+                section_title : 'a section title'
+            });
+            // TODO::
+            expect(false).toBe(true);
+
+        });
     });
-    
-    
+
+    return;
     describe("#publish", function(){
         
         var config = new Configurator('.');
