@@ -63,7 +63,7 @@ describe("ADXPublisherZenDesk", function(){
                 spies.readPreferences = spyOn(preferences, 'read').andCallFake(function(a, cb){
                     cb('');
                 });
-                var neededOptions = ['username', 'password', 'remoteUri', 'promoted', 'comments_disabled', 'section_title'];
+                // neededOptions = ['username', 'password', 'remoteUri', 'promoted', 'comments_disabled', 'section_title'];
                 var config = new Configurator('.');
                 var publisherZenDesk = new PublisherZenDesk(config, notCompletedOptions);
             }).toThrow(errMsg.missingPublishArgs);
