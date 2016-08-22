@@ -17,7 +17,7 @@ function PublisherZenDesk(configurator, preferences, options) {
     if (!configurator) {
         throw new Error(errMsg.missingConfiguratorArg);
     }
-    
+
     if (!(configurator instanceof Configurator)) {
         throw new Error(errMsg.invalidConfiguratorArg);
     }
@@ -46,9 +46,9 @@ function PublisherZenDesk(configurator, preferences, options) {
     }
 
     this.client = zenDesk.createClient({
-        username	:	this.options.username,
-        password    :   this.options.password,
-        remoteUri	:	this.options.remoteUri,
+        username    :	this.options.username,
+        password    : this.options.password,
+        remoteUri	  :	this.options.remoteUri,
         helpcenter 	:	true  //should be always set to true, otherwise the article methods are not available
     });
 }
@@ -60,9 +60,9 @@ function PublisherZenDesk(configurator, preferences, options) {
  * @param {Error} [callback.err=null]
 */
 PublisherZenDesk.prototype.publish = function(callback){
-    
+
     var  self = this ;
-    
+
     self.findSectionIdByTitle(self.options.section_title, function(err, id){
         if(err){
             if(typeof callback === "function"){
@@ -89,7 +89,6 @@ PublisherZenDesk.prototype.publish = function(callback){
                     if(err){
                         if(typeof callback === "function"){
                             callback(err);
-                            console.log(err);
                         }
                         return;
                     }
@@ -117,14 +116,17 @@ PublisherZenDesk.prototype.publish = function(callback){
                                     thePics.push(qexItems[j]);
                                 }
                             }
-                            if(theADCs.length !== 1 ){
-                                throw new Error(errMsg.badNumberOfADCFiles);
+                            if(theADCs.length != 1 ){
+                                callback(errMsg.badNumberOfADCFiles);
+                                return;
                             }
                             if(theQEXs.length > 1){
-                                throw new Error(errMsg.badNumberOfQEXFiles);
+                                callback(errMsg.badNumberOfQEXFiles);
+                                return;
                             }
                             if(thePics.length > 1){
-                                throw new Error(errMsg.badNumberOfPicFiles);
+                                callback(errMsg.badNumberOfPicFiles);
+                                return;
                             }
                             fileADC = path.resolve(path.join(self.configurator.path, common.ADC_PATH, theADCs[0]));
                             fs.stat(fileADC, function(err, adcStats){
@@ -194,7 +196,7 @@ PublisherZenDesk.prototype.publish = function(callback){
                                                 }
                                             });
                                         });
-                                    });  
+                                    });
                                 }
                                 else{ // There is only an .adc to upload
                                     restler.post(self.options.remoteUri + "/articles/" + result.id + "/attachments.json", {
@@ -218,7 +220,7 @@ PublisherZenDesk.prototype.publish = function(callback){
                                 }
                             });
                         });
-                    });    
+                    });
                 });
             });
         });
@@ -235,9 +237,9 @@ PublisherZenDesk.prototype.publish = function(callback){
  * @param {Error} [callback.err=null]
  */
 PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, callback){
-    
+
     var self = this ;
-    
+
     self.client.articles.listBySection(section_id, function(err, req, result){
         if(err){
             if(typeof callback === "function"){
@@ -246,7 +248,7 @@ PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, ca
             }
             return;
         }
-        
+
         var numberOfArticlesInstances = 0 ;
         var idToDelete = 0;
         for(var article in result){
@@ -255,11 +257,11 @@ PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, ca
                 numberOfArticlesInstances ++ ;
             }
         }
-                
+
         if(numberOfArticlesInstances > 1){
             throw new Error(errMsg.tooManyArticlesExisting);
         }
-        
+
         if(idToDelete!==0){
             self.client.articles.delete(idToDelete, function(err, req, result){
                 if(err){
@@ -272,7 +274,7 @@ PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, ca
             });
         }
         callback(null);
-        
+
     });
 };
 
@@ -285,26 +287,26 @@ PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, ca
 PublisherZenDesk.prototype.createArticle = function(callback) {
 
     var self = this ;
-    
-    
+
+
     fs.readFile(path.join(__dirname,"../../",common.ZENDESK_ARTICLE_TEMPLATE_PATH), 'utf-8', function(err, data) {
         if (err) {
             callback(err);
             return;
         }
-        
+
         var body = common.evalTemplate(data, self.configurator);
-       
+
         var article = {
             "article": {
                 "title": self.configurator.info.name(),
                 "body": body,
                 "promoted": self.options.promoted,
                 "comments_disabled": self.options.comments_disabled
-            }  
+            }
         };
         callback(null, article);
-        
+
     });
 
 };
@@ -317,13 +319,13 @@ PublisherZenDesk.prototype.createArticle = function(callback) {
  * @param {Error} [callback.err=null]
  */
 PublisherZenDesk.prototype.findSectionIdByTitle = function(title, callback) {
- 
+
     var self = this ;
-    
+
     if(!title){
         throw new Error(errMsg.missingSectionTitleArg);
     }
-    
+
     if(!(title instanceof String) && (typeof title !=='string')){
         throw new Error(errMsg.invalidSectionTitleArg);
     }
@@ -339,7 +341,7 @@ PublisherZenDesk.prototype.findSectionIdByTitle = function(title, callback) {
         for(var section in result){
             if(result[section].name === title){
                 if(typeof callback === "function"){
-                	callback(null, result[section].id);  
+                	callback(null, result[section].id);
                     return;
                 }
             }

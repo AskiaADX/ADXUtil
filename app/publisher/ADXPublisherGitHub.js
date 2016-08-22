@@ -7,15 +7,15 @@ var path            = require('path');
 var git             = require('simple-git');
 
 function PublisherGitHub(configurator, options) {
-    
+
     if(!configurator){
         throw new Error(errMsg.invalidConfiguratorArg);
     }
-    
+
     if (!(configurator instanceof Configurator)) {
         throw errMsg.invalidConfiguratorArg;
     }
-    
+
 
     var default_options = {
         username: "LouisAskia",
@@ -48,9 +48,9 @@ function PublisherGitHub(configurator, options) {
  * @param {Error} [callback.err=null]
 */
 PublisherGitHub.prototype.publish = function(callback) {
-    
+
     var self = this ;
-    
+
     function commitPush() {
         self.checkIfRepoExists(function(err) {
             if(err) {
@@ -72,11 +72,11 @@ PublisherGitHub.prototype.publish = function(callback) {
             });
         });
     };
-    
+
     var gitDir = path.join(self.configurator.path, '.git');
-    
+
     fs.stat(gitDir, function (err, stat) {
-        
+
         if (stat && stat.isDirectory()) {
             commitPush();
         }
@@ -93,12 +93,12 @@ PublisherGitHub.prototype.publish = function(callback) {
  * @param {Error} [callback.err=null]
  */
 PublisherGitHub.prototype.checkIfRepoExists = function(callback) {
-        
+
     var self        = this;
     var configInfo  = self.configurator.get();
     var name        = configInfo.info.name;
     var description = configInfo.info.description.replace(/\n/g, "");
-    
+
     self.github.authenticate({
         type: "oauth",
         token: self.options.token
@@ -119,9 +119,11 @@ PublisherGitHub.prototype.checkIfRepoExists = function(callback) {
                         return;
                     }
                     callback(null);
+                    return;
                 });
             }
             callback(err);
+            return;
         }
         callback(null);
     });

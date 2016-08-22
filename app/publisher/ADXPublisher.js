@@ -1,7 +1,7 @@
-var common				=	require('../common/common.js');
-var errMsg				=	common.messages.error;
+var common          =	require('../common/common.js');
+var errMsg          =	common.messages.error;
 var Configurator		=	require('../configurator/ADXConfigurator.js').Configurator;
-var preferences         =   require('../preferences/ADXPreferences.js');
+var preferences     =   require('../preferences/ADXPreferences.js');
 
 exports.platforms = {
     'ZenDesk'   :   require('./ADXPublisherZenDesk.js'),
@@ -13,7 +13,7 @@ exports.platforms = {
  * @param {Configurator} configurator
  */
 function Publisher(configurator) {
-    
+
     if (!(configurator instanceof Configurator)) {
         throw errMsg.invalidConfiguratorArg;
     }
@@ -36,7 +36,7 @@ Publisher.prototype.publish = function(platform, options, callback){
         callback(new Error(errMsg.missingPlatformArg));
         return;
     }
-    
+
     if (!exports.platforms[platform]) {
         callback(new Error(errMsg.invalidPlatformArg));
         return;

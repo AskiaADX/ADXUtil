@@ -57,7 +57,6 @@ describe('common', function () {
             return wasCalled;
         });
     }
-
     // Run the test in a given architecture (x64, ia32)
     function runInArch(arch, fn) {
         // process.arch is read-only use the propertyDescriptor to override it's value
@@ -242,78 +241,18 @@ describe('common', function () {
         ['adc', 'adp'].forEach(forEachADXType);
 
     });
-    
-     describe("#evalTemplate", function () {
-            
-         
-         //TODO : do this spec..
-         it("should replace all the replacement patterns", function () {
-           //  var configurator = new Configurator(path.normalize(path.join(__dirname, 'fakeADC')));
-             
-             
-             var configurator = new Configurator("adc/path");
-             configurator.load(function () {
-                configurator.info.set({
-                            name : "new-name",
-                            guid : "new-guid",
-                            version : "new-version",
-                            date : "new-date",
-                            description : "new-description",
-                            company : "new-company",
-                            author : "new-author",
-                            site : "new-site",
-                            helpURL : "new-helpURL",
-                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
-                            style : {
-                                width : 300,
-                                height : 500
-                            },
-                            constraints : {
-                                questions : {
-                                    single : false,
-                                    numeric : true
-                                },
-                                controls : {
-                                    label :false,
-                                    checkbox : true
-                                },
-                                responses : {
-                                    min : 10
-                                }
-                            }
-                        });
-                 var result = configurator.info.get();
-             });
-            
 
-              fs.readFile(path.join(__dirname, "../../", common.ZENDESK_ARTICLE_TEMPLATE_PATH), 'utf-8', function (err, data) {
-                     if (err) {
-                         if (typeof callback === "function") {
-                             callback(err);
-                         }
-                         return;
-                     }
-                     var resSync = common.evalTemplate(data, configurator.get());
-                     expect(resSync.match(/{{.*}}/gi).length).toEqual(0);
-                 });
-         });
-    });
-    
     describe("#propertiesToHTML", function(){
-        
+
         it("should throw an error when the `properties` param missing", function(){
             expect(function(){
                 common.propertiesToHTML();
             }).toThrow(new Error(errMsg.missingPropertiesArg));
         }) ;
-        
-         //TODO : do this spec
-         it("should return an html table", function(){
-            
-        });
+
     });
-    
-    
+
+
     describe('#getTemplatePath', function () {
 
         it('should throw an error when the `type` and `callback` arguments are not specified', function () {
