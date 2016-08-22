@@ -9,11 +9,11 @@ var git             = require('simple-git');
 function PublisherGitHub(configurator, options) {
 
     if(!configurator){
-        throw new Error(errMsg.invalidConfiguratorArg);
+        throw new Error(errMsg.missingConfiguratorArg);
     }
 
     if (!(configurator instanceof Configurator)) {
-        throw errMsg.invalidConfiguratorArg;
+        throw new Error(errMsg.invalidConfiguratorArg);
     }
 
 
