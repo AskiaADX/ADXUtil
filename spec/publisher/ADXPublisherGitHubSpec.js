@@ -43,18 +43,32 @@ describe("ADXPublisherGitHub", function(){
         
     });
     
-    describe("#publish", function(){
+    describe("#publish", function() {
         
         var config = new Configurator('.');
         var publisherGitHub = new PublisherGitHub(config, {}, options);
         
+        beforeEach(function() {
+            spies.gitInit = spyOn(publisherGitHub.git, "init");
+            
+            spies.gitPush = spyOn(publisherGitHub.git, "push").andCallFake(function(params, cb) {
+                cb(null, "");
+            });
+            //spies.gitAddConfig = spyOn(publisherGitHub.git, "addConfig").andCallFake(function(){});
+            /*spies.gitAdd = spyOn(publisherGitHub.git, "add").andCallFake(function(files, cb) {
+                cb(null, "");
+            });*/
+            /*spies.gitCommit = spyOn(publisherGitHub.git, "commit").andCallFake(function(message, files, cb) {
+                cb(null, "");
+            });*/
+        });
         
-        it("should call git#init if there is not a `.git` folder in the adc folder", function(){
-            spies.checkIfRepoExists = spyOn(PublisherGitHub.prototype, "checkIfRepoExists").andCallFake(function(cb){
+        
+        it("should call git#init if there is not a `.git` folder in the adc folder", function() {
+            spies.checkIfRepoExists = spyOn(PublisherGitHub.prototype, "checkIfRepoExists").andCallFake(function(cb) {
                 cb(null);
             });
-            spies.gitInit = spyOn(publisherGitHub.git, "init");
-            spies.dirStats = spyOn(fs, "stat").andCallFake(function(dir, cb){
+            spies.dirStats = spyOn(fs, "stat").andCallFake(function(dir, cb) {
                 cb(null, {
                     isDirectory: function(){
                         return false;
@@ -62,7 +76,7 @@ describe("ADXPublisherGitHub", function(){
                 });
             });
             spies.config = spyOn(publisherGitHub.configurator, "get").andReturn({info:{name:"tt"}});
-            publisherGitHub.publish(function(err){
+            publisherGitHub.publish(function(err) {
                expect(spies.gitInit).toHaveBeenCalled(); 
             });
             
