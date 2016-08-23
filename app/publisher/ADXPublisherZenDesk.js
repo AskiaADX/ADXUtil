@@ -46,10 +46,10 @@ function PublisherZenDesk(configurator, preferences, options) {
     }
 
     this.client = zenDesk.createClient({
-        username    :	this.options.username,
+        username    : this.options.username,
         password    : this.options.password,
-        remoteUri	  :	this.options.remoteUri,
-        helpcenter 	:	true  //should be always set to true, otherwise the article methods are not available
+        remoteUri	: this.options.remoteUri,
+        helpcenter 	: true  //should be always set to true, otherwise the article methods are not available
     });
 }
 
@@ -80,7 +80,6 @@ PublisherZenDesk.prototype.publish = function(callback){
 ;            self.checkIfArticleExists(article.article.title, id, function(err, result){
                 if(err){
                     if(typeof callback === "function"){
-                        console.log(err);
                         callback(err);
                     }
                     return;
@@ -112,7 +111,7 @@ PublisherZenDesk.prototype.publish = function(callback){
                                 if(qexItems[j].match(/^.+\.qex$/i)){
                                     theQEXs.push(qexItems[j]);
                                 }
-                                if(qexItems[j].match(/^adc.+\.png$/i)){ // This regex allows to put other pic files in the example folder but they must not begin by'adc'
+                                if(qexItems[j].match(/^adc.+\.png$/i)){ // This regex allows to put other pic files in the example folder but they must not begin by 'adc'
                                     thePics.push(qexItems[j]);
                                 }
                             }
@@ -145,7 +144,6 @@ PublisherZenDesk.prototype.publish = function(callback){
                                                 "file": restler.file(fileADC, null, adcStats.size, null, "application/octet-stream")
                                             }
                                         }).on('complete', function(adcRes){
-                                            console.log(adcRes);
                                             restler.post(self.options.remoteUri + "/articles/" + result.id + "/attachments.json", {
                                                 username: self.options.username,
                                                 password: self.options.password,
@@ -244,7 +242,6 @@ PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, ca
         if(err){
             if(typeof callback === "function"){
                 callback(err);
-                console.log(err);
             }
             return;
         }
@@ -267,7 +264,6 @@ PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, ca
                 if(err){
                     if(typeof callback === "function"){
                         callback(err);
-                        console.log(err);
                     }
                     return ;
                 }
@@ -334,7 +330,6 @@ PublisherZenDesk.prototype.findSectionIdByTitle = function(title, callback) {
         if(err){
             if(typeof callback === "function"){
                 callback(err);
-                console.log(err);
             }
             return;
         }

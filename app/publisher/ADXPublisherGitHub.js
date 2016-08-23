@@ -6,7 +6,14 @@ var fs              = require('fs');
 var path            = require('path');
 var git             = require('simple-git');
 
-function PublisherGitHub(configurator, options) {
+
+/**
+ * Instantiate a PublisherGitHub
+ * @param {Configurator} configurator the configuration of the article
+ * @param {Object} preferences User preferences
+ * @param {Object} options Options of the platform, if the options are not specified the user preferences will be loaded.
+ */
+function PublisherGitHub(configurator, preferences, options) {
 
     if(!configurator){
         throw new Error(errMsg.missingConfiguratorArg);
@@ -16,29 +23,31 @@ function PublisherGitHub(configurator, options) {
         throw new Error(errMsg.invalidConfiguratorArg);
     }
 
-
-    var default_options = {
-        username: "LouisAskia",
-        useremail: "louis@askia.com",
-        message: "default_message",
-        remoteUri: "https://github.com/LouisAskia/",
-        token: "2d54d307120409df5104e3db380c0b04827eb8eb"
-    };
-
-    options = options || {};
-
-     for (var option in default_options) {
-         if (default_options.hasOwnProperty(option)) {
-             if (!options[option]) {
-                 options[option] = default_options[option];
-             }
-         }
+    this.options = options || {};
+    this.configurator = configurator;
+    
+      if (preferences) {
+        for (var option in preferences.github) {
+            if (preferences.github.hasOwnProperty(option)) {
+                if (!(option in this.options)) {
+                    this.options[option] = preferences.github[option];
+                }
+            }
+        }
     }
 
-    this.options        = options;
-    this.configurator   = configurator;
-    this.git            = git(this.configurator.path.replace(/\\/g, "/"));
-    this.github         = new Client({});
+    // All of these options must be present either in the command line either in the preference file of the user
+    var neededOptions = ['username', 'useremail', 'remoteUri', 'token', 'message'];
+    for (var neededOption in neededOptions) {
+        if (neededOptions.hasOwnProperty(neededOption)) {
+            if (!this.options.hasOwnProperty(neededOptions[neededOption])) {
+                throw new Error(errMsg.missingPublishArgs);
+            }
+        }
+    }
+    
+    this.git        = git(this.configurator.path.replace(/\\/g, "/"));
+    this.github     = new Client({});
 }
 
 

@@ -161,6 +161,25 @@ Preferences.prototype.write = function write(preferences, callback) {
                 currentPrefs.zendesk.comments_disabled = preferences.zendesk.comments_disabled;
             }
         }
+        
+        if (preferences.github) {
+            currentPrefs.github = currentPrefs.github || {};
+            if ("username" in preferences.github) {
+                currentPrefs.github.username = preferences.github.username;
+            }
+            if ("remoteUri" in preferences.github) {
+                currentPrefs.github.remoteUri = preferences.github.remoteUri;
+            }
+            if ("useremail" in preferences.github) {
+                currentPrefs.github.useremail = preferences.github.useremail;
+            }
+            if ("message" in preferences.github) {
+                currentPrefs.github.message = preferences.github.message;
+            }
+            if ("token" in preferences.github) {
+                currentPrefs.github.token = preferences.github.token;
+            }
+        }
 
         var filePath = path.join(process.env.APPDATA, common.APP_NAME, common.PREFERENCES_FILE_NAME);
         // Make sure the directory exist

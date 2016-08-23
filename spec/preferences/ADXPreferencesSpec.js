@@ -238,6 +238,56 @@ describe('ADXPreferences', function () {
             });
 
         });
+        
+        
+         it("should try to write the github preferences when it's define", function () {
+            spies.fs.readFile.andCallFake(function (p, encoding, cb) {
+                cb(null, JSON.stringify({
+                    author : {
+                        email : "test@test.com"
+                    }
+                }));
+            });
+
+            spies.fs.writeFile.andCallFake(function (p, content, options, cbbWrite) {
+                spies.fs.readFile.andCallFake(function (p, encoding, cbRead) {
+                    cbRead(null, content);
+                });
+                cbbWrite();
+            });
+            var obj = {
+                author : {
+                    name : 'test'
+                },
+                github : {
+                    username : "un",
+                    useremail : 'em',
+                    remoteUri : "ru",
+                    token : "050zf05grgz",
+                    message : "a msg"
+                }
+            };
+            var expectedObj = {
+                author : {
+                    name : 'test',
+                    email : "test@test.com"
+                },
+                github : {
+                    username : "un",
+                    useremail :"em",
+                    remoteUri : 'ru',
+                    token : "050zf05grgz",
+                    message : "a msg"
+                }
+            };
+            runSync(function (done) {
+                adxPreferences.write(obj, function (result) {
+                    expect(result).toEqual(expectedObj);
+                    done();
+                });
+            });
+
+        });
 
         it("should return the preferences in the callback when it's defined", function () {
             var objRead = {

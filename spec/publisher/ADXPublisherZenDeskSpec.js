@@ -9,17 +9,18 @@ describe("ADXPublisherZenDesk", function() {
             comments_disabled : false,
             section_title : 'a_section'
         },
-        common            =	require('../../app/common/common.js'),
-        errMsg				    =	common.messages.error,
-        Configurator      = require('../../app/configurator/ADXConfigurator.js').Configurator,
-        PublisherZenDesk	=	require('../../app/publisher/ADXPublisherZenDesk.js').PublisherZenDesk,
-        zenDesk           = require('node-zendesk');
+        common              = require('../../app/common/common.js'),
+        errMsg              = common.messages.error,
+        Configurator        = require('../../app/configurator/ADXConfigurator.js').Configurator,
+        PublisherZenDesk	= require('../../app/publisher/ADXPublisherZenDesk.js').PublisherZenDesk,
+        zenDesk             = require('node-zendesk');
 
     beforeEach(function(){
         spies.fs = {
             readFile : spyOn(fs, 'readFile')
          };
     });
+
 
     describe("#Constructor", function(){
 
@@ -43,7 +44,6 @@ describe("ADXPublisherZenDesk", function() {
                     promoted    :    false,
                     comments_disabled : false
                 };
-                // neededOptions = ['username', 'password', 'remoteUri', 'promoted', 'comments_disabled', 'section_title'];
                 var config = new Configurator('.');
                 var publisherZenDesk = new PublisherZenDesk(config, {}, notCompletedOptions);
             }).toThrow(errMsg.missingPublishArgs);
@@ -56,7 +56,7 @@ describe("ADXPublisherZenDesk", function() {
             var publisherZenDesk = new PublisherZenDesk(config, {}, {
                 username          : 'zendesk@askia.com',
                 password          : 'secret',
-                remoteUri	        : 'https://uri',
+                remoteUri	      : 'https://uri',
                 promoted          : false,
                 comments_disabled : false,
                 section_title     : 'a section title'
@@ -65,16 +65,17 @@ describe("ADXPublisherZenDesk", function() {
             expect(publisherZenDesk.options).toEqual({
                 username          : 'zendesk@askia.com',
                 password          : 'secret',
-                remoteUri	        : 'https://uri',
+                remoteUri	      : 'https://uri',
                 promoted          : false,
                 comments_disabled : false,
                 section_title     : 'a section title'
             });
+            
             expect(publisherZenDesk.configurator).toBe(config);
 
         });
     });
-
+    
     describe("#publish", function(){
 
         var config = new Configurator('.');
