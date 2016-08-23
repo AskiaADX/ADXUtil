@@ -68,13 +68,13 @@ describe("ADXPublisherGitHub", function(){
             
         });
         
-        it("should not call git#init if there is a `.git` folder in the adc folder", function(){
+       /* it("should not call git#init if there is a `.git` folder in the adc folder", function(){
             
         });
         
         it("should call #checkIfRepoExists in any cases", function(){
             
-        });
+        });*/
     });
     
     
