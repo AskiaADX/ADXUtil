@@ -64,6 +64,7 @@ describe("ADXPublisherGitHub", function(){
             publisherGitHub.publish(function(err){
                expect(spies.gitInit).toHaveBeenCalled(); 
             });
+            
         });
         
         it("should not call git#init if there is a `.git` folder in the adc folder", function(){

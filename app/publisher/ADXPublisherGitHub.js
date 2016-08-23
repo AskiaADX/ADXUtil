@@ -102,7 +102,7 @@ PublisherGitHub.prototype.publish = function(callback) {
  * @param {Error} [callback.err=null]
  */
 PublisherGitHub.prototype.checkIfRepoExists = function(callback) {
-
+    console.log("here");
     var self        = this;
     var configInfo  = self.configurator.get();
     var name        = configInfo.info.name;
