@@ -49,21 +49,30 @@ describe("ADXPublisherGitHub", function(){
         var publisherGitHub = new PublisherGitHub(config, {}, options);
         
         
-        it("should call git init if there is not a `.git` folder in the adc folder", function(){
+        it("should call git#init if there is not a `.git` folder in the adc folder", function(){
             spies.checkIfRepoExists = spyOn(PublisherGitHub.prototype, "checkIfRepoExists").andCallFake(function(cb){
                 cb(null);
             });
-            console.log(publisherGitHub.checkIfRepoExists);
             spies.gitInit = spyOn(publisherGitHub.git, "init");
             spies.dirStats = spyOn(fs, "stat").andCallFake(function(dir, cb){
-               cb(null, {isDirectory: function(){
-                   return false;
-               }}) ;
+                cb(null, {
+                    isDirectory: function(){
+                        return false;
+                    }
+                });
             });
             publisherGitHub.publish(function(err){
                expect(spies.gitInit).toHaveBeenCalled(); 
             });
-        })
+        });
+        
+        it("should not call git#init if there is a `.git` folder in the adc folder", function(){
+            
+        });
+        
+        it("should call #checkIfRepoExists in any cases", function(){
+            
+        });
     });
     
     
