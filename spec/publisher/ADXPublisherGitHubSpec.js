@@ -62,6 +62,9 @@ describe("ADXPublisherGitHub", function(){
             spies.gitPush = spyOn(publisherGitHub.git, "push").andCallFake(function(params, cb) {
                 cb(null, "");
             });
+            spies.gitAddConfig = spyOn(publisherGitHub.git, "addConfig").andCallFake(function(key, value, cb){
+               cb(null,""); 
+            });
             
             spies.checkIfRepoExists = spyOn(PublisherGitHub.prototype, "checkIfRepoExists").andCallFake(function(cb) {
                 cb(null);
@@ -76,7 +79,7 @@ describe("ADXPublisherGitHub", function(){
             });
             
             spies.config = spyOn(publisherGitHub.configurator, "get").andReturn({info:{name:"a name"}});
-            console.log(publisherGitHub);
+         
             publisherGitHub.publish(function(err) {
                 
                expect(spies.gitInit).toHaveBeenCalled(); 
