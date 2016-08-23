@@ -53,6 +53,7 @@ describe("ADXPublisherGitHub", function(){
             spies.checkIfRepoExists = spyOn(publisherGitHub, "checkIfRepoExists").andCallFake(function(cb){
                 cb(null);
             });
+            console.log(publisherGitHub.checkIfRepoExists);
             spies.gitInit = spyOn(publisherGitHub.git, "init");
             spies.dirStats = spyOn(fs, "stat").andCallFake(function(dir, cb){
                cb(null, {isDirectory: function(){
@@ -64,6 +65,8 @@ describe("ADXPublisherGitHub", function(){
             });
         })
     });
+    
+    
     
     describe("#checkIfRepoExists", function(){
         
