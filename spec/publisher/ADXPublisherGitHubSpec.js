@@ -49,25 +49,24 @@ describe("ADXPublisherGitHub", function(){
         var publisherGitHub = new PublisherGitHub(config, {}, options);
         
         beforeEach(function() {
+            
+        });
+        
+        
+        it("should call git#init if there is not a `.git` folder in the adc folder", function() {
+            
+            
+            
             spies.gitInit = spyOn(publisherGitHub.git, "init");
             
             spies.gitPush = spyOn(publisherGitHub.git, "push").andCallFake(function(params, cb) {
                 cb(null, "");
             });
-            //spies.gitAddConfig = spyOn(publisherGitHub.git, "addConfig").andCallFake(function(){});
-            /*spies.gitAdd = spyOn(publisherGitHub.git, "add").andCallFake(function(files, cb) {
-                cb(null, "");
-            });*/
-            /*spies.gitCommit = spyOn(publisherGitHub.git, "commit").andCallFake(function(message, files, cb) {
-                cb(null, "");
-            });*/
-        });
-        
-        
-        it("should call git#init if there is not a `.git` folder in the adc folder", function() {
+            
             spies.checkIfRepoExists = spyOn(PublisherGitHub.prototype, "checkIfRepoExists").andCallFake(function(cb) {
                 cb(null);
             });
+            
             spies.dirStats = spyOn(fs, "stat").andCallFake(function(dir, cb) {
                 cb(null, {
                     isDirectory: function(){
@@ -75,9 +74,11 @@ describe("ADXPublisherGitHub", function(){
                     }
                 });
             });
-            spies.config = spyOn(publisherGitHub.configurator, "get").andReturn({info:{name:"tt"}});
+            
+            spies.config = spyOn(publisherGitHub.configurator, "get").andReturn({info:{name:"a name"}});
+            
             publisherGitHub.publish(function(err) {
-               expect(spies.gitInit).not.toHaveBeenCalled(); 
+               expect(spies.gitInit).toHaveBeenCalled(); 
             });
             
         });
