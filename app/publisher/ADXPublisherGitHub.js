@@ -59,7 +59,6 @@ function PublisherGitHub(configurator, preferences, options) {
 PublisherGitHub.prototype.publish = function(callback) {
 
     var self = this ;
-
     function commitPush() {
         self.checkIfRepoExists(function(err) {
             if(err) {
@@ -95,6 +94,7 @@ PublisherGitHub.prototype.publish = function(callback) {
                                     callback(err);
                                     return;
                                 }
+                                callback(null);
                             });
                         });
                     });
@@ -102,16 +102,21 @@ PublisherGitHub.prototype.publish = function(callback) {
             });
         });
     };
-
+    
+    
     var gitDir = path.join(self.configurator.path, '.git');
-
     fs.stat(gitDir, function (err, stat) {
-
         if (stat && stat.isDirectory()) {
             commitPush();
         }
         else{
-            self.git.init(commitPush());
+            self.git.init(function(err, res){
+                if(err){
+                    callback(err);
+                    return;
+                }
+                commitPush();
+            });
         }
     });
 };
