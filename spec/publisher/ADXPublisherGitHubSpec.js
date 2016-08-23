@@ -76,9 +76,9 @@ describe("ADXPublisherGitHub", function(){
             });
             
             spies.config = spyOn(publisherGitHub.configurator, "get").andReturn({info:{name:"a name"}});
-            
+            console.log(publisherGitHub);
             publisherGitHub.publish(function(err) {
-                console.log(err);
+                
                expect(spies.gitInit).toHaveBeenCalled(); 
             });
             
