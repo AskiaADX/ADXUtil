@@ -50,7 +50,7 @@ describe("ADXPublisherGitHub", function(){
         
         
         it("should call git init if there is not a `.git` folder in the adc folder", function(){
-            spies.checkIfRepoExists = spyOn(publisherGitHub, "checkIfRepoExists").andCallFake(function(cb){
+            spies.checkIfRepoExists = spyOn(PublisherGitHub.prototype, "checkIfRepoExists").andCallFake(function(cb){
                 cb(null);
             });
             console.log(publisherGitHub.checkIfRepoExists);
