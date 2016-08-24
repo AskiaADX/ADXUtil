@@ -46,7 +46,7 @@ describe("ADXPublisherZenDesk", function() {
                 };
                 var config = new Configurator('.');
                 var publisherZenDesk = new PublisherZenDesk(config, {}, notCompletedOptions);
-            }).toThrow(errMsg.missingPublishArgs);
+            }).toThrow(errMsg.missingPublishArgs + '\n missing argument : password'); //first missing arg here is password
         });
 
         it("should instantiate the zendesk client when everything is ok", function() {
@@ -250,19 +250,17 @@ describe("ADXPublisherZenDesk", function() {
             var config = new Configurator('.');
             var publisherZenDesk = new PublisherZenDesk(config, {}, options);
 
-            config.info = {
-                name:  'test-adx'
-            };
-
             spies.fs.readFile.andCallFake(function(a, b, callback) {
                callback(null);
             });
 
-            spies.evalTemplate = spyOn(common, 'evalTemplate').andCallFake(function(input, configurator) {
-                return "the-body" ;
-            });
+            spies.evalTemplate = spyOn(common, 'evalTemplate').andReturn('the-body');
 
-            spies.infoname = spyOn(config.info, 'name').andReturn('test-adx');
+            spies.infoname = spyOn(config, 'get').andReturn({
+                info:{
+                    name: 'test-adx'
+                }
+            });
 
             publisherZenDesk.createArticle(function(err, article) {
                 expect(article).toEqual({

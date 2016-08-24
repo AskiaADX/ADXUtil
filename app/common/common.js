@@ -141,7 +141,7 @@
             invalidConfiguratorArg: "Invalid `configurator` argument",
             invalidOptionsArg: "Invalid `options` argument",
             invalidSectionTitleArg: "Invalid `title` argument",
-            unexistingSection: "Unexisting section",
+            unexistingSection: "Unexisting section. Please check the section title or your logins",
             missingConfiguratorArg: "Missing `configurator` argument",
             badNumberOfADCFiles: "The number of .adc files is incorrect",
             badNumberOfQEXFiles: "The number of .qex files is incorrect",
@@ -671,7 +671,7 @@
 
             b = b.replace(/\{\{ADXSentence:accesSurvey\}\}/gi, '<li>To access to the live survey, click on the picture above.</li>');
         }
-        else{
+        else {
             b = b.replace(/\{\{ADXQexPicture\}\}/gi, "");
             b = b.replace(/\{\{ADXSentence:accesSurvey\}\}/gi, "");
         }

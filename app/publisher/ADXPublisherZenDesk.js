@@ -40,17 +40,18 @@ function PublisherZenDesk(configurator, preferences, options) {
     for (var neededOption in neededOptions) {
         if (neededOptions.hasOwnProperty(neededOption)) {
             if (!this.options.hasOwnProperty(neededOptions[neededOption])) {
-                throw new Error(errMsg.missingPublishArgs);
+                throw new Error(errMsg.missingPublishArgs + '\n missing argument : ' + neededOptions[neededOption]);
             }
         }
     }
-
+    
     this.client = zenDesk.createClient({
         username    : this.options.username,
         password    : this.options.password,
         remoteUri	: this.options.remoteUri,
         helpcenter 	: true  //should be always set to true, otherwise the article methods are not available
     });
+    
 }
 
 
@@ -163,19 +164,20 @@ PublisherZenDesk.prototype.publish = function(callback) {
                                                                 "file": restler.file(filePNG, null, pngStats.size, null, "image/png")
                                                             }
                                                         }).on('complete', function(pngRes) {
-                                                            var article = common.updateArticleAfterUploads(result, {
-                                                                qexID: qexRes.article_attachment.id,
-                                                                qexName: qexRes.article_attachment.file_name,
-                                                                adcName: adcRes.article_attachment.file_name,
-                                                                adcID: adcRes.article_attachment.id,
-                                                                pngID: pngRes.article_attachment.id,
-                                                                pngName: pngRes.article_attachment.file_name
-                                                            });
-                                                            self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res) {
-                                                                if(err){
-                                                                    callback(err);
-                                                                }
-                                                            });
+                                                                var article = common.updateArticleAfterUploads(result, {
+                                                                    qexID: qexRes.article_attachment.id,
+                                                                    qexName: qexRes.article_attachment.file_name,
+                                                                    adcName: adcRes.article_attachment.file_name,
+                                                                    adcID: adcRes.article_attachment.id,
+                                                                    pngID: pngRes.article_attachment.id,
+                                                                    pngName: pngRes.article_attachment.file_name
+                                                                });
+                                                                self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res) {
+                                                                    if(err){
+                                                                        callback(err);
+                                                                    }
+                                                                });
+                                                            
                                                         });
                                                     });
                                                 }
@@ -291,11 +293,11 @@ PublisherZenDesk.prototype.createArticle = function(callback) {
             return;
         }
 
-        var body = common.evalTemplate(data, self.configurator);
+        var body = common.evalTemplate(data, self.configurator.get(), self.configurator.path);
 
         var article = {
             "article": {
-                "title": self.configurator.info.name(),
+                "title": self.configurator.get().info.name,
                 "body": body,
                 "promoted": self.options.promoted,
                 "comments_disabled": self.options.comments_disabled
@@ -317,15 +319,16 @@ PublisherZenDesk.prototype.createArticle = function(callback) {
 PublisherZenDesk.prototype.findSectionIdByTitle = function(title, callback) {
 
     var self = this ;
-
     if (!title) {
         callback(errMsg.missingSectionTitleArg);
+        return;
     }
 
     if (!(title instanceof String) && (typeof title !=='string')) {
         callback(errMsg.invalidSectionTitleArg);
+        return;
     }
-
+    
     self.client.sections.list(function (err, req, result) {
         if (err) {
             if (typeof callback === "function") {

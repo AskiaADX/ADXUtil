@@ -75,7 +75,7 @@ program
             var adxPublisher = require('./publisher/ADXPublisher.js');
             var publisher = new adxPublisher.Publisher(configurator);
             publisher.publish(platform, options, function () {
-                //console.log(arguments);
+                console.log(arguments);
             });
         });
     });
