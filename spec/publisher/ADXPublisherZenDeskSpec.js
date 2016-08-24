@@ -1,7 +1,7 @@
 describe("ADXPublisherZenDesk", function() {
-    var fs					=	require('fs'),
-        spies				=	{},
-        options				=	{
+    var fs					= require('fs'),
+        spies				= {},
+        options				= {
             username	:	'zendesk@askia.com',
             remoteUri	:	'https://uri',
             password    :   'mdp',
@@ -15,29 +15,29 @@ describe("ADXPublisherZenDesk", function() {
         PublisherZenDesk	= require('../../app/publisher/ADXPublisherZenDesk.js').PublisherZenDesk,
         zenDesk             = require('node-zendesk');
 
-    beforeEach(function(){
+    beforeEach(function() {
         spies.fs = {
             readFile : spyOn(fs, 'readFile')
          };
     });
 
 
-    describe("#Constructor", function(){
+    describe("#Constructor", function() {
 
-        it("should throw an error when the `configurator` argument is missing", function(){
-            expect(function(){
+        it("should throw an error when the `configurator` argument is missing", function() {
+            expect(function() {
             	var publisherZenDesk = new PublisherZenDesk();
             }).toThrow(errMsg.missingConfiguratorArg);
         });
 
-        it("should throw an error when the `configurator` argument is invalid", function(){
-            expect(function(){
+        it("should throw an error when the `configurator` argument is invalid", function() {
+            expect(function() {
             	var publisherZenDesk = new PublisherZenDesk({});
             }).toThrow(errMsg.invalidConfiguratorArg);
         });
 
         it("should throw an error when options are missing", function() {
-            expect(function(){
+            expect(function() {
                 var notCompletedOptions = {
                     username	:	'zendesk@askia.com',
                     remoteUri	:	'https://uri',
@@ -76,13 +76,13 @@ describe("ADXPublisherZenDesk", function() {
         });
     });
     
-    describe("#publish", function(){
+    describe("#publish", function() {
 
         var config = new Configurator('.');
         var publisherZenDesk = new PublisherZenDesk(config, {}, options);
 
 
-        beforeEach(function(){
+        beforeEach(function() {
              var result = [
                  {
                       name: "une_section",
@@ -99,12 +99,12 @@ describe("ADXPublisherZenDesk", function() {
                 callback(null, "", result);
             });
 
-            spies.findSectionIdByTitle = spyOn(publisherZenDesk, 'findSectionIdByTitle').andCallFake(function(title, cb){
+            spies.findSectionIdByTitle = spyOn(publisherZenDesk, 'findSectionIdByTitle').andCallFake(function(title, cb) {
                 cb(null, 86);
             });
 
 
-            spies.createArticle = spyOn(PublisherZenDesk.prototype, 'createArticle').andCallFake(function(cb){
+            spies.createArticle = spyOn(PublisherZenDesk.prototype, 'createArticle').andCallFake(function(cb) {
                cb(null, {
                     "article": {
                         "title": 'titre',
@@ -115,12 +115,12 @@ describe("ADXPublisherZenDesk", function() {
                });
             });
 
-            spies.checkIfArticleExists = spyOn(PublisherZenDesk.prototype, 'checkIfArticleExists').andCallFake(function(title, section_id, cb){
+            spies.checkIfArticleExists = spyOn(PublisherZenDesk.prototype, 'checkIfArticleExists').andCallFake(function(title, section_id, cb) {
                 cb(null);
             });
 
 
-            spies.articles_create = spyOn(publisherZenDesk.client.articles, 'create').andCallFake(function(id, article, cb){
+            spies.articles_create = spyOn(publisherZenDesk.client.articles, 'create').andCallFake(function(id, article, cb) {
                 cb(null, "", {
                         name: "un article",
                         id: 42
@@ -130,65 +130,65 @@ describe("ADXPublisherZenDesk", function() {
 
 
 
-        it("should output an error when there are more than one .adc file in " + common.ADC_PATH, function(){
+        it("should output an error when there are more than one .adc file in " + common.ADC_PATH, function() {
 
             spies.readDirADC = spyOn(fs, 'readdir').andCallFake(function(path, callback) {
                 callback(null, ['1.adc', '2.adc']);
             });
-            publisherZenDesk.publish(function(err){
+            publisherZenDesk.publish(function(err) {
                 expect(err).toBe(errMsg.badNumberOfADCFiles)
             });
 
         });
 
-        it("should output an error when the .adc file is missing in " + common.ADC_PATH, function(){
+        it("should output an error when the .adc file is missing in " + common.ADC_PATH, function() {
 
               spies.readDirADC = spyOn(fs, 'readdir').andCallFake(function(path, callback) {
                     callback(null, []);
               });
-              publisherZenDesk.publish(function(err){
+              publisherZenDesk.publish(function(err) {
                     expect(err).toBe(errMsg.badNumberOfADCFiles);
               });
 
         });
 
-        it("should output an error when there is more than a .qex file in " + common.QEX_PATH, function(){
+        it("should output an error when there is more than a .qex file in " + common.QEX_PATH, function() {
 
             spies.readDirQEX = spyOn(fs, 'readdir').andCallFake(function(path, callback) {
                 callback(null, ['1.adc', '1.qex', '2.qex']);
             });
-            publisherZenDesk.publish(function(err){
+            publisherZenDesk.publish(function(err) {
                 expect(err).toBe(errMsg.badNumberOfQEXFiles);
             });
 
         });
 
-        it("should output an error when there is more than a .png file begining with 'adc' in " + common.QEX_PATH, function(){
+        it("should output an error when there is more than a .png file begining with 'adc' in " + common.QEX_PATH, function() {
 
                 spies.readDirPNG = spyOn(fs, 'readdir').andCallFake(function(path, callback) {
                     callback(null, ['1.adc', '1.qex', 'logo.png', 'adc-anADC.png', 'adc-an_otherADC.png']);
                 });
-                publisherZenDesk.publish(function(err){
+                publisherZenDesk.publish(function(err) {
                   expect(err).toBe(errMsg.badNumberOfPicFiles);
                 });
         });
     });
 
-    describe("#findSectionIdByTitle", function(){
+    describe("#findSectionIdByTitle", function() {
 
         var config = new Configurator('.');
         var publisherZenDesk = new PublisherZenDesk(config, {}, options);
 
-        it("should throw an error when the `title` argument is missing", function() {
-            expect(function(){
-                publisherZenDesk.findSectionIdByTitle();
-            }).toThrow(errMsg.missingSectionTitleArg);
+        it("should output an error when the `title` argument is missing", function() {
+            publisherZenDesk.findSectionIdByTitle('', function(err){
+                expect(err).toBe(errMsg.missingSectionTitleArg);
+            });
         });
 
-        it("should throw an error when the `title` argument is invalid", function() {
-            expect(function(){
-                publisherZenDesk.findSectionIdByTitle({});
-            }).toThrow(errMsg.invalidSectionTitleArg);
+        it("should output an error when the `title` argument is invalid", function() {
+            publisherZenDesk.findSectionIdByTitle(12, function(err){
+                expect(err).toBe(errMsg.invalidSectionTitleArg);
+            });
         });
 
         it("should output an id when the section is found", function() {
@@ -229,9 +229,9 @@ describe("ADXPublisherZenDesk", function() {
 
     });
 
-    describe("#createArticle",function(){
+    describe("#createArticle",function() {
 
-        it("should return an error if there is an error while reading the template article file", function(){
+        it("should return an error if there is an error while reading the template article file", function() {
           var config = new Configurator('.');
           var publisherZenDesk = new PublisherZenDesk(config, {}, options);
 
@@ -239,13 +239,13 @@ describe("ADXPublisherZenDesk", function() {
              callback("a fatal error occured");
           });
 
-          publisherZenDesk.createArticle(function(err, article){
+          publisherZenDesk.createArticle(function(err, article) {
               expect(err).toBe("a fatal error occured");
           });
 
         });
 
-        it("should return a JSON object with an article pattern", function() {
+        it("should return a JSON object with an article pattern when everything is ok", function() {
 
             var config = new Configurator('.');
             var publisherZenDesk = new PublisherZenDesk(config, {}, options);
@@ -274,7 +274,6 @@ describe("ADXPublisherZenDesk", function() {
                     }
                 });
             });
-
         });
     });
 

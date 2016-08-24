@@ -1,14 +1,13 @@
-
 describe('ADXPublisher', function(){
-    var fs					=	require('fs'),
+    var fs					= require('fs'),
         spies               = {},
-        ADXPublisher 		=	require("../../app/publisher/ADXPublisher.js"),
+        ADXPublisher 		= require("../../app/publisher/ADXPublisher.js"),
         Publisher           = ADXPublisher.Publisher,
         platforms           = ADXPublisher.platforms,
-        common				=	require('../../app/common/common.js'),
-        errMsg				=	common.messages.error,
-        Configurator 		=   require('../../app/configurator/ADXConfigurator.js').Configurator,
-        preferences         =   require('../../app/preferences/ADXPreferences.js');
+        common				= require('../../app/common/common.js'),
+        errMsg				= common.messages.error,
+        Configurator 		= require('../../app/configurator/ADXConfigurator.js').Configurator,
+        preferences         = require('../../app/preferences/ADXPreferences.js');
 
 
     function PublisherFake(configurator, preferences, options) {
@@ -17,10 +16,11 @@ describe('ADXPublisher', function(){
         this.options = options;
         this.afterConstructor.apply(this, arguments);
     }
+    
     PublisherFake.prototype.afterConstructor = function () {};
     PublisherFake.prototype.publish = function (callback) {};
 
-    beforeEach(function(){
+    beforeEach(function() {
         platforms['Fake'] = {
             PublisherFake : PublisherFake
         };
@@ -33,7 +33,7 @@ describe('ADXPublisher', function(){
 
         spies.readPreferences = spyOn(preferences, 'read');
 
-        spies.readPreferences.andCallFake(function(a, cb){
+        spies.readPreferences.andCallFake(function(a, cb) {
             cb({});
         });
     });
@@ -45,30 +45,30 @@ describe('ADXPublisher', function(){
                 wasCalled = true;
             });
         });
-        waitsFor(function () {
+        waitsFor( function () {
             return wasCalled;
         });
     }
     
-    describe("#constructor", function(){
+    describe("#constructor", function() {
         
-        it("should instantiate the publisher with a good `configurator` argument", function(){
+        it("should instantiate the publisher with a good `configurator` argument", function() {
             var conf = new Configurator('.');
             var publisher = new Publisher(conf);
             expect(publisher.configurator).toBe(conf);
         });
         
-        it("should throw an error when the `configurator` argument is not correct", function(){
-            expect(function(){
+        it("should throw an error when the `configurator` argument is not correct", function() {
+            expect(function() {
                 var publisher = new Publisher({});
             }).toThrow(errMsg.invalidConfiguratorArg);
         });
 
     });
 
-    describe("#publish", function(){
+    describe("#publish", function() {
         
-        it("should return an error when the platform argument is unknown", function(){
+        it("should return an error when the platform argument is unknown", function() {
             runSync(function (done) {
                 var publisher = new Publisher(new Configurator('.'));
                 publisher.publish("unknown publisher", null, function (err) {
@@ -78,7 +78,7 @@ describe('ADXPublisher', function(){
             });
         });
 
-        it("should return an error when the `platform` argument is not specified", function(){
+        it("should return an error when the `platform` argument is not specified", function() {
             runSync(function (done) {
                 var publisher = new Publisher(new Configurator('.'));
                 publisher.publish(undefined, null, function (err) {
@@ -88,7 +88,7 @@ describe('ADXPublisher', function(){
             });
         });
 
-        it("should instantiate the right `platform`", function(){
+        it("should instantiate the right `platform`", function() {
             runSync(function (done) {
                 var publisher = new Publisher(new Configurator('.'));
                 publisher.publish('Fake', {}, function (err) {
@@ -98,9 +98,9 @@ describe('ADXPublisher', function(){
             });
         });
 
-        it("should instantiate the right `platform` with configurator, preferences and options", function(){
+        it("should instantiate the right `platform` with configurator, preferences and options", function() {
             var prefs = {'key' : 'value'}
-            spies.readPreferences.andCallFake(function(a, cb){
+            spies.readPreferences.andCallFake(function(a, cb) {
                 cb(prefs);
             });
             runSync(function (done) {
@@ -114,7 +114,7 @@ describe('ADXPublisher', function(){
             });
         });
 
-        it("should call #publish method on the right `platform` argument", function(){
+        it("should call #publish method on the right `platform` argument", function() {
             runSync(function (done) {
                 var publisher = new Publisher(new Configurator('.'));
                 publisher.publish('Fake', {}, function (err) {

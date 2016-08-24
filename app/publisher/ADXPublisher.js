@@ -1,7 +1,7 @@
-var common          =	require('../common/common.js');
-var errMsg          =	common.messages.error;
-var Configurator		=	require('../configurator/ADXConfigurator.js').Configurator;
-var preferences     =   require('../preferences/ADXPreferences.js');
+var common          = require('../common/common.js');
+var errMsg          = common.messages.error;
+var Configurator	= require('../configurator/ADXConfigurator.js').Configurator;
+var preferences     = require('../preferences/ADXPreferences.js');
 
 exports.platforms = {
     'ZenDesk'   :   require('./ADXPublisherZenDesk.js'),

@@ -15,7 +15,7 @@ var git             = require('simple-git');
  */
 function PublisherGitHub(configurator, preferences, options) {
 
-    if(!configurator){
+    if (!configurator) {
         throw new Error(errMsg.missingConfiguratorArg);
     }
 
@@ -61,36 +61,36 @@ PublisherGitHub.prototype.publish = function(callback) {
     var self = this ;
     function commitPush() {
         self.checkIfRepoExists(function(err) {
-            if(err) {
+            if (err) {
                 callback(err);
                 return;
             }
-            self.git.addConfig('user.name', self.options.username, function(err, res){
-                if(err) {
+            self.git.addConfig('user.name', self.options.username, function(err, res) {
+                if (err) {
                     callback(err);
                     return;
                 }
-                self.git.addConfig('user.email', self.options.useremail, function(err, res){
-                    if(err) {
+                self.git.addConfig('user.email', self.options.useremail, function(err, res) {
+                    if (err) {
                         callback(err);
                         return;
                     }
-                    self.git.add("./*", function(err, res){
-                        if(err) {
+                    self.git.add("./*", function(err, res) {
+                        if (err) {
                             callback(err);
                             return;
                         }
-                        self.git.commit(self.options.message, './*', function(err, res){
-                            if(err) {
+                        self.git.commit(self.options.message, './*', function(err, res) {
+                            if (err) {
                                 callback(err);
                                 return;
                             }
                             var params = [self.options.remoteUri+self.configurator.get().info.name, 'master'];
-                            if(self.options.force) {
+                            if (self.options.force) {
                                 params.push('-f');
                             }
                             self.git.push(params, function(err, res) {
-                                if(err){
+                                if (err) {
                                     callback(err);
                                     return;
                                 }
@@ -147,7 +147,7 @@ PublisherGitHub.prototype.checkIfRepoExists = function(callback) {
                 self.github.repos.create({
                     name: name,
                     description: description
-                },function(err, res){
+                },function(err, res) {
                     if (err) {
                         callback(err);
                         return;

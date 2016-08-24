@@ -1,4 +1,4 @@
-describe("ADXPublisherGitHub", function(){
+describe("ADXPublisherGitHub", function() {
     
     var PublisherGitHub = require('../../app/publisher/ADXPublisherGitHub.js').PublisherGitHub;
     var common = require('../../app/common/common.js');
@@ -19,19 +19,19 @@ describe("ADXPublisherGitHub", function(){
        
         
         it("should throw an error when the `configurator` argument is missing", function() {
-            expect(function(){
+            expect(function() {
                 publisherGitHub = new PublisherGitHub();  
             }).toThrow(errMsg.missingConfiguratorArg);
         });
         
         it("should throw an error when the `configurator` argument is invalid", function() {
-            expect(function(){
+            expect(function() {
                 publisherGitHub = new PublisherGitHub({});  
             }).toThrow(errMsg.invalidConfiguratorArg);
         });
         
         it("should throw an error when options are missing", function() {
-            expect(function(){
+            expect(function() {
                 var notCompletedOptions = {
                     username	:	'fakeUser',
                     remoteUri	:	'https://uri',
@@ -157,14 +157,12 @@ describe("ADXPublisherGitHub", function(){
                 cb(null);
             });
                      
-            publisherGitHub.checkIfRepoExists(function(err){
+            publisherGitHub.checkIfRepoExists(function(err) {
                 expect(spies.create).not.toHaveBeenCalled(); 
             });
             
         });
         
     });
-    
-    
     
 });

@@ -59,83 +59,83 @@ function PublisherZenDesk(configurator, preferences, options) {
  * @param {Function} callback
  * @param {Error} [callback.err=null]
 */
-PublisherZenDesk.prototype.publish = function(callback){
+PublisherZenDesk.prototype.publish = function(callback) {
 
     var  self = this ;
 
-    self.findSectionIdByTitle(self.options.section_title, function(err, id){
-        if(err){
-            if(typeof callback === "function"){
+    self.findSectionIdByTitle(self.options.section_title, function(err, id) {
+        if (err) {
+            if (typeof callback === "function") {
                 callback(err);
             }
             return;
         }
-        self.createArticle(function(err, article){
-            if(err){
-                if(typeof callback === "function"){
+        self.createArticle(function(err, article) {
+            if (err) {
+                if (typeof callback === "function") {
                     callback(err);
                 }
                 return;
             }
-;            self.checkIfArticleExists(article.article.title, id, function(err, result){
-                if(err){
-                    if(typeof callback === "function"){
+            self.checkIfArticleExists(article.article.title, id, function(err, result) {
+                if (err) {
+                    if (typeof callback === "function") {
                         callback(err);
                     }
                     return;
                 }
                 self.client.articles.create(id, article, function(err, req, result) {
-                    if(err){
-                        if(typeof callback === "function"){
+                    if (err) {
+                        if (typeof callback === "function") {
                             callback(err);
                         }
                         return;
                     }
-                    fs.readdir(path.resolve(path.join(self.configurator.path, common.ADC_PATH)), function(errADC, adcItems){
-                        fs.readdir(path.resolve(path.join(self.configurator.path, common.QEX_PATH)), function(errQEX, qexItems){
-                            if(errQEX){
+                    fs.readdir(path.resolve(path.join(self.configurator.path, common.ADC_PATH)), function(errADC, adcItems) {
+                        fs.readdir(path.resolve(path.join(self.configurator.path, common.QEX_PATH)), function(errQEX, qexItems) {
+                            if (errQEX) {
                                 callback(errQEX);
                                 return;
                             }
-                            if(errADC){
+                            if (errADC) {
                                 callback(errADC);
                                 return;
                             }
                             var theADCs = [], theQEXs = [], thePics = [];
-                            for(var i = 0; i < adcItems.length  ; i++){
-                                if(adcItems[i].match(/^.+\.adc$/i)){
+                            for (var i = 0; i < adcItems.length  ; i++) {
+                                if (adcItems[i].match(/^.+\.adc$/i)) {
                                     theADCs.push(adcItems[i]);
                                 }
                             }
-                            for(var j = 0 ; j < qexItems.length ;  j++){
-                                if(qexItems[j].match(/^.+\.qex$/i)){
+                            for (var j = 0 ; j < qexItems.length ;  j++) {
+                                if (qexItems[j].match(/^.+\.qex$/i)){
                                     theQEXs.push(qexItems[j]);
                                 }
-                                if(qexItems[j].match(/^adc.+\.png$/i)){ // This regex allows to put other pic files in the example folder but they must not begin by 'adc'
+                                if (qexItems[j].match(/^adc.+\.png$/i)) { // This regex allows to put other pic files in the example folder but they must not begin by 'adc'
                                     thePics.push(qexItems[j]);
                                 }
                             }
-                            if(theADCs.length != 1 ){
+                            if (theADCs.length != 1 ) {
                                 callback(errMsg.badNumberOfADCFiles);
                                 return;
                             }
-                            if(theQEXs.length > 1){
+                            if (theQEXs.length > 1) {
                                 callback(errMsg.badNumberOfQEXFiles);
                                 return;
                             }
-                            if(thePics.length > 1){
+                            if (thePics.length > 1) {
                                 callback(errMsg.badNumberOfPicFiles);
                                 return;
                             }
                             fileADC = path.resolve(path.join(self.configurator.path, common.ADC_PATH, theADCs[0]));
-                            fs.stat(fileADC, function(err, adcStats){
-                               if(err){
+                            fs.stat(fileADC, function(err, adcStats) {
+                               if (err) {
                                    callback(err);
                                    return;
                                }
-                               if(theQEXs.length === 1){ //A .qex is available for the upload
+                               if (theQEXs.length === 1) { //A .qex is available for the upload
                                     fileQEX = path.resolve(path.join(self.configurator.path, common.QEX_PATH, theQEXs[0]));
-                                    fs.stat(fileQEX, function(err, qexStats){
+                                    fs.stat(fileQEX, function(err, qexStats) {
                                         restler.post(self.options.remoteUri + "/articles/" + result.id + "/attachments.json", {
                                             username: self.options.username,
                                             password: self.options.password,
@@ -143,7 +143,7 @@ PublisherZenDesk.prototype.publish = function(callback){
                                             data:{
                                                 "file": restler.file(fileADC, null, adcStats.size, null, "application/octet-stream")
                                             }
-                                        }).on('complete', function(adcRes){
+                                        }).on('complete', function(adcRes) {
                                             restler.post(self.options.remoteUri + "/articles/" + result.id + "/attachments.json", {
                                                 username: self.options.username,
                                                 password: self.options.password,
@@ -151,10 +151,10 @@ PublisherZenDesk.prototype.publish = function(callback){
                                                 data:{
                                                     "file": restler.file(fileQEX, null, qexStats.size, null, "application/octet-stream")
                                                 }
-                                            }).on('complete', function(qexRes){
-                                                if(thePics.length === 1){ // All the files are available ! (.png ; .adc ;  .qex)
+                                            }).on('complete', function(qexRes) {
+                                                if (thePics.length === 1) { // All the files are available ! (.png ; .adc ;  .qex)
                                                     filePNG = path.resolve(path.join(self.configurator.path, common.QEX_PATH, thePics[0]));
-                                                    fs.stat(filePNG, function(err, pngStats){
+                                                    fs.stat(filePNG, function(err, pngStats) {
                                                         restler.post(self.options.remoteUri + "/articles/" + result.id + "/attachments.json", {
                                                             username: self.options.username,
                                                             password: self.options.password,
@@ -162,7 +162,7 @@ PublisherZenDesk.prototype.publish = function(callback){
                                                             data:{
                                                                 "file": restler.file(filePNG, null, pngStats.size, null, "image/png")
                                                             }
-                                                        }).on('complete', function(pngRes){
+                                                        }).on('complete', function(pngRes) {
                                                             var article = common.updateArticleAfterUploads(result, {
                                                                 qexID: qexRes.article_attachment.id,
                                                                 qexName: qexRes.article_attachment.file_name,
@@ -171,7 +171,7 @@ PublisherZenDesk.prototype.publish = function(callback){
                                                                 pngID: pngRes.article_attachment.id,
                                                                 pngName: pngRes.article_attachment.file_name
                                                             });
-                                                            self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res){
+                                                            self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res) {
                                                                 if(err){
                                                                     callback(err);
                                                                 }
@@ -186,7 +186,7 @@ PublisherZenDesk.prototype.publish = function(callback){
                                                         adcName: adcRes.article_attachment.file_name,
                                                         adcID: adcRes.article_attachment.id
                                                     });
-                                                    self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res){
+                                                    self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res) {
                                                         if(err){
                                                             callback(err);
                                                         }
@@ -209,8 +209,8 @@ PublisherZenDesk.prototype.publish = function(callback){
                                             adcID: adcRes.article_attachment.id,
                                             adcName: adcRes.article_attachment.file_name,
                                         });
-                                        self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res){
-                                            if(err){
+                                        self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res ){
+                                            if (err) {
                                                 callback(err);
                                             }
                                         });
@@ -234,13 +234,13 @@ PublisherZenDesk.prototype.publish = function(callback){
  * @param {Function} callback
  * @param {Error} [callback.err=null]
  */
-PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, callback){
+PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, callback) {
 
     var self = this ;
 
-    self.client.articles.listBySection(section_id, function(err, req, result){
-        if(err){
-            if(typeof callback === "function"){
+    self.client.articles.listBySection(section_id, function(err, req, result) {
+        if (err) {
+            if (typeof callback === "function") {
                 callback(err);
             }
             return;
@@ -248,21 +248,21 @@ PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, ca
 
         var numberOfArticlesInstances = 0 ;
         var idToDelete = 0;
-        for(var article in result){
-            if(result[article].name === title){
+        for (var article in result) {
+            if (result[article].name === title) {
                 idToDelete = result[article].id ;
                 numberOfArticlesInstances ++ ;
             }
         }
 
-        if(numberOfArticlesInstances > 1){
+        if (numberOfArticlesInstances > 1) {
             throw new Error(errMsg.tooManyArticlesExisting);
         }
 
-        if(idToDelete!==0){
-            self.client.articles.delete(idToDelete, function(err, req, result){
-                if(err){
-                    if(typeof callback === "function"){
+        if (idToDelete!==0) {
+            self.client.articles.delete(idToDelete, function(err, req, result) {
+                if (err) {
+                    if (typeof callback === "function") {
                         callback(err);
                     }
                     return ;
@@ -318,24 +318,24 @@ PublisherZenDesk.prototype.findSectionIdByTitle = function(title, callback) {
 
     var self = this ;
 
-    if(!title){
-        throw new Error(errMsg.missingSectionTitleArg);
+    if (!title) {
+        callback(errMsg.missingSectionTitleArg);
     }
 
-    if(!(title instanceof String) && (typeof title !=='string')){
-        throw new Error(errMsg.invalidSectionTitleArg);
+    if (!(title instanceof String) && (typeof title !=='string')) {
+        callback(errMsg.invalidSectionTitleArg);
     }
 
     self.client.sections.list(function (err, req, result) {
-        if(err){
-            if(typeof callback === "function"){
+        if (err) {
+            if (typeof callback === "function") {
                 callback(err);
             }
             return;
         }
-        for(var section in result){
-            if(result[section].name === title){
-                if(typeof callback === "function"){
+        for (var section in result) {
+            if (result[section].name === title) {
+                if (typeof callback === "function") {
                 	callback(null, result[section].id);
                     return;
                 }
