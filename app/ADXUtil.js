@@ -74,8 +74,15 @@ program
             options.force = 'force' in program;
             var adxPublisher = require('./publisher/ADXPublisher.js');
             var publisher = new adxPublisher.Publisher(configurator);
-            publisher.publish(platform, options, function () {
-                console.log(arguments);
+            publisher.publish(platform, options, function (err) {
+                if (err) {
+                    console.log(err);
+                    if (err.result) {
+                        console.log(err.result.toString());
+                    }
+                    return;
+                }
+                console.log('Ok');
             });
         });
     });

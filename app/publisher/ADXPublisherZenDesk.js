@@ -37,11 +37,10 @@ function PublisherZenDesk(configurator, preferences, options) {
 
     // All of these options must be present either in the command line either in the preference file of the user
     var neededOptions = ['username', 'password', 'remoteUri', 'promoted', 'comments_disabled', 'section_title'];
-    for (var neededOption in neededOptions) {
-        if (neededOptions.hasOwnProperty(neededOption)) {
-            if (!this.options.hasOwnProperty(neededOptions[neededOption])) {
-                throw new Error(errMsg.missingPublishArgs + '\n missing argument : ' + neededOptions[neededOption]);
-            }
+    for (var i = 0, l = neededOptions.length; i < l; i++) {
+        var neededOption = neededOptions[i];
+        if (!this.options.hasOwnProperty(neededOption)) {
+            throw new Error(errMsg.missingPublishArgs + '\n missing argument : ' + neededOption);
         }
     }
     
@@ -49,7 +48,7 @@ function PublisherZenDesk(configurator, preferences, options) {
         username    : this.options.username,
         password    : this.options.password,
         remoteUri	: this.options.remoteUri,
-        helpcenter 	: true  //should be always set to true, otherwise the article methods are not available
+        helpcenter 	: true  // IMPORTANT: Should be always set to true, otherwise the article methods are not available
     });
     
 }
@@ -71,7 +70,7 @@ PublisherZenDesk.prototype.publish = function(callback) {
             }
             return;
         }
-        self.createArticle(function(err, article) {
+        self.createJSONArticle(function(err, article) {
             if (err) {
                 if (typeof callback === "function") {
                     callback(err);
@@ -111,8 +110,7 @@ PublisherZenDesk.prototype.publish = function(callback) {
                             for (var j = 0 ; j < qexItems.length ;  j++) {
                                 if (qexItems[j].match(/^.+\.qex$/i)){
                                     theQEXs.push(qexItems[j]);
-                                }
-                                if (qexItems[j].match(/^adc.+\.png$/i)) { // This regex allows to put other pic files in the example folder but they must not begin by 'adc'
+                                } else if (qexItems[j].match(/^adc.+\.png$/i)) { // This regex allows to put other pic files in the example folder but they must not begin by 'adc'
                                     thePics.push(qexItems[j]);
                                 }
                             }
@@ -231,7 +229,7 @@ PublisherZenDesk.prototype.publish = function(callback) {
 
 /**
  * Check if an article already exists in section and delete it
- * pre-condition : there is the possiblity to have two articles with the same name but not in the same section
+ * pre-condition : there is the possibility to have two articles with the same name but not in the same section
  * @param {String} title The title of the article to check
  * @param {Function} callback
  * @param {Error} [callback.err=null]
@@ -278,11 +276,11 @@ PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, ca
 
 
 /**
- * Create the JSON formated article
+ * Create the JSON formatted article
  * @param {Function} callback
  * @param {Error} [callback.err=null]
  */
-PublisherZenDesk.prototype.createArticle = function(callback) {
+PublisherZenDesk.prototype.createJSONArticle = function(callback) {
 
     var self = this ;
 
@@ -312,11 +310,11 @@ PublisherZenDesk.prototype.createArticle = function(callback) {
 
 /**
  * Find the section id of a section with the Title
- * @param {String} section title
+ * @param {String} title Section title
  * @param {Function} callback
  * @param {Error} [callback.err=null]
  */
-PublisherZenDesk.prototype.findSectionIdByTitle = function(title, callback) {
+PublisherZenDesk.prototype.findSectionIdByTitle = function (title, callback) {
 
     var self = this ;
     if (!title) {
@@ -324,7 +322,7 @@ PublisherZenDesk.prototype.findSectionIdByTitle = function(title, callback) {
         return;
     }
 
-    if (!(title instanceof String) && (typeof title !=='string')) {
+    if (typeof title !== 'string') {
         callback(errMsg.invalidSectionTitleArg);
         return;
     }

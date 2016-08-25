@@ -104,7 +104,7 @@ describe("ADXPublisherZenDesk", function() {
             });
 
 
-            spies.createArticle = spyOn(PublisherZenDesk.prototype, 'createArticle').andCallFake(function(cb) {
+            spies.createJSONArticle = spyOn(PublisherZenDesk.prototype, 'createJSONArticle').andCallFake(function(cb) {
                cb(null, {
                     "article": {
                         "title": 'titre',
@@ -229,7 +229,7 @@ describe("ADXPublisherZenDesk", function() {
 
     });
 
-    describe("#createArticle",function() {
+    describe("#createJSONArticle",function() {
 
         it("should return an error if there is an error while reading the template article file", function() {
           var config = new Configurator('.');
@@ -239,7 +239,7 @@ describe("ADXPublisherZenDesk", function() {
              callback("a fatal error occured");
           });
 
-          publisherZenDesk.createArticle(function(err, article) {
+          publisherZenDesk.createJSONArticle(function(err, article) {
               expect(err).toBe("a fatal error occured");
           });
 
@@ -262,7 +262,7 @@ describe("ADXPublisherZenDesk", function() {
                 }
             });
 
-            publisherZenDesk.createArticle(function(err, article) {
+            publisherZenDesk.createJSONArticle(function(err, article) {
                 expect(article).toEqual({
                     article : {
                         title: 'test-adx',

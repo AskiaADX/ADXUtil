@@ -4,18 +4,14 @@
   "description": "Utilities tools for Askia Design eXtension",
   "main": "./app/ADXUtilAPI.js",
   "dependencies": {
-    "aws": "0.0.3-2",
-    "bl": "^1.1.2",
     "cli-color": "^0.2.2",
     "commander": "^1.1.1",
     "elementtree": "^0.1.6",
     "github": "^2.4.0",
     "jszip": "^2.2.2",
     "markdown": "^0.5.0",
-    "minimatch": "^3.0.3",
     "node-uuid": "^1.4.0",
     "node-zendesk": "^1.1.10",
-    "qs": "^6.2.1",
     "restler": "^3.4.0",
     "simple-git": "^1.44.0",
     "wrench": "^1.5.1"

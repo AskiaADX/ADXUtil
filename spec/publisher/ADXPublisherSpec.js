@@ -99,7 +99,7 @@ describe('ADXPublisher', function(){
         });
 
         it("should instantiate the right `platform` with configurator, preferences and options", function() {
-            var prefs = {'key' : 'value'}
+            var prefs = {'key' : 'value'};
             spies.readPreferences.andCallFake(function(a, cb) {
                 cb(prefs);
             });
