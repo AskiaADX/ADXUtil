@@ -245,7 +245,8 @@ PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, ca
             }
             return;
         }
-
+        
+        //the part below is needed to check if some people added articles directly from the web
         var numberOfArticlesInstances = 0 ;
         var idToDelete = 0;
         for (var article in result) {
@@ -254,9 +255,10 @@ PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, ca
                 numberOfArticlesInstances ++ ;
             }
         }
-
+        
         if (numberOfArticlesInstances > 1) {
-            throw new Error(errMsg.tooManyArticlesExisting);
+            callback(errMsg.tooManyArticlesExisting);
+            return;
         }
 
         if (idToDelete!==0) {
@@ -270,7 +272,6 @@ PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, ca
             });
         }
         callback(null);
-
     });
 };
 
@@ -315,7 +316,7 @@ PublisherZenDesk.prototype.createJSONArticle = function(callback) {
  * @param {Error} [callback.err=null]
  */
 PublisherZenDesk.prototype.findSectionIdByTitle = function (title, callback) {
-
+    
     var self = this ;
     if (!title) {
         callback(errMsg.missingSectionTitleArg);

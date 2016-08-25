@@ -174,6 +174,41 @@ describe("ADXPublisherZenDesk", function() {
         });
     });
 
+    describe("#checkIfArticleExists", function() {
+        
+        var config = new Configurator('.');
+        var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+        
+        it("should call articles#delete when this article already exists", function() {
+            spies.listBySection = spyOn(publisherZenDesk.client.articles, "listBySection").andCallFake(function(section_id, cb){
+                cb(null, null, [{name: 'amazing'}]);
+            });
+            spies.delete = spyOn(publisherZenDesk.client.articles, "delete").andCallFake(function(id){});
+            publisherZenDesk.checkIfArticleExists("amazing", 86, function(err){
+                expect(spies.delete).toHaveBeenCalled();
+            });
+        });
+        
+        it("should output an error when there is already more than one instance of the article on the platform", function() {
+            spies.listBySection = spyOn(publisherZenDesk.client.articles, "listBySection").andCallFake(function(section_id, cb){
+                cb(null, null, [{name: 'amazing'}, {name: 'amazing'}]);
+            });
+            publisherZenDesk.checkIfArticleExists("amazing", 86, function(err) {
+                expect(err).toBe(errMsg.tooManyArticlesExisting); 
+            });
+        });
+        
+        it("should not call articles#delete when the article does not exist", function() {
+            spies.listBySection = spyOn(publisherZenDesk.client.articles, "listBySection").andCallFake(function(section_id, cb){
+                cb(null, null, [{name: 'amazing'}]);
+            });
+            spies.delete = spyOn(publisherZenDesk.client.articles, "delete").andCallFake(function(id){});
+            publisherZenDesk.checkIfArticleExists("an article", 86, function(err){
+                expect(spies.delete).not.toHaveBeenCalled();
+            });
+        });
+    });
+    
     describe("#findSectionIdByTitle", function() {
 
         var config = new Configurator('.');
