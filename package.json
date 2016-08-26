@@ -12,7 +12,7 @@
     "markdown": "^0.5.0",
     "node-uuid": "^1.4.0",
     "node-zendesk": "^1.1.10",
-    "restler": "^3.4.0",
+    "request": "^2.74.0",
     "simple-git": "^1.44.0",
     "wrench": "^1.5.1"
   },

@@ -13,7 +13,8 @@ describe("ADXPublisherZenDesk", function() {
         errMsg              = common.messages.error,
         Configurator        = require('../../app/configurator/ADXConfigurator.js').Configurator,
         PublisherZenDesk	= require('../../app/publisher/ADXPublisherZenDesk.js').PublisherZenDesk,
-        zenDesk             = require('node-zendesk');
+        zenDesk             = require('node-zendesk'),
+        request             = require('request');
 
     beforeEach(function() {
         spies.fs = {
@@ -174,6 +175,28 @@ describe("ADXPublisherZenDesk", function() {
         });
     });
 
+    describe("#uploadAvailableFiles", function() {
+        
+        var config = new Configurator('.');
+        var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+        
+        it("should call request#post as many times as available files", function() {
+            var counter = 0
+            spies.post = spyOn(request, "post").andCallFake(function(obj, cb){
+                counter++;
+                cb(null, null, "{}");
+            });
+            spies.parse = spyOn(JSON, 'parse').andReturn({article_attachment:{id:56}});
+            spies.match = spyOn(String.prototype, 'match').andReturn('');
+            
+            spies.createReadStream = spyOn(fs, 'createReadStream').andReturn('');
+            publisherZenDesk.uploadAvailableFiles(['j.adc', 'q.qex', 'adc-hello.png'], 35, function(err, attachmentsIDs) {
+                expect(counter).toBe(3);    
+            })
+            
+        });
+    });
+    
     describe("#checkIfArticleExists", function() {
         
         var config = new Configurator('.');

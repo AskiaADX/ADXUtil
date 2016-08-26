@@ -4,7 +4,7 @@ var common          = require('../common/common.js');
 var path            = require('path');
 var errMsg          = common.messages.error;
 var Configurator    = require('../configurator/ADXConfigurator.js').Configurator;
-var restler         = require('restler');
+var request         = require('request');
 
 /**
  * Instantiate a PublisherZendesk
@@ -84,7 +84,7 @@ PublisherZenDesk.prototype.publish = function(callback) {
                     }
                     return;
                 }
-                self.client.articles.create(id, article, function(err, req, result) {
+                self.client.articles.create(id, article, function(err, req, article) {
                     if (err) {
                         if (typeof callback === "function") {
                             callback(err);
@@ -92,16 +92,16 @@ PublisherZenDesk.prototype.publish = function(callback) {
                         return;
                     }
                     fs.readdir(path.resolve(path.join(self.configurator.path, common.ADC_PATH)), function(errADC, adcItems) {
+                        if (errADC) {
+                            callback(errADC);
+                            return;
+                        }
                         fs.readdir(path.resolve(path.join(self.configurator.path, common.QEX_PATH)), function(errQEX, qexItems) {
                             if (errQEX) {
                                 callback(errQEX);
                                 return;
                             }
-                            if (errADC) {
-                                callback(errADC);
-                                return;
-                            }
-                            var theADCs = [], theQEXs = [], thePics = [];
+                            var theADCs = [], theQEXs = [], thePics = [], filesToPush = [];
                             for (var i = 0; i < adcItems.length  ; i++) {
                                 if (adcItems[i].match(/^.+\.adc$/i)) {
                                     theADCs.push(adcItems[i]);
@@ -126,96 +126,25 @@ PublisherZenDesk.prototype.publish = function(callback) {
                                 callback(errMsg.badNumberOfPicFiles);
                                 return;
                             }
-                            fileADC = path.resolve(path.join(self.configurator.path, common.ADC_PATH, theADCs[0]));
-                            fs.stat(fileADC, function(err, adcStats) {
-                               if (err) {
-                                   callback(err);
-                                   return;
-                               }
-                               if (theQEXs.length === 1) { //A .qex is available for the upload
-                                    fileQEX = path.resolve(path.join(self.configurator.path, common.QEX_PATH, theQEXs[0]));
-                                    fs.stat(fileQEX, function(err, qexStats) {
-                                        restler.post(self.options.remoteUri + "/articles/" + result.id + "/attachments.json", {
-                                            username: self.options.username,
-                                            password: self.options.password,
-                                            multipart: true,
-                                            data:{
-                                                "file": restler.file(fileADC, null, adcStats.size, null, "application/octet-stream")
-                                            }
-                                        }).on('complete', function(adcRes) {
-                                            restler.post(self.options.remoteUri + "/articles/" + result.id + "/attachments.json", {
-                                                username: self.options.username,
-                                                password: self.options.password,
-                                                multipart: true,
-                                                data:{
-                                                    "file": restler.file(fileQEX, null, qexStats.size, null, "application/octet-stream")
-                                                }
-                                            }).on('complete', function(qexRes) {
-                                                if (thePics.length === 1) { // All the files are available ! (.png ; .adc ;  .qex)
-                                                    filePNG = path.resolve(path.join(self.configurator.path, common.QEX_PATH, thePics[0]));
-                                                    fs.stat(filePNG, function(err, pngStats) {
-                                                        restler.post(self.options.remoteUri + "/articles/" + result.id + "/attachments.json", {
-                                                            username: self.options.username,
-                                                            password: self.options.password,
-                                                            multipart: true,
-                                                            data:{
-                                                                "file": restler.file(filePNG, null, pngStats.size, null, "image/png")
-                                                            }
-                                                        }).on('complete', function(pngRes) {
-                                                                var article = common.updateArticleAfterUploads(result, {
-                                                                    qexID: qexRes.article_attachment.id,
-                                                                    qexName: qexRes.article_attachment.file_name,
-                                                                    adcName: adcRes.article_attachment.file_name,
-                                                                    adcID: adcRes.article_attachment.id,
-                                                                    pngID: pngRes.article_attachment.id,
-                                                                    pngName: pngRes.article_attachment.file_name
-                                                                });
-                                                                self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res) {
-                                                                    if(err){
-                                                                        callback(err);
-                                                                    }
-                                                                });
-                                                            
-                                                        });
-                                                    });
-                                                }
-                                                else{ // There is an .adc and a .qex to upload
-                                                    var article = common.updateArticleAfterUploads(result, {
-                                                        qexID: qexRes.article_attachment.id,
-                                                        qexName: qexRes.article_attachment.file_name,
-                                                        adcName: adcRes.article_attachment.file_name,
-                                                        adcID: adcRes.article_attachment.id
-                                                    });
-                                                    self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res) {
-                                                        if(err){
-                                                            callback(err);
-                                                        }
-                                                    });
-                                                }
-                                            });
-                                        });
-                                    });
+                            filesToPush.push(path.resolve(path.join(self.configurator.path, common.ADC_PATH, theADCs[0])));
+                            if (theQEXs.length === 1) {
+                                filesToPush.push(path.resolve(path.join(self.configurator.path, common.QEX_PATH, theQEXs[0])));
+                            }
+                            if (thePics.length === 1) {
+                                filesToPush.push(path.resolve(path.join(self.configurator.path, common.QEX_PATH, thePics[0])));
+                            }
+                            self.uploadAvailableFiles(filesToPush, article.id, function(err, attachmentsIDs){
+                                if (err) {
+                                    callback(err);
+                                    return;
                                 }
-                                else{ // There is only an .adc to upload
-                                    restler.post(self.options.remoteUri + "/articles/" + result.id + "/attachments.json", {
-                                        username: self.options.username,
-                                        password: self.options.password,
-                                        multipart: true,
-                                        data:{
-                                            "file": restler.file(fileADC, null, adcStats.size, null, "application/octet-stream")
-                                        }
-                                    }).on('complete', function(adcRes){
-                                        var article = common.updateArticleAfterUploads(result, {
-                                            adcID: adcRes.article_attachment.id,
-                                            adcName: adcRes.article_attachment.file_name,
-                                        });
-                                        self.client.translations.updateForArticle(result.id, 'en-us', article, function(err, req, res ){
-                                            if (err) {
-                                                callback(err);
-                                            }
-                                        });
-                                    });
-                                }
+                                var articleUpdated = common.updateArticleAfterUploads(article, attachmentsIDs);
+                                self.client.translations.updateForArticle(article.id, 'en-us', articleUpdated, function(err, req, res) {
+                                    if (err) {
+                                        callback(err);
+                                        return;
+                                    } 
+                                });
                             });
                         });
                     });
@@ -225,7 +154,48 @@ PublisherZenDesk.prototype.publish = function(callback) {
     });
 };
 
-
+/**
+ * Upload all the files that are available (.adc, .qex, .png)
+ * @param {Array} files An array containing Strings which are the absolute paths of the files
+ * @param {Number} articleId The Id of the article
+ * @param {Function} callback
+ */
+PublisherZenDesk.prototype.uploadAvailableFiles = function(files, articleId, callback) {
+    
+    var self = this ;
+    var attachmentsIDs = {};
+        
+    function uploadAvailableFilesRecursive(index) {
+        
+        var formData = {
+            'file' : fs.createReadStream(files[index])
+        };
+        
+        request.post({
+            url: self.options.remoteUri + "/articles/" + articleId + "/attachments.json",
+            formData: formData,
+            headers : {
+                'Authorization' : "Basic " + new Buffer(self.options.username + ":" + self.options.password).toString('base64')
+            }
+        }, function(err, resp, body) {
+            if (err) {
+                callback(err);
+                return;
+            }
+            body = JSON.parse(body);
+            attachmentsIDs[files[index].match(/\.([a-z]{2,4})$/i)[1] + 'ID']   = body.article_attachment.id;
+            attachmentsIDs[files[index].match(/\.([a-z]{2,4})$/i)[1] + 'Name'] = body.article_attachment.file_name;
+            index++;
+            if (index >= files.length) {
+                callback(null, attachmentsIDs)
+            } else {
+                uploadAvailableFilesRecursive(index);
+            }
+        });
+    };
+    
+    uploadAvailableFilesRecursive(0);
+};
 
 /**
  * Check if an article already exists in section and delete it
