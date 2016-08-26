@@ -43,6 +43,7 @@ This application works through Windows PowerShell
 
     generate <type> <name>        generate a new ADP or ADC structure (type is `adc` or `adp`)
     validate [<path>]             validate the uncompressed ADX structure
+    publish <platform>            publish the adc on a web platform
     build [<path>]                build the ADX file
     show [<path>]                 show the output of the ADX
     config                        get or set the configuration (use the --authorXXX flags to set the config)
@@ -63,6 +64,9 @@ This application works through Windows PowerShell
     --authorEmail <email>     default email of the author to set in the config
     --authorCompany <name>    default company of the author to set in the config
     --authorWebsite <website> default website of the author to set in the config
+    --promoted                the article will be promoted (appear with a star in ZenDesk Platform)
+    --enableComments          the comments will be enabled on the article corresponding to the ADC on ZenDesk
+    --username <name>         the username login to connect to the platform
     
 ### Generate
 
@@ -105,6 +109,21 @@ Or
     "The directory @%s@ already exists."
     "Incorrect ADX name. The name of the ADX should only contains letters, digits, spaces, @_,-,.@ characters"
     "Cannot found the @%s@ template"
+
+
+### Publish
+
+Start `Windows PowerShell` (`Start > All programs > Accessories > Windows PowerShell > Windows PowerShell`). 
+Target your ADC directory.
+
+    cd C:\Users\user_name\Documents\ADXProjects\my_adx_name
+    
+Then enter the following command:
+
+    ADXUtil publish
+
+
+
 
 ### Validate
 

@@ -143,7 +143,8 @@ PublisherZenDesk.prototype.publish = function(callback) {
                                     if (err) {
                                         callback(err);
                                         return;
-                                    } 
+                                    }
+                                    callback(null);
                                 });
                             });
                         });

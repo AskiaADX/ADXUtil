@@ -667,6 +667,7 @@
         if(attachmentIDs.pngID){
             // TODO : /!\ change show and parameter SurveyName. See for the rules to establish.
             // we should upload the file to the demo server from this app
+            // should use request.post like in the method uploadAvailableFiles in PublisherZenDesk
             b = b.replace(/\{\{ADXQexPicture\}\}/gi, '<p><a href="http://show.askia.com/WebProd/cgi-bin/askiaext.dll?Action=StartSurvey&amp;SurveyName=ADC2_Gender" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentIDs.pngID + '/' + attachmentIDs.pngName + '" alt="" /> </a></p>');
 
             b = b.replace(/\{\{ADXSentence:accesSurvey\}\}/gi, '<li>To access to the live survey, click on the picture above.</li>');

@@ -2,6 +2,7 @@
 
 var Command = require('../node_modules/commander').Command;
 var program = new Command();
+var common  = require('../app/common/common.js')
 
 
 program
@@ -76,13 +77,10 @@ program
             var publisher = new adxPublisher.Publisher(configurator);
             publisher.publish(platform, options, function (err) {
                 if (err) {
-                    console.log(err);
-                    if (err.result) {
-                        console.log(err.result.toString());
-                    }
+                    common.writeError("Failed to publish the ADC : " + err);
                     return;
                 }
-                console.log('Ok');
+                common.writeSuccess("ADC succesfuly upload");
             });
         });
     });

@@ -192,9 +192,9 @@ describe("ADXPublisherZenDesk", function() {
             spies.createReadStream = spyOn(fs, 'createReadStream').andReturn('');
             publisherZenDesk.uploadAvailableFiles(['j.adc', 'q.qex', 'adc-hello.png'], 35, function(err, attachmentsIDs) {
                 expect(counter).toBe(3);    
-            })
-            
+            });
         });
+        
     });
     
     describe("#checkIfArticleExists", function() {
