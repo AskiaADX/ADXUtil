@@ -70,21 +70,21 @@ PublisherZenDesk.prototype.publish = function(callback) {
             }
             return;
         }
-        self.createJSONArticle(function(err, article) {
+        self.createJSONArticle(function(err, jsonArticle) {
             if (err) {
                 if (typeof callback === "function") {
                     callback(err);
                 }
                 return;
             }
-            self.checkIfArticleExists(article.article.title, id, function(err, result) {
+            self.deleteArticle(jsonArticle.article.title, id, function(err) {
                 if (err) {
                     if (typeof callback === "function") {
                         callback(err);
                     }
                     return;
                 }
-                self.client.articles.create(id, article, function(err, req, article) {
+                self.client.articles.create(id, jsonArticle, function(err, req, article) {
                     if (err) {
                         if (typeof callback === "function") {
                             callback(err);
@@ -101,51 +101,79 @@ PublisherZenDesk.prototype.publish = function(callback) {
                                 callback(errQEX);
                                 return;
                             }
-                            var theADCs = [], theQEXs = [], thePics = [], filesToPush = [];
+                            var adxFile, qexFile, previewFile, filesToPush = [];
                             for (var i = 0; i < adcItems.length  ; i++) {
                                 if (adcItems[i].match(/^.+\.adc$/i)) {
-                                    theADCs.push(adcItems[i]);
+                                    // Already specified
+                                    if (adxFile) {
+                                        callback(errMsg.badNumberOfADCFiles);
+                                        return;
+                                    }
+                                    // Init
+                                    adxFile = adcItems[i];
                                 }
                             }
-                            for (var j = 0 ; j < qexItems.length ;  j++) {
-                                if (qexItems[j].match(/^.+\.qex$/i)){
-                                    theQEXs.push(qexItems[j]);
-                                } else if (qexItems[j].match(/^adc.+\.png$/i)) { // This regex allows to put other pic files in the example folder but they must not begin by 'adc'
-                                    thePics.push(qexItems[j]);
-                                }
-                            }
-                            if (theADCs.length != 1 ) {
+
+                            if (!adxFile) {
                                 callback(errMsg.badNumberOfADCFiles);
                                 return;
                             }
-                            if (theQEXs.length > 1) {
-                                callback(errMsg.badNumberOfQEXFiles);
-                                return;
+
+                            for (var j = 0 ; j < qexItems.length ;  j++) {
+                                if (qexItems[j].match(/^.+\.qex$/i)){
+                                    if (qexFile) {
+                                        callback(errMsg.badNumberOfQEXFiles);
+                                        return;
+                                    }
+                                    qexFile = qexItems[j];
+
+                                } else if (qexItems[j].match(/^adc.+\.png$/i)) { // This regex allows to put other pic files in the example folder but they must not begin by 'adc'
+                                    if (previewFile) {
+                                        callback(errMsg.badNumberOfPicFiles);
+                                        return;
+                                    }
+                                    previewFile = qexItems[j];
+                                }
                             }
-                            if (thePics.length > 1) {
-                                callback(errMsg.badNumberOfPicFiles);
-                                return;
+
+                            filesToPush.push(path.resolve(path.join(self.configurator.path, common.ADC_PATH, adxFile)));
+                            if (qexFile) {
+                                filesToPush.push(path.resolve(path.join(self.configurator.path, common.QEX_PATH, qexFile)));
                             }
-                            filesToPush.push(path.resolve(path.join(self.configurator.path, common.ADC_PATH, theADCs[0])));
-                            if (theQEXs.length === 1) {
-                                filesToPush.push(path.resolve(path.join(self.configurator.path, common.QEX_PATH, theQEXs[0])));
-                            }
-                            if (thePics.length === 1) {
-                                filesToPush.push(path.resolve(path.join(self.configurator.path, common.QEX_PATH, thePics[0])));
+                            if (previewFile) {
+                                filesToPush.push(path.resolve(path.join(self.configurator.path, common.QEX_PATH, previewFile)));
                             }
                             self.uploadAvailableFiles(filesToPush, article.id, function(err, attachmentsIDs){
                                 if (err) {
                                     callback(err);
                                     return;
                                 }
-                                var articleUpdated = common.updateArticleAfterUploads(article, attachmentsIDs);
-                                self.client.translations.updateForArticle(article.id, 'en-us', articleUpdated, function(err, req, res) {
-                                    if (err) {
-                                        callback(err);
-                                        return;
+
+                                var replacements = [
+                                    {
+                                        pattern : /\{\{ADXQexFileURL\}\}/gi,
+                                        replacement : (attachmentIDs.qexID) ?  ('<li>To download the qex file, <a href="/hc/en-us/article_attachments/' + attachmentIDs.qexID + '/' + attachmentIDs.qexName + '">click here</a></li>') : ""
+                                    },
+                                    {
+                                        pattern : /\{\{ADXAdcFileURL\}\}/gi,
+                                        replacement : '<a href="/hc/en-us/article_attachments/' + attachmentIDs.adcID + '/' + attachmentIDs.adcName + '">click here</a>'
                                     }
-                                    callback(null);
+                                ];
+
+                                // TODO : /!\ change show and parameter SurveyName. See for the rules to establish.
+                                // we should upload the file to the demo server from this app
+                                // should use request.post like in the method uploadAvailableFiles in PublisherZenDesk
+                                replacements.push({
+                                    pattern         : /\{\{ADXQexPicture\}\}/gi,
+                                    replacement     : (!attachmentIDs.pngID)  ? '' : '<p><a href="http://show.askia.com/WebProd/cgi-bin/askiaext.dll?Action=StartSurvey&amp;SurveyName=ADC2_Gender" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentIDs.pngID + '/' + attachmentIDs.pngName + '" alt="" /> </a></p>'
                                 });
+                                replacements.push({
+                                    pattern         : /\{\{ADXSentence:accesSurvey\}\}/gi,
+                                    replacement     : (!attachmentIDs.pngID) ? '' : '<li>To access to the live survey, click on the picture above.</li>'
+                                });
+
+                                var articleUpdated = common.evalTemplate(article.body, {}, replacements);
+                                self.client.translations.updateForArticle(article.id, 'en-us', articleUpdated, callback);
                             });
                         });
                     });
@@ -199,13 +227,13 @@ PublisherZenDesk.prototype.uploadAvailableFiles = function(files, articleId, cal
 };
 
 /**
- * Check if an article already exists in section and delete it
+ * Delete the article (if already exist) in the specified section
  * pre-condition : there is the possibility to have two articles with the same name but not in the same section
  * @param {String} title The title of the article to check
  * @param {Function} callback
  * @param {Error} [callback.err=null]
  */
-PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, callback) {
+PublisherZenDesk.prototype.deleteArticle = function(title, section_id, callback) {
 
     var self = this ;
 
@@ -218,31 +246,29 @@ PublisherZenDesk.prototype.checkIfArticleExists = function(title, section_id, ca
         }
         
         //the part below is needed to check if some people added articles directly from the web
-        var numberOfArticlesInstances = 0 ;
         var idToDelete = 0;
-        for (var article in result) {
-            if (result[article].name === title) {
-                idToDelete = result[article].id ;
-                numberOfArticlesInstances ++ ;
+        for (var i = 0, l = result.length; i < l; i += 1) {
+            if (result[i].name === title) {
+                if (idToDelete) { // Already exist
+                    callback(errMsg.tooManyArticlesExisting);
+                    return;
+                }
+                idToDelete = result[i].id ;
             }
         }
-        
-        if (numberOfArticlesInstances > 1) {
-            callback(errMsg.tooManyArticlesExisting);
+
+        // No article to delete
+        if (!idToDelete) {
+            // TODO::Should be uncomment when the test has been implemented
+            // callback(null);
             return;
         }
 
-        if (idToDelete!==0) {
-            self.client.articles.delete(idToDelete, function(err, req, result) {
-                if (err) {
-                    if (typeof callback === "function") {
-                        callback(err);
-                    }
-                    return ;
-                }
-            });
-        }
-        callback(null);
+        // Delete the article
+        self.client.articles.delete(idToDelete, function(err) {
+            // TODO::Should be uncomment when the test has been implemented
+            // callback(err);
+        });
     });
 };
 
@@ -263,7 +289,12 @@ PublisherZenDesk.prototype.createJSONArticle = function(callback) {
             return;
         }
 
-        var body = common.evalTemplate(data, self.configurator.get(), self.configurator.path);
+        var replacements = [{
+            pattern : /\{\{ADXNotes\}\}/gi,
+            replacement : common.mdNotesToHtml(path.join(self.configurator.path, "Readme.md"))
+        }];
+
+        var body = common.evalTemplate(data, self.configurator.get(), replacements);
 
         var article = {
             "article": {

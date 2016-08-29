@@ -116,7 +116,7 @@ describe("ADXPublisherZenDesk", function() {
                });
             });
 
-            spies.checkIfArticleExists = spyOn(PublisherZenDesk.prototype, 'checkIfArticleExists').andCallFake(function(title, section_id, cb) {
+            spies.deleteArticle = spyOn(PublisherZenDesk.prototype, 'deleteArticle').andCallFake(function(title, section_id, cb) {
                 cb(null);
             });
 
@@ -197,26 +197,26 @@ describe("ADXPublisherZenDesk", function() {
         
     });
     
-    describe("#checkIfArticleExists", function() {
+    describe("#deleteArticle", function() {
         
         var config = new Configurator('.');
         var publisherZenDesk = new PublisherZenDesk(config, {}, options);
         
         it("should call articles#delete when this article already exists", function() {
             spies.listBySection = spyOn(publisherZenDesk.client.articles, "listBySection").andCallFake(function(section_id, cb){
-                cb(null, null, [{name: 'amazing'}]);
+                cb(null, null, [{id : 2, name: 'amazing'}]);
             });
             spies.delete = spyOn(publisherZenDesk.client.articles, "delete").andCallFake(function(id){});
-            publisherZenDesk.checkIfArticleExists("amazing", 86, function(err){
+            publisherZenDesk.deleteArticle("amazing", 86, function(err){
                 expect(spies.delete).toHaveBeenCalled();
             });
         });
         
         it("should output an error when there is already more than one instance of the article on the platform", function() {
             spies.listBySection = spyOn(publisherZenDesk.client.articles, "listBySection").andCallFake(function(section_id, cb){
-                cb(null, null, [{name: 'amazing'}, {name: 'amazing'}]);
+                cb(null, null, [{id : 1, name: 'amazing'}, {id : 2, name: 'amazing'}]);
             });
-            publisherZenDesk.checkIfArticleExists("amazing", 86, function(err) {
+            publisherZenDesk.deleteArticle("amazing", 86, function(err) {
                 expect(err).toBe(errMsg.tooManyArticlesExisting); 
             });
         });
@@ -226,10 +226,19 @@ describe("ADXPublisherZenDesk", function() {
                 cb(null, null, [{name: 'amazing'}]);
             });
             spies.delete = spyOn(publisherZenDesk.client.articles, "delete").andCallFake(function(id){});
-            publisherZenDesk.checkIfArticleExists("an article", 86, function(err){
+            publisherZenDesk.deleteArticle("an article", 86, function(err){
                 expect(spies.delete).not.toHaveBeenCalled();
             });
         });
+
+        it("should call the the callback when article has been deleted", function () {
+            expect(false).toBe(true);
+        });
+
+        it("should call the the callback when article was not exists", function () {
+            expect(false).toBe(true);
+        });
+
     });
     
     describe("#findSectionIdByTitle", function() {

@@ -556,6 +556,7 @@
         });
     };
 
+    // TODO::Move the 6 following functions in publisher ZenDesk
 
     /**
      * Generate an HTML string which is a line of a 3 columns array with the name of the property category.
@@ -596,7 +597,6 @@
                 '</tr>\n' ;
     };
 
-
     /**
      * Create a String which contains an html dynamic array with the properties
      * @param {Object} properties The properties. Should give configurator.get().properties
@@ -626,76 +626,42 @@
      */
     exports.constraintsToSentence = function(constraints) {
         var result = "This control is compatible with " + (constraints.questions.single ? "single" : "")
-                                                  + (constraints.questions.multiple ? "multiple" : "")
-                                                  + (constraints.questions.numeric ? "numeric" : "")
-                                                  + (constraints.questions.date ? "date" : "")
-                                                  + (constraints.questions.open ? "open" : "")
-                                                  + (constraints.questions.chapter ? "chapter" : "")
-                                                  + " questions"
-                                                  + (constraints.questions.loop ? "( loop)" : "")
-                                                  + ". Number of responses(min-max) : "
-                                                  + (constraints.responses.min === "*" ? 0 : constraints.responses.min)
-                                                  + " - "
-                                                  + (constraints.responses.max === "*" ? "infinite" : constraints.responses.max)
-                                                  + ". You cas use the following controls : "
+            + (constraints.questions.multiple ? "multiple" : "")
+            + (constraints.questions.numeric ? "numeric" : "")
+            + (constraints.questions.date ? "date" : "")
+            + (constraints.questions.open ? "open" : "")
+            + (constraints.questions.chapter ? "chapter" : "")
+            + " questions"
+            + (constraints.questions.loop ? "( loop)" : "")
+            + ". Number of responses(min-max) : "
+            + (constraints.responses.min === "*" ? 0 : constraints.responses.min)
+            + " - "
+            + (constraints.responses.max === "*" ? "infinite" : constraints.responses.max)
+            + ". You cas use the following controls : "
         for(var control in constraints.controls){
             if(constraints.controls[control]){
                 result += control;
                 result += " ";
             }
         }
-        
+
         return result + ".";
-        
+
     };
-
-    /**
-     * Set the the link of a donwlable attachments
-     * @param {Object} article The article to be replaced.
-     * @param {Object} attachmentIDs An object containing all the ids of an article attachment.
-     */
-    exports.updateArticleAfterUploads = function(article, attachmentIDs){
-        
-        
-        var b = article.body ;
-        
-        b = b.replace(/\{\{ADXQexFileURL\}\}/gi, (attachmentIDs.qexID)?  ('<li>To download the qex file, <a href="/hc/en-us/article_attachments/' + attachmentIDs.qexID + '/' + attachmentIDs.qexName + '">click here</a></li>') : "");
-       
-        b = b.replace(/\{\{ADXAdcFileURL\}\}/gi,  '<a href="/hc/en-us/article_attachments/' + attachmentIDs.adcID + '/' + attachmentIDs.adcName + '">click here</a>');
-        
-        
-        if(attachmentIDs.pngID){
-            // TODO : /!\ change show and parameter SurveyName. See for the rules to establish.
-            // we should upload the file to the demo server from this app
-            // should use request.post like in the method uploadAvailableFiles in PublisherZenDesk
-            b = b.replace(/\{\{ADXQexPicture\}\}/gi, '<p><a href="http://show.askia.com/WebProd/cgi-bin/askiaext.dll?Action=StartSurvey&amp;SurveyName=ADC2_Gender" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentIDs.pngID + '/' + attachmentIDs.pngName + '" alt="" /> </a></p>');
-
-            b = b.replace(/\{\{ADXSentence:accesSurvey\}\}/gi, '<li>To access to the live survey, click on the picture above.</li>');
-        }
-        else {
-            b = b.replace(/\{\{ADXQexPicture\}\}/gi, "");
-            b = b.replace(/\{\{ADXSentence:accesSurvey\}\}/gi, "");
-        }
-        
-        return {
-            body: b
-        };
-    };
-
 
     /**
      * Parse the readme.md file to read notes and convert them to an html list
      * @param {String | Buffer} p The path to the readme.md file
      */
     exports.mdNotesToHtml = function(p){
-        
+
         var file = fs.readFileSync(path.resolve(p), 'utf-8');
         var tree = md.parse(file);
         var res = "";
         for(var i = 0 ; i < tree.length ; i++){
             if (tree[i][0] === 'header' && tree[i][1].level == 2 && tree[i][2] === 'Notes') {
                 if(typeof tree[i+1][1] === "string"){
-                    res += tree[i+1][1];    
+                    res += tree[i+1][1];
                 }
             }
         }
@@ -704,46 +670,97 @@
             res = res.substring(2);
             res = '<p><span class="wysiwyg-underline">Notes:</span></p><ul><li>' + res + '</li></ul>';
         }
-      
+
         return res;
     };
+
+    // EMD TODO
+
     
     
     /**
      * Transform the patterns of a string by their real values which are in a config
      * @param {String} input The text to be replaced
      * @param {Object} config The result of a call to method get of a configurator
-     * @param {String} [adxPath] Path of the ADX project
+     * @param {Array} additionalReplacements Additional replacement. Array of object with `pattern` key as regex and `replacement` key as string
      */
-    exports.evalTemplate = function evalTemplate(input, config, adxPath) {
+    exports.evalTemplate = function evalTemplate(input, config, additionalReplacements) {
 
-        var result = input,
-            authorFullName = '';
+        var replacements = [
+            {
+                pattern : /\{\{ADXName\}\}/gi,
+                replacement : (config.info && config.info.name) || ""
+            },
+            {
+                pattern : /\{\{ADXGuid\}\}/gi,
+                replacement : (config.info && config.info.guid) || uuid.v4()
+            },
+            {
+                pattern : /\{\{ADXDescription\}\}/gi,
+                replacement : (config.info && config.info.description) || ""
+            },
+            {
+                pattern : /\{\{ADXAuthor.Name\}\}/gi,
+                replacement : (config.info && config.info.author) || ""
+            },
+            {
+                pattern : /\{\{ADXAuthor.Email\}\}/gi,
+                replacement : (config.info && config.info.email) || ""
+            },
+            {
+                pattern : /\{\{ADXAuthor.Company\}\}/gi,
+                replacement : (config.info && config.info.company) || ""
+            },
+            {
+                pattern : /\{\{ADXAuthor.website\}\}/gi,
+                replacement : (config.info && config.info.site) || ""
+            },
+            // TODO::Move the 2 following in publisher ZenDesk
+            {
+                pattern : /\{\{ADXProperties:HTML\}\}/gi,
+                replacement : (config.properties && exports.propertiesToHTML(config.properties)) || ""
+            },
+            {
+                pattern : /\{\{ADXListKeyWords\}\}/gi,
+                replacement : ("adc; adc2; javascript; control; design; askiadesign; " + ((config.info && config.info.name) || ""))
+            },
+            // END TODO
+            {
+                pattern : /\{\{ADXVersion\}\}/gi,
+                replacement : (config.info && config.info.version) || ""
+            },
+            {
+                pattern : /\{\{ADXConstraints\}\}/gi,
+                replacement : (config.info && config.info.constraints && exports.constraintsToSentence(config.info.constraints)) || ""
+            },
+            {
+                pattern : /2000-01-01/,
+                replacement : exports.formatXmlDate()
+            },
+            {
+                pattern : '\ufeff',  // Remove the BOM characters (Marker of the UTF-8 in the string)
+                replacement : ''
+            }
+        ];
 
-        if (adxPath) {
-            var markdown = exports.mdNotesToHtml(path.join(adxPath, "Readme.md"));
-            result = result.replace(/\{\{ADXNotes\}\}/gi, markdown);
-        }
-
-        result = result.replace(/\{\{ADXName\}\}/gi, (config.info && config.info.name) || "");
-        result = result.replace(/\{\{ADXGuid\}\}/gi, (config.info && config.info.guid) || uuid.v4());
-        result = result.replace(/\{\{ADXDescription\}\}/gi, (config.info && config.info.description) || "");
-        result = result.replace(/\{\{ADXAuthor.Name\}\}/gi, (config.info && config.info.author) || "");
-        result = result.replace(/\{\{ADXAuthor.Email\}\}/gi, (config.info && config.info.email) || "");
-        result = result.replace(/\{\{ADXAuthor.Company\}\}/gi, (config.info && config.info.company) || "");
-        result = result.replace(/\{\{ADXAuthor.website\}\}/gi, (config.info && config.info.site) || "");
-        result = result.replace(/\{\{ADXProperties:HTML\}\}/gi, (config.properties && exports.propertiesToHTML(config.properties)) || "");
-        result = result.replace(/\{\{ADXListKeyWords\}\}/gi, ("adc; adc2; javascript; control; design; askiadesign; " + ((config.info && config.info.name) || "")));
-        result = result.replace(/\{\{ADXVersion\}\}/gi, (config.info && config.info.version) || "");
-        result = result.replace(/\{\{ADXConstraints\}\}/gi, (config.info.constraints && exports.constraintsToSentence(config.info.constraints)) || "");
-        authorFullName = (config.info && config.info.author) || "";
+        var authorFullName = (config.info && config.info.author) || "";
         if (config.info && config.info.email) {
             authorFullName += ' <' + config.info.email + '>';
         }
-        result = result.replace(/\{\{ADXAuthor\}\}/gi, authorFullName);
-        result = result.replace(/2000-01-01/, exports.formatXmlDate());
-        result = result.replace('\ufeff', ''); // Remove the BOM characters (Marker of the UTF-8 in the string)
-                
+        replacements.push({
+            pattern: /\{\{ADXAuthor\}\}/gi,
+            replacement: authorFullName
+        });
+
+        if (additionalReplacements) {
+            replacements = replacements.concat(additionalReplacements);
+        }
+
+        var result = input;
+        for(var i = 0, l = replacements.length; i < l; i += 1) {
+            result = result.replace(replacements[i].pattern, replacements[i].replacement);
+        }
+
         return result;
     };
 

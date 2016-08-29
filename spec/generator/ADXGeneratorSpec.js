@@ -351,109 +351,59 @@ describe('ADXGenerator', function () {
                 expect(common.writeError).not.toHaveBeenCalled();
             });
 
-            function testReplacement(obj) {
-                it("should replace the `" + obj.pattern + "` by the right value", function () {
-                    var result;
-                    spies.fs.readFile.andCallFake(function (path, option, callback) {
-                        callback(null, obj.pattern);
-                    });
-                    spies.fs.writeFile.andCallFake(function (path, content) {
-                        result = content;
-                    });
-                    spyOn(common, 'formatXmlDate').andReturn('2013-12-31');
-                    adxGenerator.generate({
-                        output : 'adx/path/dir',
+            it('should call the common#evalTemplate with an object that looks like a config', function () {
+                spies.fs.readFile.andCallFake(function (path, option, callback) {
+                    callback(null, 'the input');
+                });
+                var input, obj;
+                var spy = spyOn(common, 'evalTemplate').andCallFake(function (a, b) {
+                    input = a;
+                    obj = b;
+                });
+
+                adxGenerator.generate({
+                    output : 'adx/path/dir',
+                    description : 'My description',
+                    author : {
+                        name : 'myname',
+                        email : 'myemail',
+                        company : 'mycompany',
+                        website : 'mysite'
+                    }
+                }, 'adc', 'adxname');
+
+                expect(spy).toHaveBeenCalled();
+                expect(input).toEqual('the input');
+                expect(obj).toEqual({
+                    info : {
+                        name : 'adxname' ,
+                        type :	 'adc',
                         description : 'My description',
-                        author : {
-                            name : 'MySelf',
-                            email : 'myself@test.com',
-                            company : 'My Company',
-                            website : 'http://my/web/site.com'
-                        }
-                    }, 'adc', 'adxname');
-                    expect(result).toBe(obj.replacement);
+                        author : 'myname',
+                        email : 'myemail',
+                        company : 'mycompany',
+                        site : 'mysite'
+                    }
                 });
-            }
+            });
 
-            var replacement = [
-                {
-                    pattern : "{{ADXName}}",
-                    replacement : "adxname"
-                },
-                {
-                    pattern : "{{ADXGuid}}",
-                    replacement : "guid"
-                },
-                {
-                    pattern : "2000-01-01",
-                    replacement : "2013-12-31"
-                },
-                {
-                    pattern : '{{ADXDescription}}',
-                    replacement : 'My description'
-                },
-                {
-                    pattern : '{{ADXAuthor}}',
-                    replacement : 'MySelf <myself@test.com>'
-                },
-                {
-                    pattern : '{{ADXAuthor.Name}}',
-                    replacement : 'MySelf'
-                },
-                {
-                    pattern : '{{ADXAuthor.Email}}',
-                    replacement : 'myself@test.com'
-                },
-                {
-                    pattern : '{{ADXAuthor.Company}}',
-                    replacement : 'My Company'
-                },
-                {
-                    pattern : '{{ADXAuthor.website}}',
-                    replacement : 'http://my/web/site.com'
-                }
-            ];
-            replacement.forEach(testReplacement);
-
-
-            function testReplaceWithPreferences(obj) {
-                it("should replace the `" + obj.pattern + "` by the value from the preferences", function () {
-                    var result;
-                    spies.fs.readFile.andCallFake(function (path, option, callback) {
-                        callback(null, obj.pattern);
-                    });
-                    spies.fs.writeFile.andCallFake(function (path, content) {
-                        result = content;
-                    });
-                    spyOn(common, 'formatXmlDate').andReturn('2013-12-31');
-                    adxGenerator.generate({
-                        output : 'adx/path/dir',
-                        description : 'My description'
-                    }, 'adc', 'adxname');
-                    expect(result).toBe(obj.replacement);
+            it('should write the file with the result of the common#evalTemplate', function () {
+                spies.fs.readFile.andCallFake(function (path, option, callback) {
+                    callback(null, 'the input');
                 });
-            }
+                var result;
+                spies.fs.writeFile.andCallFake(function (path, content) {
+                    result = content;
+                });
+                spyOn(common, 'evalTemplate').andReturn('something');
 
-            var preferencesReplacement = [
-                {
-                    pattern : '{{ADXAuthor.Name}}',
-                    replacement : 'MyPrefName'
-                },
-                {
-                    pattern : '{{ADXAuthor.Email}}',
-                    replacement : 'MyPrefEmail'
-                },
-                {
-                    pattern : '{{ADXAuthor.Company}}',
-                    replacement : 'MyPrefCompany'
-                },
-                {
-                    pattern : '{{ADXAuthor.website}}',
-                    replacement : 'MyWebsite'
-                }
-            ];
+                adxGenerator.generate({
+                    output : 'adx/path/dir',
+                    description : 'My description'
+                }, 'adc', 'adxname');
 
-            preferencesReplacement.forEach(testReplaceWithPreferences);
+                expect(result).toEqual('something');
+            });
 
             it("should output an error when failing to rewrite the file", function () {
                 spies.fs.readFile.andCallFake(function (path, option, callback) {
