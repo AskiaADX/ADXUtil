@@ -153,6 +153,15 @@ Once you have called publish with ZenDesk and the right args, it will :
 
 II - GitHub :
 
+The options needed are : 'username', 'useremail', 'remoteUri', 'token', 'message'.  
+
+You have to generate a token from github.com with some specific permissions. You have to tick the case which allows to create a repository.  
+
+Once you have called publish with GitHub and the right args, it will :  
+
+* call git add with all files of the adc folder
+* call git commit with the message 'message'
+* and then call git push
 
 
 ### Validate

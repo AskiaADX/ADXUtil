@@ -30,7 +30,8 @@ program
     .option('--remoteUri <uri>', 'The remote URI of the platform')
     .option('--useremail <email>', 'The email login to connect to the platform (GitHub Only)')
     .option('--message <msg>', 'The commit message (GitHub only)')
-    .option('--force', 'The commit will be forced(GitHub only). If someone changed the article on github, and you really want to update with the local version');
+    .option('--force', 'The commit will be forced(GitHub only). If someone changed the article on github, and you really want to update with the local version')
+    .option('--token <token>', 'The token that allows you to publish')
 
 
 program
@@ -71,6 +72,9 @@ program
             }
             if ('useremail' in program) {
                 options.useremail = program.useremail;
+            }
+            if ('token' in program) {
+                options.token = program.token;
             }
             options.force = 'force' in program;
             var adxPublisher = require('./publisher/ADXPublisher.js');
