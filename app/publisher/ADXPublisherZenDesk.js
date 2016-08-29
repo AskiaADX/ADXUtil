@@ -5,6 +5,7 @@ var path            = require('path');
 var errMsg          = common.messages.error;
 var Configurator    = require('../configurator/ADXConfigurator.js').Configurator;
 var request         = require('request');
+var md              = require('markdown').markdown;
 
 /**
  * Instantiate a PublisherZendesk
@@ -91,89 +92,54 @@ PublisherZenDesk.prototype.publish = function(callback) {
                         }
                         return;
                     }
-                    fs.readdir(path.resolve(path.join(self.configurator.path, common.ADC_PATH)), function(errADC, adcItems) {
-                        if (errADC) {
-                            callback(errADC);
+                    var filesToPush = [];
+                    var name = self.configurator.get().info.name;
+                    fs.stat(path.resolve(path.join(self.configurator.path, common.ADC_PATH, name + '.adc')), function(err, stats) {
+                        if(stats && stats.isFile()) {
+                            filesToPush.push(path.resolve(path.join(self.configurator.path, common.ADC_PATH, name + '.adc')));
+                        } else {
+                            callback(errMsg.badNumberOfADCFiles);
                             return;
                         }
-                        fs.readdir(path.resolve(path.join(self.configurator.path, common.QEX_PATH)), function(errQEX, qexItems) {
-                            if (errQEX) {
-                                callback(errQEX);
-                                return;
+                        fs.stat(path.resolve(path.join(self.configurator.path, common.QEX_PATH, name + '.qex')), function(err, stats) {
+                            if(stats && stats.isFile()) {
+                                filesToPush.push(path.resolve(path.join(self.configurator.path, common.QEX_PATH, name + '.qex')));
                             }
-                            var adxFile, qexFile, previewFile, filesToPush = [];
-                            for (var i = 0; i < adcItems.length  ; i++) {
-                                if (adcItems[i].match(/^.+\.adc$/i)) {
-                                    // Already specified
-                                    if (adxFile) {
-                                        callback(errMsg.badNumberOfADCFiles);
+                            fs.stat(path.resolve(path.join(self.configurator.path, 'preview.png')), function(err, stats) {
+                                if(stats && stats.isFile()) {
+                                    filesToPush.push(path.resolve(path.join(self.configurator.path, 'preview.png')));
+                                }
+                                self.uploadAvailableFiles(filesToPush, article.id, function(err, attachmentsIDs){
+                                    if (err) {
+                                        callback(err);
                                         return;
                                     }
-                                    // Init
-                                    adxFile = adcItems[i];
-                                }
-                            }
+                                    var replacements = [
+                                        {
+                                            pattern : /\{\{ADXQexFileURL\}\}/gi,
+                                            replacement : (attachmentsIDs.qexID) ?  ('<li>To download the qex file, <a href="/hc/en-us/article_attachments/' + attachmentsIDs.qexID + '/' + attachmentsIDs.qexName + '">click here</a></li>') : ""
+                                        },
+                                        {
+                                            pattern : /\{\{ADXAdcFileURL\}\}/gi,
+                                            replacement : '<a href="/hc/en-us/article_attachments/' + attachmentsIDs.adcID + '/' + attachmentsIDs.adcName + '">click here</a>'
+                                        }
+                                    ];
 
-                            if (!adxFile) {
-                                callback(errMsg.badNumberOfADCFiles);
-                                return;
-                            }
+                                    // TODO : /!\ change show and parameter SurveyName. See for the rules to establish.
+                                    // we should upload the file to the demo server from this app
+                                    // should use request.post like in the method uploadAvailableFiles in PublisherZenDesk
+                                    replacements.push({
+                                        pattern         : /\{\{ADXQexPicture\}\}/gi,
+                                        replacement     : (!attachmentsIDs.pngID)  ? '' : '<p><a href="http://show.askia.com/WebProd/cgi-bin/askiaext.dll?Action=StartSurvey&amp;SurveyName=ADC2_Gender" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentsIDs.pngID + '/' + attachmentsIDs.pngName + '" alt="" /> </a></p>'
+                                    });
+                                    replacements.push({
+                                        pattern         : /\{\{ADXSentence:accesSurvey\}\}/gi,
+                                        replacement     : (!attachmentsIDs.pngID) ? '' : '<li>To access to the live survey, click on the picture above.</li>'
+                                    });
 
-                            for (var j = 0 ; j < qexItems.length ;  j++) {
-                                if (qexItems[j].match(/^.+\.qex$/i)){
-                                    if (qexFile) {
-                                        callback(errMsg.badNumberOfQEXFiles);
-                                        return;
-                                    }
-                                    qexFile = qexItems[j];
-
-                                } else if (qexItems[j].match(/^adc.+\.png$/i)) { // This regex allows to put other pic files in the example folder but they must not begin by 'adc'
-                                    if (previewFile) {
-                                        callback(errMsg.badNumberOfPicFiles);
-                                        return;
-                                    }
-                                    previewFile = qexItems[j];
-                                }
-                            }
-
-                            filesToPush.push(path.resolve(path.join(self.configurator.path, common.ADC_PATH, adxFile)));
-                            if (qexFile) {
-                                filesToPush.push(path.resolve(path.join(self.configurator.path, common.QEX_PATH, qexFile)));
-                            }
-                            if (previewFile) {
-                                filesToPush.push(path.resolve(path.join(self.configurator.path, common.QEX_PATH, previewFile)));
-                            }
-                            self.uploadAvailableFiles(filesToPush, article.id, function(err, attachmentsIDs){
-                                if (err) {
-                                    callback(err);
-                                    return;
-                                }
-
-                                var replacements = [
-                                    {
-                                        pattern : /\{\{ADXQexFileURL\}\}/gi,
-                                        replacement : (attachmentIDs.qexID) ?  ('<li>To download the qex file, <a href="/hc/en-us/article_attachments/' + attachmentIDs.qexID + '/' + attachmentIDs.qexName + '">click here</a></li>') : ""
-                                    },
-                                    {
-                                        pattern : /\{\{ADXAdcFileURL\}\}/gi,
-                                        replacement : '<a href="/hc/en-us/article_attachments/' + attachmentIDs.adcID + '/' + attachmentIDs.adcName + '">click here</a>'
-                                    }
-                                ];
-
-                                // TODO : /!\ change show and parameter SurveyName. See for the rules to establish.
-                                // we should upload the file to the demo server from this app
-                                // should use request.post like in the method uploadAvailableFiles in PublisherZenDesk
-                                replacements.push({
-                                    pattern         : /\{\{ADXQexPicture\}\}/gi,
-                                    replacement     : (!attachmentIDs.pngID)  ? '' : '<p><a href="http://show.askia.com/WebProd/cgi-bin/askiaext.dll?Action=StartSurvey&amp;SurveyName=ADC2_Gender" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentIDs.pngID + '/' + attachmentIDs.pngName + '" alt="" /> </a></p>'
+                                    var articleUpdated = common.evalTemplate(article.body, {}, replacements);
+                                    self.client.translations.updateForArticle(article.id, 'en-us', {body:articleUpdated}, callback);
                                 });
-                                replacements.push({
-                                    pattern         : /\{\{ADXSentence:accesSurvey\}\}/gi,
-                                    replacement     : (!attachmentIDs.pngID) ? '' : '<li>To access to the live survey, click on the picture above.</li>'
-                                });
-
-                                var articleUpdated = common.evalTemplate(article.body, {}, replacements);
-                                self.client.translations.updateForArticle(article.id, 'en-us', articleUpdated, callback);
                             });
                         });
                     });
@@ -259,15 +225,15 @@ PublisherZenDesk.prototype.deleteArticle = function(title, section_id, callback)
 
         // No article to delete
         if (!idToDelete) {
-            // TODO::Should be uncomment when the test has been implemented
-            // callback(null);
+            callback(null);
             return;
         }
 
         // Delete the article
         self.client.articles.delete(idToDelete, function(err) {
+            
             // TODO::Should be uncomment when the test has been implemented
-            // callback(err);
+             callback(err);
         });
     });
 };
@@ -283,7 +249,7 @@ PublisherZenDesk.prototype.createJSONArticle = function(callback) {
     var self = this ;
 
 
-    fs.readFile(path.join(__dirname,"../../",common.ZENDESK_ARTICLE_TEMPLATE_PATH), 'utf-8', function(err, data) {
+    fs.readFile(path.join(__dirname,"../../", common.ZENDESK_ARTICLE_TEMPLATE_PATH), 'utf-8', function(err, data) {
         if (err) {
             callback(err);
             return;
@@ -291,9 +257,21 @@ PublisherZenDesk.prototype.createJSONArticle = function(callback) {
 
         var replacements = [{
             pattern : /\{\{ADXNotes\}\}/gi,
-            replacement : common.mdNotesToHtml(path.join(self.configurator.path, "Readme.md"))
+            replacement : self.mdNotesToHtml(path.join(self.configurator.path, "Readme.md"))
+        },
+        {
+            pattern : /\{\{ADXProperties:HTML\}\}/gi,
+            replacement : self.propertiesToHTML(self.configurator.get().properties)
+        },
+        {
+            pattern : /\{\{ADXListKeyWords\}\}/gi,
+            replacement : "adc; adc2; javascript; control; design; askiadesign; " + self.configurator.get().info.name
+        },
+        {
+            pattern : /\{\{ADXConstraints\}\}/gi,
+            replacement : self.constraintsToSentence(self.configurator.get().info.constraints)
         }];
-
+        
         var body = common.evalTemplate(data, self.configurator.get(), replacements);
 
         var article = {
@@ -348,6 +326,125 @@ PublisherZenDesk.prototype.findSectionIdByTitle = function (title, callback) {
         callback(errMsg.unexistingSection);
     });
 };
+
+
+/**
+ * Generate an HTML string which is a line of a 3 columns array with the name of the property category.
+ * @param {Object} an object which represents a category of properties.
+ */
+generateHTMLcodeForCategory = function (category) {
+    return '<tr>\n' +
+        '<th data-sheets-value="[null,2,&quot;' + category.name + '&quot;]">' + category.name + '</th>\n' +
+        '<td> </td>\n' +
+        '<td> </td>\n' +
+        '</tr>\n' ;
+};
+
+
+/**
+ * Generate a string which is the concatenation of all the options separated by ' '.
+ * @param {Object} an object containing the options of a property.
+ */
+generateHTMLcodeForOptions = function(opt){
+    var result = '';
+    for(var i in opt){
+        result += opt[i].value ;
+        result += ' '
+    }
+    return result;
+};
+
+
+/**
+ * Generate an HTML string which is a line of a 3 columns array with the standard description of a property.
+ * @param {Object} an object which represents a property.
+ */
+generateHTMLcodeForProperty = function (property) {
+    return  '<tr>\n' +
+            '<td data-sheets-value="[null,2,&quot;' + property.name + '&quot;]">' + property.name + '</td>\n' +
+            '<td data-sheets-value="[null,2,&quot;' + property.type + '&quot;]">' + property.type + '</td>\n' +
+            '<td data-sheets-value="[null,2,&quot;' + property.description + ' ' + property.value + '&quot;,null,null,null,1]">' + (property.description ? ('Description : ' + property.description) : "") + (property.value ? ('<br/>Value : ' + property.value) : "") + (property.options ? ('<br/>Options : ' + generateHTMLcodeForOptions(property.options)) : "") + (property.colorFormat ? ('<br/>ColorFormat : ' + property.colorFormat) : "") +'</td>\n' +
+            '</tr>\n' ;
+};
+
+/**
+ * Create a String which contains an html dynamic array with the properties
+ * @param {Object} properties The properties. Should give configurator.get().properties
+ */
+PublisherZenDesk.prototype.propertiesToHTML = function (prop) {
+
+    if(!prop){
+        throw new Error(exports.messages.error.missingPropertiesArg);
+    }
+
+
+    var result = '<table class="askiatable" dir="ltr" cellspacing="0" cellpadding="0"><colgroup><col width="281" /><col width="192" /><col width="867" /></colgroup><tbody><tr><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Parameters&quot;]">Parameters</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Type&quot;]">Type</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Comments and/or possible value&quot;]">Comments and/or possible value</td></tr><tr><td> </td><td> </td><td> </td></tr>';
+
+    for (var category in prop.categories) {
+        result += generateHTMLcodeForCategory(prop.categories[category]);
+        for (var property in prop.categories[category].properties) {
+            result += generateHTMLcodeForProperty(prop.categories[category].properties[property]);
+        }
+    }
+    return result + '</tbody></table>' ;
+};
+
+
+/**
+ * Transform the constraints of an adc(from the config) to a sentence
+ * @param {Object} constraints The constraints.
+ */
+PublisherZenDesk.prototype.constraintsToSentence = function(constraints) {
+    var result = "This control is compatible with " + (constraints.questions.single ? "single" : "")
+        + (constraints.questions.multiple ? "multiple" : "")
+        + (constraints.questions.numeric ? "numeric" : "")
+        + (constraints.questions.date ? "date" : "")
+        + (constraints.questions.open ? "open" : "")
+        + (constraints.questions.chapter ? "chapter" : "")
+        + " questions"
+        + (constraints.questions.loop ? "( loop)" : "")
+        + ". Number of responses(min-max) : "
+        + (constraints.responses.min === "*" ? 0 : constraints.responses.min)
+        + " - "
+        + (constraints.responses.max === "*" ? "infinite" : constraints.responses.max)
+        + ". You can use the following controls : "
+    for(var control in constraints.controls){
+        if(constraints.controls[control]){
+            result += control;
+            result += " ";
+        }
+    }
+
+    return result + ".";
+
+};
+
+/**
+ * Parse the readme.md file to read notes and convert them to an html list
+ * @param {String | Buffer} p The path to the readme.md file
+ */
+PublisherZenDesk.prototype.mdNotesToHtml = function(p){
+
+    var file = fs.readFileSync(path.resolve(p), 'utf-8');
+    var tree = md.parse(file);
+    var res = "";
+    for(var i = 0 ; i < tree.length ; i++){
+        if (tree[i][0] === 'header' && tree[i][1].level == 2 && tree[i][2] === 'Notes') {
+            if(typeof tree[i+1][1] === "string"){
+                res += tree[i+1][1];
+            }
+        }
+    }
+    if(res.length > 0){
+        res = res.replace(/\n\-\ /g, "<li></li>");
+        res = res.substring(2);
+        res = '<p><span class="wysiwyg-underline">Notes:</span></p><ul><li>' + res + '</li></ul>';
+    }
+
+    return res;
+};
+
+
 
 //Make it public
 exports.PublisherZenDesk = PublisherZenDesk ;

@@ -76,7 +76,7 @@ describe("ADXPublisherZenDesk", function() {
 
         });
     });
-    
+
     describe("#publish", function() {
 
         var config = new Configurator('.');
@@ -129,49 +129,20 @@ describe("ADXPublisherZenDesk", function() {
             });
         });
 
-
-
-        it("should output an error when there are more than one .adc file in " + common.ADC_PATH, function() {
-
-            spies.readDirADC = spyOn(fs, 'readdir').andCallFake(function(path, callback) {
-                callback(null, ['1.adc', '2.adc']);
-            });
-            publisherZenDesk.publish(function(err) {
-                expect(err).toBe(errMsg.badNumberOfADCFiles)
-            });
-
-        });
-
         it("should output an error when the .adc file is missing in " + common.ADC_PATH, function() {
-
-              spies.readDirADC = spyOn(fs, 'readdir').andCallFake(function(path, callback) {
-                    callback(null, []);
-              });
-              publisherZenDesk.publish(function(err) {
-                    expect(err).toBe(errMsg.badNumberOfADCFiles);
-              });
-
-        });
-
-        it("should output an error when there is more than a .qex file in " + common.QEX_PATH, function() {
-
-            spies.readDirQEX = spyOn(fs, 'readdir').andCallFake(function(path, callback) {
-                callback(null, ['1.adc', '1.qex', '2.qex']);
+            
+            spies.infoname = spyOn(config, 'get').andReturn({
+                info:{
+                    name: 'test-adx'
+                }
             });
+            spies.stats = spyOn(fs, 'stat').andCallFake(function(path, callback) {
+                callback(null, null);
+             });
             publisherZenDesk.publish(function(err) {
-                expect(err).toBe(errMsg.badNumberOfQEXFiles);
+                expect(err).toBe(errMsg.badNumberOfADCFiles);
             });
 
-        });
-
-        it("should output an error when there is more than a .png file begining with 'adc' in " + common.QEX_PATH, function() {
-
-                spies.readDirPNG = spyOn(fs, 'readdir').andCallFake(function(path, callback) {
-                    callback(null, ['1.adc', '1.qex', 'logo.png', 'adc-anADC.png', 'adc-an_otherADC.png']);
-                });
-                publisherZenDesk.publish(function(err) {
-                  expect(err).toBe(errMsg.badNumberOfPicFiles);
-                });
         });
     });
 
@@ -206,7 +177,9 @@ describe("ADXPublisherZenDesk", function() {
             spies.listBySection = spyOn(publisherZenDesk.client.articles, "listBySection").andCallFake(function(section_id, cb){
                 cb(null, null, [{id : 2, name: 'amazing'}]);
             });
-            spies.delete = spyOn(publisherZenDesk.client.articles, "delete").andCallFake(function(id){});
+            spies.delete = spyOn(publisherZenDesk.client.articles, "delete").andCallFake(function(section_id, cb) {
+                cb(null); 
+            });
             publisherZenDesk.deleteArticle("amazing", 86, function(err){
                 expect(spies.delete).toHaveBeenCalled();
             });
@@ -223,7 +196,7 @@ describe("ADXPublisherZenDesk", function() {
         
         it("should not call articles#delete when the article does not exist", function() {
             spies.listBySection = spyOn(publisherZenDesk.client.articles, "listBySection").andCallFake(function(section_id, cb){
-                cb(null, null, [{name: 'amazing'}]);
+                cb(null, null, [{id: 4, name: 'amazing'}]);
             });
             spies.delete = spyOn(publisherZenDesk.client.articles, "delete").andCallFake(function(id){});
             publisherZenDesk.deleteArticle("an article", 86, function(err){
@@ -232,11 +205,25 @@ describe("ADXPublisherZenDesk", function() {
         });
 
         it("should call the the callback when article has been deleted", function () {
-            expect(false).toBe(true);
+            spies.listBySection = spyOn(publisherZenDesk.client.articles, "listBySection").andCallFake(function(section_id, cb){
+                cb(null, null, [{id: 5, name: 'amazing'}]);
+            });
+            spies.delete = spyOn(publisherZenDesk.client.articles, "delete").andCallFake(function(section_id, cb) {
+                cb(null); 
+            });
+            publisherZenDesk.deleteArticle("amazing", 86, function(err) {
+                expect(err).toEqual(null);
+            });
         });
 
-        it("should call the the callback when article was not exists", function () {
-            expect(false).toBe(true);
+        it("should call the the callback when article does not exist", function () {
+            spies.listBySection = spyOn(publisherZenDesk.client.articles, "listBySection").andCallFake(function(section_id, cb){
+                cb(null, null, [{id: 5, name: 'amazing'}]);
+            });
+            
+            publisherZenDesk.deleteArticle("an article", 86, function(err) {
+                expect(err).toEqual(null);
+            });
         });
 
     });
@@ -320,12 +307,17 @@ describe("ADXPublisherZenDesk", function() {
             spies.fs.readFile.andCallFake(function(a, b, callback) {
                callback(null);
             });
-
+            
+            spies.md = spyOn(PublisherZenDesk.prototype, "mdNotesToHtml").andReturn('notes');
+            spies.propertiesToHTML = spyOn(PublisherZenDesk.prototype, "propertiesToHTML").andReturn('properties');
+            spies.constraintsToSentence = spyOn(PublisherZenDesk.prototype, "constraintsToSentence").andReturn('sentence');
+            
             spies.evalTemplate = spyOn(common, 'evalTemplate').andReturn('the-body');
 
             spies.infoname = spyOn(config, 'get').andReturn({
                 info:{
-                    name: 'test-adx'
+                    name: 'test-adx',
+                    constraints: 'constraints'
                 }
             });
 

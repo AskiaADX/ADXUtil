@@ -10,8 +10,6 @@
         Zip = require('jszip'),
         //uuid lib
         uuid = require('node-uuid'),
-        //markdown lib
-        md = require('markdown').markdown,
         //path lib
         path = require('path');
 
@@ -144,8 +142,6 @@
             unexistingSection: "Unexisting section. Please check the section title or your logins",
             missingConfiguratorArg: "Missing `configurator` argument",
             badNumberOfADCFiles: "The number of .adc files is incorrect",
-            badNumberOfQEXFiles: "The number of .qex files is incorrect",
-            badNumberOfPicFiles: "The number of .png files is incorrect",
             tooManyArticlesExisting: "Error when updating or creating this article : There are already at least two instances of this article on ZenDesk (Check in draft mode if you don't see them in help_center mode)",
             missingSectionTitleArg: "Missing `title` arg",
             missingPublishArgs: "Arguments are missing. Check the arguments in command line or your personal preferences file"
@@ -555,128 +551,6 @@
             });
         });
     };
-
-    // TODO::Move the 6 following functions in publisher ZenDesk
-
-    /**
-     * Generate an HTML string which is a line of a 3 columns array with the name of the property category.
-     * @param {Object} an object which represents a category of properties.
-     */
-    generateHTMLcodeForCategory = function (category) {
-        return '<tr>\n' +
-            '<th data-sheets-value="[null,2,&quot;' + category.name + '&quot;]">' + category.name + '</th>\n' +
-            '<td> </td>\n' +
-            '<td> </td>\n' +
-            '</tr>\n' ;
-    };
-
-
-    /**
-     * Generate a string which is the concatenation of all the options separated by ' '.
-     * @param {Object} an object containing the options of a property.
-     */
-    generateHTMLcodeForOptions = function(opt){
-        var result = '';
-        for(var i in opt){
-            result += opt[i].value ;
-            result += ' '
-        }
-        return result;
-    };
-    
-
-    /**
-     * Generate an HTML string which is a line of a 3 columns array with the standard description of a property.
-     * @param {Object} an object which represents a property.
-     */
-    generateHTMLcodeForProperty = function (property) {
-        return  '<tr>\n' +
-                '<td data-sheets-value="[null,2,&quot;' + property.name + '&quot;]">' + property.name + '</td>\n' +
-                '<td data-sheets-value="[null,2,&quot;' + property.type + '&quot;]">' + property.type + '</td>\n' +
-                '<td data-sheets-value="[null,2,&quot;' + property.description + ' ' + property.value + '&quot;,null,null,null,1]">' + (property.description ? ('Description : ' + property.description) : "") + (property.value ? ('<br/>Value : ' + property.value) : "") + (property.options ? ('<br/>Options : ' + generateHTMLcodeForOptions(property.options)) : "") + (property.colorFormat ? ('<br/>ColorFormat : ' + property.colorFormat) : "") +'</td>\n' +
-                '</tr>\n' ;
-    };
-
-    /**
-     * Create a String which contains an html dynamic array with the properties
-     * @param {Object} properties The properties. Should give configurator.get().properties
-     */
-    exports.propertiesToHTML = function (prop) {
-        
-        if(!prop){
-            throw new Error(exports.messages.error.missingPropertiesArg);
-        }
-        
-        
-        var result = '<table class="askiatable" dir="ltr" cellspacing="0" cellpadding="0"><colgroup><col width="281" /><col width="192" /><col width="867" /></colgroup><tbody><tr><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Parameters&quot;]">Parameters</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Type&quot;]">Type</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Comments and/or possible value&quot;]">Comments and/or possible value</td></tr><tr><td> </td><td> </td><td> </td></tr>';
-
-        for (var category in prop.categories) {
-            result += generateHTMLcodeForCategory(prop.categories[category]);
-            for (var property in prop.categories[category].properties) {
-                result += generateHTMLcodeForProperty(prop.categories[category].properties[property]);
-            }
-        }
-        return result + '</tbody></table>' ;
-    };
-
-
-    /**
-     * Transform the constraints of an adc(from the config) to a sentence
-     * @param {Object} constraints The constraints.
-     */
-    exports.constraintsToSentence = function(constraints) {
-        var result = "This control is compatible with " + (constraints.questions.single ? "single" : "")
-            + (constraints.questions.multiple ? "multiple" : "")
-            + (constraints.questions.numeric ? "numeric" : "")
-            + (constraints.questions.date ? "date" : "")
-            + (constraints.questions.open ? "open" : "")
-            + (constraints.questions.chapter ? "chapter" : "")
-            + " questions"
-            + (constraints.questions.loop ? "( loop)" : "")
-            + ". Number of responses(min-max) : "
-            + (constraints.responses.min === "*" ? 0 : constraints.responses.min)
-            + " - "
-            + (constraints.responses.max === "*" ? "infinite" : constraints.responses.max)
-            + ". You cas use the following controls : "
-        for(var control in constraints.controls){
-            if(constraints.controls[control]){
-                result += control;
-                result += " ";
-            }
-        }
-
-        return result + ".";
-
-    };
-
-    /**
-     * Parse the readme.md file to read notes and convert them to an html list
-     * @param {String | Buffer} p The path to the readme.md file
-     */
-    exports.mdNotesToHtml = function(p){
-
-        var file = fs.readFileSync(path.resolve(p), 'utf-8');
-        var tree = md.parse(file);
-        var res = "";
-        for(var i = 0 ; i < tree.length ; i++){
-            if (tree[i][0] === 'header' && tree[i][1].level == 2 && tree[i][2] === 'Notes') {
-                if(typeof tree[i+1][1] === "string"){
-                    res += tree[i+1][1];
-                }
-            }
-        }
-        if(res.length > 0){
-            res = res.replace(/\n\-\ /g, "<li></li>");
-            res = res.substring(2);
-            res = '<p><span class="wysiwyg-underline">Notes:</span></p><ul><li>' + res + '</li></ul>';
-        }
-
-        return res;
-    };
-
-    // EMD TODO
-
-    
     
     /**
      * Transform the patterns of a string by their real values which are in a config
@@ -715,23 +589,9 @@
                 pattern : /\{\{ADXAuthor.website\}\}/gi,
                 replacement : (config.info && config.info.site) || ""
             },
-            // TODO::Move the 2 following in publisher ZenDesk
-            {
-                pattern : /\{\{ADXProperties:HTML\}\}/gi,
-                replacement : (config.properties && exports.propertiesToHTML(config.properties)) || ""
-            },
-            {
-                pattern : /\{\{ADXListKeyWords\}\}/gi,
-                replacement : ("adc; adc2; javascript; control; design; askiadesign; " + ((config.info && config.info.name) || ""))
-            },
-            // END TODO
             {
                 pattern : /\{\{ADXVersion\}\}/gi,
                 replacement : (config.info && config.info.version) || ""
-            },
-            {
-                pattern : /\{\{ADXConstraints\}\}/gi,
-                replacement : (config.info && config.info.constraints && exports.constraintsToSentence(config.info.constraints)) || ""
             },
             {
                 pattern : /2000-01-01/,
