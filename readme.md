@@ -146,7 +146,7 @@ The 'remoteUri' should have this pattern : `https://myZendeskPlatform.zendesk.co
 If 'promoted' is set to true, the article correponding to the adc will be promoted and will appear on the main page of your zendesk platform.  
 If 'comments_disabled' is set to true, no body will be able to comment the article, which seems logic..  
 The Readme.md of the adc must contains a line containing `Notes` header level 2 with the notes following this header in order to have 
-a note section in the article
+a Note section in the article.  
 Once you have called publish with ZenDesk and the right args, it will :  
 
 * Create an article with the informations of the adc and post it in the section 'sectio_title'
