@@ -67,6 +67,12 @@ This application works through Windows PowerShell
     --promoted                the article will be promoted (appear with a star in ZenDesk Platform)
     --enableComments          the comments will be enabled on the article corresponding to the ADC on ZenDesk
     --username <name>         the username login to connect to the platform
+    --pwd <password>          the password login to connect to the platform(only for ZenDesk)
+    --sectionTitle <title>    The name of the section where the adc will be posted (ZenDesk)
+    --remoteUri <uri>         The remote URI of the platform
+    --useremail <email>       The email login to connect to the platform (GitHub Only)
+    --message <msg>           The commit message (GitHub only)
+    --force                   The commit will be forced(GitHub only). If someone changed the article on github, and you really want to update with the local version
     
 ### Generate
 
@@ -118,10 +124,34 @@ Target your ADC directory.
 
     cd C:\Users\user_name\Documents\ADXProjects\my_adx_name
     
-Then enter the following command:
+Then enter the following command with a platform argument and then the options you want:
 
-    ADXUtil publish
+    ADXUtil publish ZenDesk --sectionTitle MyFavouriteSection --pwd amazingSecret
 
+You must enter all the needed options otherwise an error will be thrown. If you don't enter all of them, the
+program will try to load your user preferences and if they don't exist it will output an error with the missing option.
+
+In case of succes, that should produce an output like:
+
+![publish (Example output)](ADCUtilPublish.png "validate (Example output)")
+
+In this case, the missing options in the command line were stored in the preferences.json.
+
+Let's describe how it works more precisely:
+
+I - ZenDesk :
+
+The options needed are : 'username', 'password', 'remoteUri', 'promoted', 'comments_disabled', 'section_title'
+The 'remoteUri' should have this pattern : https://myZendeskPlatform.zendesk.com/api/v2/help_center
+If 'promoted' is set to true, the article correponding to the adc will be promoted and will appear on the main page of your zendesk platform
+If 'comments_disabled' is set to true, no body will be able to comment the article, which seems logic..
+Once you have called publish with ZenDesk and the right args, it will :
+
+* Create an article with the informations of the adc and post it in the section 'sectio_title'
+* Upload the article attachents like the .adc, the .png (oic of an example of the survey) or the .qex.
+* Create a link to start a demo of the survey if it is available. (/!\ TODO ! Don't have the API of demo.askia ...)
+
+II - GitHub :
 
 
 

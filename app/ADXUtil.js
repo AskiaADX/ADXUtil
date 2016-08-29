@@ -80,7 +80,7 @@ program
                     common.writeError("Failed to publish the ADC : " + err);
                     return;
                 }
-                common.writeSuccess("ADC succesfuly upload");
+                common.writeSuccess("ADC succesfuly uploaded");
             });
         });
     });
