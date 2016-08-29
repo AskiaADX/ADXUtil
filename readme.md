@@ -165,6 +165,8 @@ Once you have called publish with GitHub and the right args, it will :
 * call git commit with the message 'message'
 * and then call git push
 
+If some problems happen (people changing the adc from the platform) you may fix it using the git command
+
 
 #### List of possible error messages
 
