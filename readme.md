@@ -164,6 +164,24 @@ Once you have called publish with GitHub and the right args, it will :
 * and then call git push
 
 
+#### List of possible error messages
+
+**Errors**
+
+    "Invalid `platform` argument"
+    "Missing `platform` argument"
+    "Invalid `configurator` argument"
+    "Invalid `options` argument"
+    "Invalid `title` argument"
+    "Unexisting section. Please check the section title or your logins"
+    "Missing `configurator` argument"
+    "The number of .adc files is incorrect"
+    "The number of .qex files is incorrect"
+    "The number of .png files is incorrect"
+    "Error when updating or creating this article : There are already at least two instances of this article on ZenDesk (Check in draft mode if you don't see them in help_center mode)"
+    "Missing `title` arg"
+    "Arguments are missing. Check the arguments in command line or your personal preferences file"
+
 ### Validate
 
 Start `Windows PowerShell` (`Start > All programs > Accessories > Windows PowerShell > Windows PowerShell`). 
