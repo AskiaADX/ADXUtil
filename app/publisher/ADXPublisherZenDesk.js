@@ -37,13 +37,15 @@ function PublisherZenDesk(configurator, preferences, options) {
     }
 
     // All of these options must be present either in the command line either in the preference file of the user
-    var neededOptions = ['username', 'password', 'remoteUri', 'promoted', 'comments_disabled', 'section_title'];
+    var neededOptions = ['username', 'password', 'remoteUri', 'section_title'];
     for (var i = 0, l = neededOptions.length; i < l; i++) {
         var neededOption = neededOptions[i];
         if (!this.options.hasOwnProperty(neededOption)) {
             throw new Error(errMsg.missingPublishArgs + '\n missing argument : ' + neededOption);
         }
     }
+    
+    this.options.remoteUri += "/api/v2/help_center";
     
     this.client = zenDesk.createClient({
         username    : this.options.username,
@@ -125,11 +127,11 @@ PublisherZenDesk.prototype.publish = function(callback) {
                                         }
                                     ];
 
-                                    // TODO : /!\ change show and parameter SurveyName. See for the rules to establish.
+                                    // TODO : /!\ change the url ! We don't want a redirection to the pic, but a redirection to survey demo on demo.askia...
                                     // we should upload the file to the demo server from this app
                                     replacements.push({
                                         pattern         : /\{\{ADXQexPicture\}\}/gi,
-                                        replacement     : (!attachmentsIDs.pngID)  ? '' : '<p><a href="http://show.askia.com/WebProd/cgi-bin/askiaext.dll?Action=StartSurvey&amp;SurveyName=ADC2_Gender" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentsIDs.pngID + '/' + attachmentsIDs.pngName + '" alt="" /> </a></p>'
+                                        replacement     : (!attachmentsIDs.pngID)  ? '' : '<p><a href="/hc/en-us/article_attachments/' + attachmentsIDs.pngID + '/' + attachmentsIDs.pngName + '" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentsIDs.pngID + '/' + attachmentsIDs.pngName + '" alt="" /> </a></p>'
                                     });
                                     replacements.push({
                                         pattern         : /\{\{ADXSentence:accesSurvey\}\}/gi,

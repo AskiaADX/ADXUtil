@@ -85,9 +85,6 @@ PublisherGitHub.prototype.publish = function(callback) {
                                 return;
                             }
                             var params = ['https://github.com/' + self.options.organization + '/' + self.configurator.get().info.name, 'master'];
-                            if (self.options.force) {
-                                params.push('-f');
-                            }
                             self.git.push(params, function(err, res) {
                                 if (err) {
                                     callback(err);

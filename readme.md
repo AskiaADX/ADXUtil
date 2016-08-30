@@ -73,7 +73,6 @@ This application works through Windows PowerShell
     --useremail <email>       The email login to connect to the platform (GitHub Only)
     --message <msg>           The commit message (GitHub only)
     --organization <org>      The name of the organization to publish (GitHub Only)
-    --force                   The commit will be forced(GitHub only). If someone changed the article on github, and you really want to update with the local version
     
 ### Generate
 
@@ -143,7 +142,7 @@ Let's describe how it works more precisely:
 I - ZenDesk :
 
 The options needed are : 'username', 'password', 'remoteUri', 'promoted', 'comments_disabled', 'section_title'.  
-The 'remoteUri' should have this pattern : `https://myZendeskPlatform.zendesk.com/api/v2/help_center`.  
+The 'remoteUri' should have this pattern : `https://myZendeskPlatform.zendesk.com`.  
 If 'promoted' is set to true, the article correponding to the adc will be promoted and will appear on the main page of your zendesk platform.  
 If 'comments_disabled' is set to true, no body will be able to comment the article, which seems logic..  
 The Readme.md of the adc must contains a line containing `Notes` header level 2 with the notes following this header in order to have 
