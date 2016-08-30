@@ -141,17 +141,18 @@ Let's describe how it works more precisely:
 
 I - ZenDesk :
 
-The options needed are : 'username', 'password', 'remoteUri', 'promoted', 'comments_disabled', 'section_title'.  
+The options needed are : 'username', 'password', 'remoteUri', 'section_title'.  
 The 'remoteUri' should have this pattern : `https://myZendeskPlatform.zendesk.com`.  
+There are two more optional options : 'enableComments' and 'promoted'  
 If 'promoted' is set to true, the article correponding to the adc will be promoted and will appear on the main page of your zendesk platform.  
-If 'comments_disabled' is set to true, no body will be able to comment the article, which seems logic..  
+If 'enableComments' is set to true, the people will be able to comment the article corresponding to the adc  
 The Readme.md of the adc must contains a line containing `Notes` header level 2 with the notes following this header in order to have 
 a Note section in the article.  
 Once you have called publish with ZenDesk and the right args, it will :  
 
 * Create an article with the informations of the adc and post it in the section 'sectio_title'
 * Upload the article attachents like the .adc, the .png (oic of an example of the survey) or the .qex.
-* Create a link to start a demo of the survey if it is available. (/!\ TODO ! Don't have the API of demo.askia ...)
+* Create a link to start a demo of the survey if it is available by clicking on the picture. (/!\ TODO ! Don't have the API of demo.askia ...)
 
 II - GitHub :
 
