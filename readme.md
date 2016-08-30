@@ -72,6 +72,7 @@ This application works through Windows PowerShell
     --remoteUri <uri>         The remote URI of the platform
     --useremail <email>       The email login to connect to the platform (GitHub Only)
     --message <msg>           The commit message (GitHub only)
+    --organization <org>      The name of the organization to publish (GitHub Only)
     --force                   The commit will be forced(GitHub only). If someone changed the article on github, and you really want to update with the local version
     
 ### Generate
@@ -155,12 +156,13 @@ Once you have called publish with ZenDesk and the right args, it will :
 
 II - GitHub :
 
-The options needed are : 'username', 'useremail', 'remoteUri', 'token', 'message'.  
+The options needed are : 'username', 'useremail', 'organization', 'password', 'message'.  
 
-You have to generate a token from github.com with some specific permissions. You have to tick the case which allows to create a repository.  
+The user must be able to create repos and to push in the organization.
 
 Once you have called publish with GitHub and the right args, it will :  
 
+* create a repo with the name of the adc if it does not exist
 * call git add with all files of the adc folder
 * call git commit with the message 'message'
 * and then call git push

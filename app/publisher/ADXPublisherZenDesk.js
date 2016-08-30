@@ -127,7 +127,6 @@ PublisherZenDesk.prototype.publish = function(callback) {
 
                                     // TODO : /!\ change show and parameter SurveyName. See for the rules to establish.
                                     // we should upload the file to the demo server from this app
-                                    // should use request.post like in the method uploadAvailableFiles in PublisherZenDesk
                                     replacements.push({
                                         pattern         : /\{\{ADXQexPicture\}\}/gi,
                                         replacement     : (!attachmentsIDs.pngID)  ? '' : '<p><a href="http://show.askia.com/WebProd/cgi-bin/askiaext.dll?Action=StartSurvey&amp;SurveyName=ADC2_Gender" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentsIDs.pngID + '/' + attachmentsIDs.pngName + '" alt="" /> </a></p>'

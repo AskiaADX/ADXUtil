@@ -245,16 +245,6 @@ describe('common', function () {
 
     });
 
-    describe("#propertiesToHTML", function(){
-
-        it("should throw an error when the `properties` param missing", function(){
-            expect(function(){
-                common.propertiesToHTML();
-            }).toThrow(new Error(errMsg.missingPropertiesArg));
-        }) ;
-
-    });
-
     describe('#getTemplatePath', function () {
 
         it('should throw an error when the `type` and `callback` arguments are not specified', function () {

@@ -37,12 +37,11 @@ function PublisherGitHub(configurator, preferences, options) {
     }
 
     // All of these options must be present either in the command line either in the preference file of the user
-    var neededOptions = ['username', 'useremail', 'remoteUri', 'token', 'message'];
-    for (var neededOption in neededOptions) {
-        if (neededOptions.hasOwnProperty(neededOption)) {
-            if (!this.options.hasOwnProperty(neededOptions[neededOption])) {
-                throw new Error(errMsg.missingPublishArgs);
-            }
+    var neededOptions = ['username', 'useremail', 'organization', 'password', 'message'];
+    for (var i = 0, l = neededOptions.length; i < l; i++) {
+        var neededOption = neededOptions[i];
+        if (!this.options.hasOwnProperty(neededOption)) {
+            throw new Error(errMsg.missingPublishArgs + '\n missing argument : ' + neededOption);
         }
     }
     
@@ -85,7 +84,7 @@ PublisherGitHub.prototype.publish = function(callback) {
                                 callback(err);
                                 return;
                             }
-                            var params = [self.options.remoteUri+self.configurator.get().info.name, 'master'];
+                            var params = ['https://github.com/' + self.options.organization + '/' + self.configurator.get().info.name, 'master'];
                             if (self.options.force) {
                                 params.push('-f');
                             }
@@ -132,34 +131,38 @@ PublisherGitHub.prototype.checkIfRepoExists = function(callback) {
     var configInfo  = self.configurator.get();
     var name        = configInfo.info.name;
     var description = configInfo.info.description.replace(/\n/g, "");
-
+    
     self.github.authenticate({
-        type: "oauth",
-        token: self.options.token
+        type: "basic",
+        username: self.options.username,
+        password: self.options.password
     });
 
-    self.github.repos.get({
-        user        : self.options.username,
-        repo        : name
-    },function(err){
-        if (err) {
-            if (err.code === 404 && err.status === 'Not Found') {
-                self.github.repos.create({
-                    name: name,
-                    description: description
-                },function(err, res) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    }
-                    callback(null);
-                    return;
-                });
-            }
+    self.github.repos.getForOrg({
+        org: self.options.organization
+    }, function(err, repos) {
+        if(err) {
             callback(err);
             return;
         }
-        callback(null);
+        for(var i = 0, j = repos.length ; i < j ; ++i) {
+            if(repos[i].name === name) {
+                callback(null);
+                return;
+            }
+        }
+        
+        self.github.repos.createForOrg({
+            org: self.options.organization,
+            name: name,
+            description: description
+        }, function(err, res) {
+            if(err) {
+                callback(err);
+                return;
+            }
+            callback(null);
+        });
     });
 };
 

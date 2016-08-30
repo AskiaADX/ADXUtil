@@ -8,10 +8,10 @@ describe("ADXPublisherGitHub", function() {
     var git = require('simple-git');
     var options = {
         username : "a user",
-        remoteUri : "http://uri",
+        organization : "fakeAskiaOrg",
         useremail : "user@email.com",
         message : "a msg",
-        token : "0v5ev0z6505g50rcz9841ht"
+        password : "amazingSecret"
     }
     var fs = require('fs');
         
@@ -34,11 +34,10 @@ describe("ADXPublisherGitHub", function() {
             expect(function() {
                 var notCompletedOptions = {
                     username	:	'fakeUser',
-                    remoteUri	:	'https://uri',
                 };
                 var config = new Configurator('.');
-                var publisherZenDesk = new PublisherGitHub(config, {}, notCompletedOptions);
-            }).toThrow(errMsg.missingPublishArgs);
+                var publisherGitHub = new PublisherGitHub(config, {}, notCompletedOptions);
+            }).toThrow(errMsg.missingPublishArgs + '\n missing argument : useremail' );
         });
         
     });
@@ -133,33 +132,35 @@ describe("ADXPublisherGitHub", function() {
             
             spies.authenticate = spyOn(publisherGitHub.github, "authenticate").andCallFake(function(){});
             
-            spies.create = spyOn(publisherGitHub.github.repos, "create").andCallFake(function(){});
+            spies.create = spyOn(publisherGitHub.github.repos, "createForOrg").andCallFake(function(obj, cb) {
+                cb(null);
+            });
         });
         
         it("should create a repo when it doest not exist yet", function() {
-           
-            spies.get = spyOn(publisherGitHub.github.repos, "get").andCallFake(function(params, cb) {
-                cb({
-                    code: 404,
-                    status: "Not Found"
-                });
+            
+            spies.getForOrg = spyOn(publisherGitHub.github.repos, 'getForOrg').andCallFake(function(obj, cb) {
+                cb(null, []); 
             });
             
             publisherGitHub.checkIfRepoExists(function(err) {
                 expect(spies.create).toHaveBeenCalled(); 
+                expect(err).toBe(null);
             });
             
         });
         
         it("should not create a repo if it already exists", function() {
             
-            spies.get = spyOn(publisherGitHub.github.repos, "get").andCallFake(function(params, cb) {
-                cb(null);
+            spies.getForOrg = spyOn(publisherGitHub.github.repos, 'getForOrg').andCallFake(function(obj, cb) {
+                cb(null, [{name:'a name'}]); 
             });
-                     
+            
             publisherGitHub.checkIfRepoExists(function(err) {
                 expect(spies.create).not.toHaveBeenCalled(); 
+                expect(err).toBe(null);
             });
+            
             
         });
         

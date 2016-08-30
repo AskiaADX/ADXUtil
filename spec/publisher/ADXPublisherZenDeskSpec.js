@@ -144,6 +144,7 @@ describe("ADXPublisherZenDesk", function() {
             });
 
         });
+        
     });
 
     describe("#uploadAvailableFiles", function() {
@@ -164,6 +165,35 @@ describe("ADXPublisherZenDesk", function() {
             publisherZenDesk.uploadAvailableFiles(['j.adc', 'q.qex', 'adc-hello.png'], 35, function(err, attachmentsIDs) {
                 expect(counter).toBe(3);    
             });
+        });
+        
+        it("should output an error when the upload failed", function() {
+            spies.createReadStream = spyOn(fs, 'createReadStream').andReturn('');
+            spies.post = spyOn(request, "post").andCallFake(function(obj, cb){
+                cb('a fatal error !');
+            });
+            publisherZenDesk.uploadAvailableFiles(['k.adc'], 86, function(err) {
+                expect(err).toBe('a fatal error !'); 
+            });
+        });
+        
+        it("should call the callback when all the files have been uploaded", function() {
+            spies.post = spyOn(request, "post").andCallFake(function(obj, cb){
+                cb(null, null, "{}");
+            });
+            spies.parse = spyOn(JSON, 'parse').andReturn({article_attachment:{id:56}});
+            spies.match = spyOn(String.prototype, 'match').andReturn('');
+            spies.createReadStream = spyOn(fs, 'createReadStream').andReturn('');
+            publisherZenDesk.uploadAvailableFiles(['file.adc', 'popo.qex'], 42, function(err, attachmentsIDs) {
+                expect({err: err, attachmentsIDs: attachmentsIDs}).toEqual({
+                    err: null,
+                    attachmentsIDs: {
+                        undefinedID : 56,
+                        undefinedName : undefined
+                    }
+                });
+            });
+            
         });
         
     });

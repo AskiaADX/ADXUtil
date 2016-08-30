@@ -32,6 +32,7 @@ program
     .option('--message <msg>', 'The commit message (GitHub only)')
     .option('--force', 'The commit will be forced(GitHub only). If someone changed the article on github, and you really want to update with the local version')
     .option('--token <token>', 'The token that allows you to publish')
+    .option('--organization <org>', 'The name of the organization to publish adc');
 
 
 program
@@ -73,8 +74,8 @@ program
             if ('useremail' in program) {
                 options.useremail = program.useremail;
             }
-            if ('token' in program) {
-                options.token = program.token;
+            if ('organization' in program) {
+                options.organization = program.organization;
             }
             options.force = 'force' in program;
             var adxPublisher = require('./publisher/ADXPublisher.js');
