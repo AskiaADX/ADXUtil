@@ -58,17 +58,13 @@ describe("ADXPublisherZenDesk", function() {
                 username          : 'zendesk@askia.com',
                 password          : 'secret',
                 remoteUri	      : 'https://uri',
-                promoted          : false,
-                comments_disabled : false,
                 section_title     : 'a section title'
             });
 
             expect(publisherZenDesk.options).toEqual({
                 username          : 'zendesk@askia.com',
                 password          : 'secret',
-                remoteUri	      : 'https://uri',
-                promoted          : false,
-                comments_disabled : false,
+                remoteUri	      : 'https://uri/api/v2/help_center',
                 section_title     : 'a section title'
             });
             
