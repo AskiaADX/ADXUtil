@@ -67,7 +67,7 @@ This application works through Windows PowerShell
     --promoted                the article will be promoted (appear with a star in ZenDesk Platform)
     --enableComments          the comments will be enabled on the article corresponding to the ADC on ZenDesk
     --username <name>         the username login to connect to the platform
-    --pwd <password>          the password login to connect to the platform(only for ZenDesk)
+    --pwd <password>          the password login to connect to the platform
     --sectionTitle <title>    The name of the section where the adc will be posted (ZenDesk)
     --remoteUri <uri>         The remote URI of the platform
     --useremail <email>       The email login to connect to the platform (GitHub Only)
