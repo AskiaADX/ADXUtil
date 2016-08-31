@@ -139,12 +139,12 @@ describe("ADXPublisherGitHub", function() {
         
         it("should create a repo when it doest not exist yet", function() {
             
-            spies.getForOrg = spyOn(publisherGitHub.github.repos, 'getForOrg').andCallFake(function(obj, cb) {
-                cb(null, []); 
+            spies.get = spyOn(publisherGitHub.github.repos, 'get').andCallFake(function(obj, cb) {
+                cb(null); 
             });
             
             publisherGitHub.checkIfRepoExists(function(err) {
-                expect(spies.create).toHaveBeenCalled(); 
+                expect(spies.create).not.toHaveBeenCalled(); 
                 expect(err).toBe(null);
             });
             
@@ -152,12 +152,12 @@ describe("ADXPublisherGitHub", function() {
         
         it("should not create a repo if it already exists", function() {
             
-            spies.getForOrg = spyOn(publisherGitHub.github.repos, 'getForOrg').andCallFake(function(obj, cb) {
-                cb(null, [{name:'a name'}]); 
+            spies.get = spyOn(publisherGitHub.github.repos, 'get').andCallFake(function(obj, cb) {
+                cb({code: 404}); 
             });
             
             publisherGitHub.checkIfRepoExists(function(err) {
-                expect(spies.create).not.toHaveBeenCalled(); 
+                expect(spies.create).toHaveBeenCalled(); 
                 expect(err).toBe(null);
             });
             
