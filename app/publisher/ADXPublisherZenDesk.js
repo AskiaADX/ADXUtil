@@ -129,13 +129,15 @@ PublisherZenDesk.prototype.publish = function(callback) {
 
                                     // TODO : /!\ change the url ! We don't want a redirection to the pic, but a redirection to survey demo on demo.askia...
                                     // we should upload the file to the demo server from this app
+                                    var urlToPointAt = (!self.options.surveyDemoUrl) ? '/hc/en-us/article_attachments/' + attachmentsIDs.pngID + '/' + attachmentsIDs.pngName :
+                                    self.options.surveyDemoUrl ;
                                     replacements.push({
                                         pattern         : /\{\{ADXQexPicture\}\}/gi,
-                                        replacement     : (!attachmentsIDs.pngID)  ? '' : '<p><a href="/hc/en-us/article_attachments/' + attachmentsIDs.pngID + '/' + attachmentsIDs.pngName + '" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentsIDs.pngID + '/' + attachmentsIDs.pngName + '" alt="" /> </a></p>'
+                                        replacement     : (!attachmentsIDs.pngID)  ? '' : '<p><a href="' + urlToPointAt + '" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentsIDs.pngID + '/' + attachmentsIDs.pngName + '" alt="" /> </a></p>'
                                     });
                                     replacements.push({
                                         pattern         : /\{\{ADXSentence:accesSurvey\}\}/gi,
-                                        replacement     : (!attachmentsIDs.pngID) ? '' : '<li>To access to the live survey, click on the picture above.</li>'
+                                        replacement     : (!self.options.surveyDemoUrl) ? '' : '<li>To access to the live survey, click on the picture above.</li>'
                                     });
 
                                     var articleUpdated = common.evalTemplate(article.body, {}, replacements);
@@ -152,12 +154,20 @@ PublisherZenDesk.prototype.publish = function(callback) {
 
 
 /**
- * List all the sections. This method
-
+ * List all the sections. This method has been implemented for the integration in ADXStudio
+ * @param {Function} callback
  */
-/*PublisherZenDesk.protoype.listSections = function(callback) {
+PublisherZenDesk.prototype.listSections = function(callback) {
+    var self = this ;
     
-};*/
+    self.client.sections.list(function(err, req, res) {
+        if(err) {
+            callback(err);
+            return;
+        } 
+        callback(res);
+    });
+};
 
 /**
  * Upload all the files that are available (.adc, .qex, .png)

@@ -31,7 +31,8 @@ program
     .option('--useremail <email>', 'The email login to connect to the platform (GitHub Only)')
     .option('--message <msg>', 'The commit message (GitHub only)')
     .option('--token <token>', 'The token that allows you to publish')
-    .option('--organization <org>', 'The name of the organization to publish adc');
+    .option('--organization <org>', 'The name of the organization to publish adc')
+    .option('--surveyDemoUrl <url>' , 'The url to start the demo survey online');
 
 
 program
@@ -75,6 +76,9 @@ program
             }
             if ('organization' in program) {
                 options.organization = program.organization;
+            }
+            if ('surveyDemoUrl' in program) {
+                options.surveyDemoUrl = program.surveyDemoUrl;
             }
             var adxPublisher = require('./publisher/ADXPublisher.js');
             var publisher = new adxPublisher.Publisher(configurator);

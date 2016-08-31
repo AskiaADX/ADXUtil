@@ -73,6 +73,7 @@ This application works through Windows PowerShell
     --useremail <email>       The email login to connect to the platform (GitHub Only)
     --message <msg>           The commit message (GitHub only)
     --organization <org>      The name of the organization to publish (GitHub Only)
+	--surveyDemoUrl <url>	The url to start the survey demo
     
 ### Generate
 
@@ -148,9 +149,10 @@ I - ZenDesk :
 
 The options needed are : 'username', 'pwd', 'remoteUri', 'sectionTitle'.  
 The 'remoteUri' should have this pattern : `https://myZendeskPlatform.zendesk.com`.  
-There are two more optional options : 'enableComments' and 'promoted'  
+There are tree more optional options : 'enableComments', 'promoted' and 'surveyDemoUrl'  
 If 'promoted' is set to true, the article correponding to the adc will be promoted and will appear on the main page of your zendesk platform.  
 If 'enableComments' is set to true, the people will be able to comment the article corresponding to the adc.  
+If there is 'surveyDemoUrl' a link to the survey will be available if you you click on the picture. Otherwise if you click on the picture it will redirect on the pic itself.  
 The Readme.md of the adc must contains a line containing `Notes` header level 2 with the notes following this header in order to have 
 a Note section in the article.  
 Once you have called publish with ZenDesk and the right args, it will :  
