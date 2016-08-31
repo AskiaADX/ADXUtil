@@ -150,6 +150,15 @@ PublisherZenDesk.prototype.publish = function(callback) {
     });
 };
 
+
+/**
+ * List all the sections. This method
+
+ */
+/*PublisherZenDesk.protoype.listSections = function(callback) {
+    
+};*/
+
 /**
  * Upload all the files that are available (.adc, .qex, .png)
  * @param {Array} files An array containing Strings which are the absolute paths of the files
@@ -232,8 +241,6 @@ PublisherZenDesk.prototype.deleteArticle = function(title, section_id, callback)
 
         // Delete the article
         self.client.articles.delete(idToDelete, function(err) {
-            
-            // TODO::Should be uncomment when the test has been implemented
              callback(err);
         });
     });
@@ -347,12 +354,13 @@ generateHTMLcodeForCategory = function (category) {
  * @param {Object} an object containing the options of a property.
  */
 generateHTMLcodeForOptions = function(opt){
-    var result = '';
-    for(var i in opt){
-        result += opt[i].value ;
-        result += ' '
+    
+    var values = [];
+    for(var i = 0 , j = opt.length ; i < j ; ++i) {
+        values.push(opt[i].text);
     }
-    return result;
+    return values.join(", ");
+    
 };
 
 
@@ -396,28 +404,33 @@ PublisherZenDesk.prototype.propertiesToHTML = function (prop) {
  * @param {Object} constraints The constraints.
  */
 PublisherZenDesk.prototype.constraintsToSentence = function(constraints) {
-    var result = "This control is compatible with " + (constraints.questions.single ? "single" : "")
-        + (constraints.questions.multiple ? "multiple" : "")
-        + (constraints.questions.numeric ? "numeric" : "")
-        + (constraints.questions.date ? "date" : "")
-        + (constraints.questions.open ? "open" : "")
-        + (constraints.questions.chapter ? "chapter" : "")
+    
+    var questions = [], controls = [];
+    
+    for(var key in constraints.questions) {
+        if(constraints.questions[key]) {
+            questions.push(key);
+        }
+    }
+    for(var key in constraints.controls) {
+        if(constraints.controls[key]) {
+            controls.push(key);
+        }
+    }
+        
+    var result = "This control is compatible with " 
+        + questions.join(", ")
         + " questions"
-        + (constraints.questions.loop ? "( loop)" : "")
         + ". Number of responses(min-max) : "
         + (constraints.responses.min === "*" ? 0 : constraints.responses.min)
         + " - "
         + (constraints.responses.max === "*" ? "infinite" : constraints.responses.max)
         + ". You can use the following controls : "
-    for(var control in constraints.controls){
-        if(constraints.controls[control]){
-            result += control;
-            result += " ";
-        }
-    }
-
-    return result + ".";
-
+        + controls.join(", ")
+        + ".";
+    
+    return result;
+    
 };
 
 /**

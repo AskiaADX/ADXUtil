@@ -86,11 +86,7 @@ PublisherGitHub.prototype.publish = function(callback) {
                             }
                             var params = ['https://github.com/' + self.options.organization + '/' + self.configurator.get().info.name, 'master'];
                             self.git.push(params, function(err, res) {
-                                if (err) {
-                                    callback(err);
-                                    return;
-                                }
-                                callback(null);
+                                callback(err);
                             });
                         });
                     });
@@ -134,32 +130,21 @@ PublisherGitHub.prototype.checkIfRepoExists = function(callback) {
         username: self.options.username,
         password: self.options.password
     });
-
-    self.github.repos.getForOrg({
-        org: self.options.organization
-    }, function(err, repos) {
-        if(err) {
-            callback(err);
+    self.github.repos.get({
+        user: self.options.organization,
+        repo: name
+    }, function(err) {
+        if(err && err.code === 404) {
+            self.github.repos.createForOrg({
+                org: self.options.organization,
+                name: name,
+                description: description
+            }, function(err, res) {
+                callback(err);
+            });
             return;
         }
-        for(var i = 0, j = repos.length ; i < j ; ++i) {
-            if(repos[i].name === name) {
-                callback(null);
-                return;
-            }
-        }
-        
-        self.github.repos.createForOrg({
-            org: self.options.organization,
-            name: name,
-            description: description
-        }, function(err, res) {
-            if(err) {
-                callback(err);
-                return;
-            }
-            callback(null);
-        });
+        callback(err);
     });
 };
 
