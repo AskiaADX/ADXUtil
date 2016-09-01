@@ -1,6 +1,16 @@
 describe("ADXPublisherZenDesk", function() {
     var fs					= require('fs'),
         spies				= {},
+        sectionLists = [
+            {
+                name: "a_section",
+                id: 40
+            },
+            {
+                name: "section_found",
+                id: 60
+            }
+        ],
         options				= {
             username	:	'zendesk@askia.com',
             remoteUri	:	'https://uri',
@@ -14,12 +24,88 @@ describe("ADXPublisherZenDesk", function() {
         Configurator        = require('../../app/configurator/ADXConfigurator.js').Configurator,
         PublisherZenDesk	= require('../../app/publisher/ADXPublisherZenDesk.js').PublisherZenDesk,
         zenDesk             = require('node-zendesk'),
-        request             = require('request');
+        request             = require('request'),
+        fakeClient          = {
+            articles : {
+                create : function (id, jsonArticle, cb) {
+                    cb(null, null, {
+                        id : 12,
+                        body : 'something'
+                    });
+                },
+                listBySection : function (id, cb) {
+                    cb(null, null, []);
+                }
+            },
+            translations : {
+                updateForArticle : function (a, b, c, cb) {
+                    cb(null);
+                }
+            },
+            sections : {
+                list : function (cb){
+                    cb(null, null, sectionLists);
+                }
+            }
+        };
+
+    function runSync(fn) {
+        var wasCalled = false;
+        runs(function () {
+            fn(function () {
+                wasCalled = true;
+            });
+        });
+        waitsFor(function () {
+            return wasCalled;
+        });
+    }
 
     beforeEach(function() {
+        spies.configurator = {
+            get  : spyOn(Configurator.prototype, 'get')
+        };
+
+        spies.configurator.get.andReturn({
+            info : {
+                name : 'test-adx',
+                constraints : {}
+            },
+            properties : [{
+                id : 'something',
+                name : 'something'
+            }]
+        });
+
         spies.fs = {
-            readFile : spyOn(fs, 'readFile')
+            readFile : spyOn(fs, 'readFile'),
+            stat     : spyOn(fs, 'stat')
          };
+        spies.fs.stat.andCallFake(function (p, cb) {
+            cb(null, {
+                isFile : function () {
+                    return true;
+                }
+            });
+        });
+        spies.fs.readFile.andCallFake(function (p, o, cb) {
+            cb(null, 'a text')
+        });
+        spies.zendesk = {
+            createClient : spyOn(zenDesk, 'createClient')
+        };
+        spies.zendesk.createClient.andReturn(fakeClient);
+        spies.request = {
+            post : spyOn(request, 'post')
+        };
+        spies.request.post.andCallFake(function (obj, cb) {
+            cb(null, null, JSON.stringify({
+                article_attachment : {
+                    id : 'an id',
+                    file_name : 'a file_name'
+                }
+            }));
+        });
     });
 
 
@@ -50,10 +136,22 @@ describe("ADXPublisherZenDesk", function() {
             }).toThrow(errMsg.missingPublishArgs + '\n missing argument : password'); //first missing arg here is password
         });
 
-        it("should instantiate the zendesk client when everything is ok", function() {
+        it('should instantiate the zendesk#configurator when everyting is ok', function () {
+            var config = new Configurator('.');
+
+            var publisherZenDesk = new PublisherZenDesk(config, {}, {
+                username          : 'zendesk@askia.com',
+                password          : 'secret',
+                remoteUri	      : 'https://uri',
+                section_title     : 'a section title'
+            });
+
+            expect(publisherZenDesk.configurator).toBe(config);
+        });
+
+        it("should instantiate the zendesk with the right options", function() {
 
             var config = new Configurator('.');
-            spies.zendeskClient = spyOn(zenDesk, 'createClient').andReturn('');
             var publisherZenDesk = new PublisherZenDesk(config, {}, {
                 username          : 'zendesk@askia.com',
                 password          : 'secret',
@@ -67,81 +165,84 @@ describe("ADXPublisherZenDesk", function() {
                 remoteUri	      : 'https://uri/api/v2/help_center',
                 section_title     : 'a section title'
             });
-            
-            expect(publisherZenDesk.configurator).toBe(config);
-
         });
+
+        it("should instantiate the zendesk#client when everything is ok", function() {
+            var config = new Configurator('.');
+            var publisherZenDesk = new PublisherZenDesk(config, {}, {
+                username          : 'zendesk@askia.com',
+                password          : 'secret',
+                remoteUri	      : 'https://uri',
+                section_title     : 'a section title'
+            });
+
+            expect(publisherZenDesk.client).toBe(fakeClient);
+        });
+
     });
 
     describe("#publish", function() {
 
-        var config = new Configurator('.');
-        var publisherZenDesk = new PublisherZenDesk(config, {}, options);
-
-
-        beforeEach(function() {
-             var result = [
-                 {
-                      name: "une_section",
-                      id: 40
-                 },
-                 {
-                     name: "section_found",
-                     id: 60
-                 }
-            ];
-
-
-            spies.listSection = spyOn(publisherZenDesk.client.sections, "list").andCallFake(function(callback) {
-                callback(null, "", result);
+        it("should output an error when the section is not found", function() {
+            var config = new Configurator('.');
+            var publisherZenDesk = new PublisherZenDesk(config, {}, {
+                username	:	'zendesk@askia.com',
+                remoteUri	:	'https://uri',
+                password    :   'mdp',
+                promoted    :    false,
+                comments_disabled : false,
+                section_title : 'an unexisting section'
             });
 
-            spies.findSectionIdByTitle = spyOn(publisherZenDesk, 'findSectionIdByTitle').andCallFake(function(title, cb) {
-                cb(null, 86);
-            });
-
-
-            spies.createJSONArticle = spyOn(PublisherZenDesk.prototype, 'createJSONArticle').andCallFake(function(cb) {
-               cb(null, {
-                    "article": {
-                        "title": 'titre',
-                        "body": 'body',
-                        "promoted": false,
-                        "comments_disabled": false
-                    }
-               });
-            });
-
-            spies.deleteArticle = spyOn(PublisherZenDesk.prototype, 'deleteArticle').andCallFake(function(title, section_id, cb) {
-                cb(null);
-            });
-
-
-            spies.articles_create = spyOn(publisherZenDesk.client.articles, 'create').andCallFake(function(id, article, cb) {
-                cb(null, "", {
-                        name: "un article",
-                        id: 42
+            runSync(function (done) {
+                publisherZenDesk.publish(function(err) {
+                    expect(err).not.toBe(null);
+                    done();
                 });
             });
         });
 
         it("should output an error when the .adc file is missing in " + common.ADC_PATH, function() {
-            
-            spies.infoname = spyOn(config, 'get').andReturn({
-                info:{
-                    name: 'test-adx'
+            var config = new Configurator('.');
+            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+            spies.fs.stat.andCallFake(function (p, cb) {
+                if (/test-adx\.adc$/.test(p)) {
+                    cb(new Error('something wrong'));
+                    return;
                 }
-            });
-            spies.stats = spyOn(fs, 'stat').andCallFake(function(path, callback) {
-                callback(null, null);
-             });
-            publisherZenDesk.publish(function(err) {
-                expect(err).toBe(errMsg.badNumberOfADCFiles);
+                cb(null, {
+                    isFile : function () {
+                        return true;
+                    }
+                });
             });
 
+            runSync(function (done) {
+                publisherZenDesk.publish(function(err) {
+                    expect(err).toBe(errMsg.badNumberOfADCFiles);
+                    done();
+                });
+            });
         });
-        
+
+        it("should output an error when it could not read the article template", function () {
+            var config = new Configurator('.');
+            var error = new Error('An error');
+            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+            spies.fs.readFile.andCallFake(function (p, o, cb) {
+                cb(error);
+            });
+
+            runSync(function (done) {
+                publisherZenDesk.publish(function(err) {
+                    expect(err).toBe(error);
+                    done();
+                });
+            });
+        });
     });
+
+    return;
 
     describe("#uploadAvailableFiles", function() {
         
@@ -339,13 +440,6 @@ describe("ADXPublisherZenDesk", function() {
             spies.constraintsToSentence = spyOn(PublisherZenDesk.prototype, "constraintsToSentence").andReturn('sentence');
             
             spies.evalTemplate = spyOn(common, 'evalTemplate').andReturn('the-body');
-
-            spies.infoname = spyOn(config, 'get').andReturn({
-                info:{
-                    name: 'test-adx',
-                    constraints: 'constraints'
-                }
-            });
 
             publisherZenDesk.createJSONArticle(function(err, article) {
                 expect(article).toEqual({

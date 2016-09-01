@@ -26,6 +26,7 @@ function PublisherZenDesk(configurator, preferences, options) {
     this.options = options || {};
     this.configurator = configurator;
 
+
     if (preferences) {
         for (var option in preferences.zendesk) {
             if (preferences.zendesk.hasOwnProperty(option)) {
@@ -36,6 +37,7 @@ function PublisherZenDesk(configurator, preferences, options) {
         }
     }
 
+
     // All of these options must be present either in the command line either in the preference file of the user
     var neededOptions = ['username', 'password', 'remoteUri', 'section_title'];
     for (var i = 0, l = neededOptions.length; i < l; i++) {
@@ -44,16 +46,15 @@ function PublisherZenDesk(configurator, preferences, options) {
             throw new Error(errMsg.missingPublishArgs + '\n missing argument : ' + neededOption);
         }
     }
-    
+
     this.options.remoteUri += "/api/v2/help_center";
-    
+
     this.client = zenDesk.createClient({
         username    : this.options.username,
         password    : this.options.password,
         remoteUri	: this.options.remoteUri,
         helpcenter 	: true  // IMPORTANT: Should be always set to true, otherwise the article methods are not available
     });
-    
 }
 
 
@@ -272,6 +273,7 @@ PublisherZenDesk.prototype.createJSONArticle = function(callback) {
             callback(err);
             return;
         }
+        var conf = self.configurator.get();
 
         var replacements = [{
             pattern : /\{\{ADXNotes\}\}/gi,
@@ -279,22 +281,22 @@ PublisherZenDesk.prototype.createJSONArticle = function(callback) {
         },
         {
             pattern : /\{\{ADXProperties:HTML\}\}/gi,
-            replacement : self.propertiesToHTML(self.configurator.get().properties)
+            replacement : self.propertiesToHTML(conf.properties)
         },
         {
             pattern : /\{\{ADXListKeyWords\}\}/gi,
-            replacement : "adc; adc2; javascript; control; design; askiadesign; " + self.configurator.get().info.name
+            replacement : "adc; adc2; javascript; control; design; askiadesign; " + conf.info.name
         },
         {
             pattern : /\{\{ADXConstraints\}\}/gi,
-            replacement : self.constraintsToSentence(self.configurator.get().info.constraints)
+            replacement : self.constraintsToSentence(conf.info.constraints)
         }];
         
-        var body = common.evalTemplate(data, self.configurator.get(), replacements);
+        var body = common.evalTemplate(data, conf, replacements);
 
         var article = {
             "article": {
-                "title": self.configurator.get().info.name,
+                "title": conf.info.name,
                 "body": body,
                 "promoted": self.options.promoted,
                 "comments_disabled": self.options.comments_disabled
@@ -314,7 +316,6 @@ PublisherZenDesk.prototype.createJSONArticle = function(callback) {
  * @param {Error} [callback.err=null]
  */
 PublisherZenDesk.prototype.findSectionIdByTitle = function (title, callback) {
-    
     var self = this ;
     if (!title) {
         callback(errMsg.missingSectionTitleArg);
@@ -327,6 +328,7 @@ PublisherZenDesk.prototype.findSectionIdByTitle = function (title, callback) {
     }
     
     self.client.sections.list(function (err, req, result) {
+
         if (err) {
             if (typeof callback === "function") {
                 callback(err);
@@ -391,9 +393,8 @@ generateHTMLcodeForProperty = function (property) {
  * @param {Object} properties The properties. Should give configurator.get().properties
  */
 PublisherZenDesk.prototype.propertiesToHTML = function (prop) {
-
-    if(!prop){
-        throw new Error(exports.messages.error.missingPropertiesArg);
+    if (!prop) {
+        throw new Error(errMsg.missingPropertiesArg);
     }
 
 
@@ -415,32 +416,44 @@ PublisherZenDesk.prototype.propertiesToHTML = function (prop) {
  */
 PublisherZenDesk.prototype.constraintsToSentence = function(constraints) {
     
-    var questions = [], controls = [];
-    
-    for(var key in constraints.questions) {
-        if(constraints.questions[key]) {
-            questions.push(key);
+    var questions = [], controls = [], key
+
+    if (constraints.questions) {
+        for (key in constraints.questions) {
+            if (constraints.questions.hasOwnProperty(key) && constraints.questions[key]) {
+                questions.push(key);
+            }
         }
     }
-    for(var key in constraints.controls) {
-        if(constraints.controls[key]) {
-            controls.push(key);
+    if (constraints.controls) {
+        for (key in constraints.controls) {
+            if (constraints.controls.hasOwnProperty(key) && constraints.controls[key]) {
+                controls.push(key);
+            }
         }
     }
-        
-    var result = "This control is compatible with " 
-        + questions.join(", ")
-        + " questions"
-        + ". Number of responses(min-max) : "
-        + (constraints.responses.min === "*" ? 0 : constraints.responses.min)
-        + " - "
-        + (constraints.responses.max === "*" ? "infinite" : constraints.responses.max)
-        + ". You can use the following controls : "
-        + controls.join(", ")
-        + ".";
-    
-    return result;
-    
+
+    var responseMin = null;
+    if (constraints.responses && constraints.responses.min === "*") {
+        responseMin = constraints.responses.min;
+    }
+
+    var responseMax = null;
+    if (constraints.responses && constraints.responses.max === "*") {
+        responseMax = constraints.responses.max;
+    }
+    var numberOfResponses = '';
+    if (responseMin !== null && responseMax !== null) {
+        numberOfResponses = ". Number of responses(min-max) : ";
+        numberOfResponses +=  responseMin || 0;
+        numberOfResponses += " - " + (responseMax || 0);
+    }
+
+    return "This control is compatible with " +
+        questions.join(", ") +
+        " questions" + numberOfResponses +
+        ". You can use the following controls : " +
+        controls.join(", ") + ".";
 };
 
 /**
