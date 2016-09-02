@@ -35,6 +35,9 @@ describe("ADXPublisherZenDesk", function() {
                 },
                 listBySection : function (id, cb) {
                     cb(null, null, []);
+                },
+                delete : function (id, cb) {
+                    cb(null);
                 }
             },
             translations : {
@@ -65,7 +68,6 @@ describe("ADXPublisherZenDesk", function() {
         spies.configurator = {
             get  : spyOn(Configurator.prototype, 'get')
         };
-
         spies.configurator.get.andReturn({
             info : {
                 name : 'test-adx',
@@ -76,7 +78,6 @@ describe("ADXPublisherZenDesk", function() {
                 name : 'something'
             }]
         });
-
         spies.fs = {
             readFile : spyOn(fs, 'readFile'),
             stat     : spyOn(fs, 'stat')
@@ -238,6 +239,74 @@ describe("ADXPublisherZenDesk", function() {
                     expect(err).toBe(error);
                     done();
                 });
+            });
+        });
+        
+        it("should output an error when it could not retrieve the list of article within the section", function () {
+            var config = new Configurator('.');
+            var error = new Error('An error');
+            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+            spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
+                cb(error);
+            });
+
+            runSync(function (done) {
+                publisherZenDesk.publish(function(err) {
+                    expect(err).toBe(error);
+                    done();
+                });
+            });
+        });
+        
+        it("should output an error when it found duplicate article title", function () {
+            var config = new Configurator('.');
+            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+            spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
+                cb(null, null, [
+                    {id : 1, name : "test-adx"},
+                    {id : 2, name : "test-adx"}
+                ]);
+            });
+
+            runSync(function (done) {
+                publisherZenDesk.publish(function(err) {
+                    expect(err).toBe(errMsg.tooManyArticlesExisting);
+                    done();
+                });
+            });
+        });
+        
+        it("should delete the article when it found one with the same name", function () {
+            var config = new Configurator('.');
+            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+            spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
+                cb(null, null, [
+                    {id : 1, name : "test-adx"}
+                ]);
+            });
+
+            runSync(function (done) {
+                var deleteMock = spyOn(fakeClient.articles, "delete");
+                var id;
+                deleteMock.andCallFake(function (i) {
+                    id = i;
+                });
+                publisherZenDesk.publish(function() {});
+                expect(deleteMock).toHaveBeenCalled();
+                expect(id).toBe(1);
+                done();
+            });
+        });
+        
+        it("should not delete the article when it not found", function () {
+            var config = new Configurator('.');
+            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+            
+            runSync(function (done) {
+                var deleteMock = spyOn(fakeClient.articles, "delete");
+                publisherZenDesk.publish(function() {});
+                expect(deleteMock).not.toHaveBeenCalled();
+                done();
             });
         });
     });

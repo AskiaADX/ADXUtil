@@ -14,18 +14,15 @@ var md              = require('markdown').markdown;
  * @param {Object} options Options of the platform, if the options are not specified the user preferences will be loaded.
  */
 function PublisherZenDesk(configurator, preferences, options) {
-
     if (!configurator) {
         throw new Error(errMsg.missingConfiguratorArg);
     }
-
     if (!(configurator instanceof Configurator)) {
         throw new Error(errMsg.invalidConfiguratorArg);
     }
 
     this.options = options || {};
     this.configurator = configurator;
-
 
     if (preferences) {
         for (var option in preferences.zendesk) {
@@ -37,7 +34,6 @@ function PublisherZenDesk(configurator, preferences, options) {
         }
     }
 
-
     // All of these options must be present either in the command line either in the preference file of the user
     var neededOptions = ['username', 'password', 'remoteUri', 'section_title'];
     for (var i = 0, l = neededOptions.length; i < l; i++) {
@@ -48,7 +44,6 @@ function PublisherZenDesk(configurator, preferences, options) {
     }
 
     this.options.remoteUri += "/api/v2/help_center";
-
     this.client = zenDesk.createClient({
         username    : this.options.username,
         password    : this.options.password,
@@ -57,6 +52,124 @@ function PublisherZenDesk(configurator, preferences, options) {
     });
 }
 
+/**
+ * Create the JSON formatted article
+ * @param {PublisherZenDesk} self
+ * @param {Function} callback
+ * @param {Error} [callback.err=null]
+ */
+function createJSONArticle (self, callback) {
+    fs.readFile(path.join(__dirname,"../../", common.ZENDESK_ARTICLE_TEMPLATE_PATH), 'utf-8', function(err, data) {
+        if (err) {
+            callback(err);
+            return;
+        }
+        
+        var conf = self.configurator.get();
+        var replacements = [{
+            pattern : /\{\{ADXNotes\}\}/gi,
+            replacement : self.mdNotesToHtml(path.join(self.configurator.path, "Readme.md"))
+        },
+        {
+            pattern : /\{\{ADXProperties:HTML\}\}/gi,
+            replacement : self.propertiesToHTML(conf.properties)
+        },
+        {
+            pattern : /\{\{ADXListKeyWords\}\}/gi,
+            replacement : "adc; adc2; javascript; control; design; askiadesign; " + conf.info.name
+        },
+        {
+            pattern : /\{\{ADXConstraints\}\}/gi,
+            replacement : self.constraintsToSentence(conf.info.constraints)
+        }];
+        
+        callback(null, {
+            "article": {
+                "title": conf.info.name,
+                "body": common.evalTemplate(data, conf, replacements),
+                "promoted": self.options.promoted,
+                "comments_disabled": self.options.comments_disabled
+            }
+        });
+    });
+}
+
+/**
+ * Find the section id of a section with the Title
+ * @param {PublisherZenDesk} self
+ * @param {Function} callback
+ * @param {Error} [callback.err=null]
+ */
+function findSectionIdByTitle(self, callback) {
+    var title = self.options.section_title;
+    
+    if (typeof title !== 'string') {
+        callback(errMsg.invalidSectionTitleArg);
+        return;
+    }
+    
+    self.client.sections.list(function (err, req, result) {
+        if (err) {
+            if (typeof callback === "function") {
+                callback(err);
+            }
+            return;
+        }
+        
+        for (var section in result) {
+            if (result[section].name === title) {
+                if (typeof callback === "function") {
+                	callback(null, result[section].id);
+                    return;
+                }
+            }
+        }
+        callback(errMsg.unexistingSection);
+    });
+}
+
+/**
+ * Delete the article (if already exist) in the specified section
+ * pre-condition : there is the possibility to have two articles with the same name but not in the same section
+ * @param {PublisherZenDesk} self
+ * @param {String} title The title of the article to check
+ * @param {Function} callback
+ * @param {Error} [callback.err=null]
+ */
+function deleteArticle(self, title, section_id, callback) {
+    self.client.articles.listBySection(section_id, function(err, req, result) {
+        if (err) {
+            if (typeof callback === "function") {
+                callback(err);
+            }
+            return;
+        }
+
+        //the part below is needed to check if some people added articles directly from the web
+        var idToDelete = 0;
+
+        for (var i = 0, l = result.length; i < l; i += 1) {
+            if (result[i].name === title) {
+                if (idToDelete) { // Already exist
+                    callback(errMsg.tooManyArticlesExisting);
+                    return;
+                }
+                idToDelete = result[i].id ;
+            }
+        }
+
+        // No article to delete
+        if (!idToDelete) {
+            callback(null);
+            return;
+        }
+
+        // Delete the article
+        self.client.articles.delete(idToDelete, function(err) {
+            callback(err);
+        });
+    });
+}
 
 /**
  * Publish the article on the ZenDesk platform
@@ -64,24 +177,23 @@ function PublisherZenDesk(configurator, preferences, options) {
  * @param {Error} [callback.err=null]
 */
 PublisherZenDesk.prototype.publish = function(callback) {
+    var self = this;
 
-    var  self = this ;
-
-    self.findSectionIdByTitle(self.options.section_title, function(err, id) {
+    findSectionIdByTitle(self, function(err, id) {
         if (err) {
             if (typeof callback === "function") {
                 callback(err);
             }
             return;
         }
-        self.createJSONArticle(function(err, jsonArticle) {
+        createJSONArticle(self, function(err, jsonArticle) {
             if (err) {
                 if (typeof callback === "function") {
                     callback(err);
                 }
                 return;
             }
-            self.deleteArticle(jsonArticle.article.title, id, function(err) {
+            deleteArticle(self, jsonArticle.article.title, id, function(err) {
                 if (err) {
                     if (typeof callback === "function") {
                         callback(err);
@@ -213,139 +325,10 @@ PublisherZenDesk.prototype.uploadAvailableFiles = function(files, articleId, cal
     uploadAvailableFilesRecursive(0);
 };
 
-/**
- * Delete the article (if already exist) in the specified section
- * pre-condition : there is the possibility to have two articles with the same name but not in the same section
- * @param {String} title The title of the article to check
- * @param {Function} callback
- * @param {Error} [callback.err=null]
- */
-PublisherZenDesk.prototype.deleteArticle = function(title, section_id, callback) {
-
-    var self = this ;
-
-    self.client.articles.listBySection(section_id, function(err, req, result) {
-        if (err) {
-            if (typeof callback === "function") {
-                callback(err);
-            }
-            return;
-        }
-        
-        //the part below is needed to check if some people added articles directly from the web
-        var idToDelete = 0;
-        for (var i = 0, l = result.length; i < l; i += 1) {
-            if (result[i].name === title) {
-                if (idToDelete) { // Already exist
-                    callback(errMsg.tooManyArticlesExisting);
-                    return;
-                }
-                idToDelete = result[i].id ;
-            }
-        }
-
-        // No article to delete
-        if (!idToDelete) {
-            callback(null);
-            return;
-        }
-
-        // Delete the article
-        self.client.articles.delete(idToDelete, function(err) {
-             callback(err);
-        });
-    });
-};
 
 
-/**
- * Create the JSON formatted article
- * @param {Function} callback
- * @param {Error} [callback.err=null]
- */
-PublisherZenDesk.prototype.createJSONArticle = function(callback) {
-
-    var self = this ;
 
 
-    fs.readFile(path.join(__dirname,"../../", common.ZENDESK_ARTICLE_TEMPLATE_PATH), 'utf-8', function(err, data) {
-        if (err) {
-            callback(err);
-            return;
-        }
-        var conf = self.configurator.get();
-
-        var replacements = [{
-            pattern : /\{\{ADXNotes\}\}/gi,
-            replacement : self.mdNotesToHtml(path.join(self.configurator.path, "Readme.md"))
-        },
-        {
-            pattern : /\{\{ADXProperties:HTML\}\}/gi,
-            replacement : self.propertiesToHTML(conf.properties)
-        },
-        {
-            pattern : /\{\{ADXListKeyWords\}\}/gi,
-            replacement : "adc; adc2; javascript; control; design; askiadesign; " + conf.info.name
-        },
-        {
-            pattern : /\{\{ADXConstraints\}\}/gi,
-            replacement : self.constraintsToSentence(conf.info.constraints)
-        }];
-        
-        var body = common.evalTemplate(data, conf, replacements);
-
-        var article = {
-            "article": {
-                "title": conf.info.name,
-                "body": body,
-                "promoted": self.options.promoted,
-                "comments_disabled": self.options.comments_disabled
-            }
-        };
-        callback(null, article);
-
-    });
-
-};
-
-
-/**
- * Find the section id of a section with the Title
- * @param {String} title Section title
- * @param {Function} callback
- * @param {Error} [callback.err=null]
- */
-PublisherZenDesk.prototype.findSectionIdByTitle = function (title, callback) {
-    var self = this ;
-    if (!title) {
-        callback(errMsg.missingSectionTitleArg);
-        return;
-    }
-
-    if (typeof title !== 'string') {
-        callback(errMsg.invalidSectionTitleArg);
-        return;
-    }
-    
-    self.client.sections.list(function (err, req, result) {
-
-        if (err) {
-            if (typeof callback === "function") {
-                callback(err);
-            }
-            return;
-        }
-        for (var section in result) {
-            if (result[section].name === title) {
-                if (typeof callback === "function") {
-                	callback(null, result[section].id);
-                    return;
-                }
-            }
-        }
-        callback(errMsg.unexistingSection);
-    });
-};
 
 
 /**
