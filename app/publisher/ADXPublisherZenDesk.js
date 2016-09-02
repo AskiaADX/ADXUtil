@@ -108,6 +108,8 @@ function findSectionIdByTitle(self, callback) {
         return;
     }
     
+    title = title.toLowerCase();
+    
     self.client.sections.list(function (err, req, result) {
         if (err) {
             if (typeof callback === "function") {
@@ -115,15 +117,16 @@ function findSectionIdByTitle(self, callback) {
             }
             return;
         }
-        
+
         for (var section in result) {
-            if (result[section].name === title) {
+            if (result[section].name.toLowerCase() === title) {
                 if (typeof callback === "function") {
                 	callback(null, result[section].id);
                     return;
                 }
             }
         }
+        
         callback(errMsg.unexistingSection);
     });
 }

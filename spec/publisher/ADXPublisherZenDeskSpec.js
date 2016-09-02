@@ -81,7 +81,7 @@ describe("ADXPublisherZenDesk", function() {
         spies.fs = {
             readFile : spyOn(fs, 'readFile'),
             stat     : spyOn(fs, 'stat')
-         };
+        };
         spies.fs.stat.andCallFake(function (p, cb) {
             cb(null, {
                 isFile : function () {
@@ -114,13 +114,13 @@ describe("ADXPublisherZenDesk", function() {
 
         it("should throw an error when the `configurator` argument is missing", function() {
             expect(function() {
-            	var publisherZenDesk = new PublisherZenDesk();
+                var publisherZenDesk = new PublisherZenDesk();
             }).toThrow(errMsg.missingConfiguratorArg);
         });
 
         it("should throw an error when the `configurator` argument is invalid", function() {
             expect(function() {
-            	var publisherZenDesk = new PublisherZenDesk({});
+                var publisherZenDesk = new PublisherZenDesk({});
             }).toThrow(errMsg.invalidConfiguratorArg);
         });
 
@@ -184,23 +184,98 @@ describe("ADXPublisherZenDesk", function() {
 
     describe("#publish", function() {
 
-        it("should output an error when the section is not found", function() {
-            var config = new Configurator('.');
-            var publisherZenDesk = new PublisherZenDesk(config, {}, {
-                username	:	'zendesk@askia.com',
-                remoteUri	:	'https://uri',
-                password    :   'mdp',
-                promoted    :    false,
-                comments_disabled : false,
-                section_title : 'an unexisting section'
-            });
+        describe("findSectionIdByTitle", function() {
+            it("should output an error when the section is not found", function() {
+                var config = new Configurator('.');
+                var publisherZenDesk = new PublisherZenDesk(config, {}, {
+                    username	:	'zendesk@askia.com',
+                    remoteUri	:	'https://uri',
+                    password    :   'mdp',
+                    promoted    :    false,
+                    comments_disabled : false,
+                    section_title : 'an unexisting section'
+                });
 
-            runSync(function (done) {
-                publisherZenDesk.publish(function(err) {
-                    expect(err).not.toBe(null);
-                    done();
+                runSync(function (done) {
+                    publisherZenDesk.publish(function(err) {
+                        expect(err).not.toBe(null);
+                        done();
+                    });
                 });
             });
+
+            //HERE
+            it("should output an error when the section's title is not a string'", function() {
+                var config = new Configurator('.');
+                var publisherZenDesk = new PublisherZenDesk(config, {}, {
+                    username	:	'zendesk@askia.com',
+                    remoteUri	:	'https://uri',
+                    password    :   'mdp',
+                    promoted    :    false,
+                    comments_disabled : false,
+                    section_title : {name :'an unexisting section'}
+                });
+
+                runSync(function (done) {
+                    publisherZenDesk.publish(function(err) {
+                        expect(err).toBe(errMsg.invalidSectionTitleArg);
+                        done();
+                    });
+                });
+            });
+
+            it("should output an error when it could not retrieve the list of sections", function() {
+                var config = new Configurator('.');
+                var error = new Error('an error');
+                var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+
+                spyOn(fakeClient.sections, "list").andCallFake(function (cb) {
+                    cb(error);
+                });
+
+                runSync(function (done) {
+                    publisherZenDesk.publish(function(err) {
+                        expect(err).toBe(error);
+                        done();
+                    });
+                });
+            });
+
+            it("should create an article whith the right section ID", function() {
+                var config = new Configurator('.');
+                var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+
+                runSync(function (done) {
+                    spyOn(fakeClient.articles, "create").andCallFake(function (id, JSON, cb) {
+                        expect(id).toBe(40);
+                        done();
+                    });
+
+                    publisherZenDesk.publish(function(err) {});
+                });
+            });
+
+            it("should find the section with the same name case insensitive", function() {
+                var config = new Configurator('.');
+                var publisherZenDesk = new PublisherZenDesk(config, {}, {
+                    username	:	'zendesk@askia.com',
+                    remoteUri	:	'https://uri',
+                    password    :   'mdp',
+                    promoted    :    false,
+                    comments_disabled : false,
+                    section_title : 'A_SECTION'
+                });
+
+                runSync(function (done) {
+                    spyOn(fakeClient.articles, "create").andCallFake(function (id, JSON, cb) {
+                        expect(id).toBe(40);
+                        done();
+                    });
+
+                    publisherZenDesk.publish(function(err) {});
+                });
+            });
+            //END HERE
         });
 
         it("should output an error when the .adc file is missing in " + common.ADC_PATH, function() {
@@ -242,71 +317,73 @@ describe("ADXPublisherZenDesk", function() {
             });
         });
         
-        it("should output an error when it could not retrieve the list of article within the section", function () {
-            var config = new Configurator('.');
-            var error = new Error('An error');
-            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
-            spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
-                cb(error);
+        describe("deleteArticle", function(){
+            it("should output an error when it could not retrieve the list of article within the section", function () {
+                var config = new Configurator('.');
+                var error = new Error('An error');
+                var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+                spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
+                    cb(error);
+                });
+
+                runSync(function (done) {
+                    publisherZenDesk.publish(function(err) {
+                        expect(err).toBe(error);
+                        done();
+                    });
+                });
             });
 
-            runSync(function (done) {
-                publisherZenDesk.publish(function(err) {
-                    expect(err).toBe(error);
+            it("should output an error when it found duplicate article title", function () {
+                var config = new Configurator('.');
+                var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+                spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
+                    cb(null, null, [
+                        {id : 1, name : "test-adx"},
+                        {id : 2, name : "test-adx"}
+                    ]);
+                });
+
+                runSync(function (done) {
+                    publisherZenDesk.publish(function(err) {
+                        expect(err).toBe(errMsg.tooManyArticlesExisting);
+                        done();
+                    });
+                });
+            });
+
+            it("should delete the article when it found one with the same name", function () {
+                var config = new Configurator('.');
+                var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+                spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
+                    cb(null, null, [
+                        {id : 1, name : "test-adx"}
+                    ]);
+                });
+
+                runSync(function (done) {
+                    var deleteMock = spyOn(fakeClient.articles, "delete");
+                    var id;
+                    deleteMock.andCallFake(function (i) {
+                        id = i;
+                    });
+                    publisherZenDesk.publish(function() {});
+                    expect(deleteMock).toHaveBeenCalled();
+                    expect(id).toBe(1);
                     done();
                 });
             });
-        });
-        
-        it("should output an error when it found duplicate article title", function () {
-            var config = new Configurator('.');
-            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
-            spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
-                cb(null, null, [
-                    {id : 1, name : "test-adx"},
-                    {id : 2, name : "test-adx"}
-                ]);
-            });
 
-            runSync(function (done) {
-                publisherZenDesk.publish(function(err) {
-                    expect(err).toBe(errMsg.tooManyArticlesExisting);
+            it("should not delete the article when it not found", function () {
+                var config = new Configurator('.');
+                var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+
+                runSync(function (done) {
+                    var deleteMock = spyOn(fakeClient.articles, "delete");
+                    publisherZenDesk.publish(function() {});
+                    expect(deleteMock).not.toHaveBeenCalled();
                     done();
                 });
-            });
-        });
-        
-        it("should delete the article when it found one with the same name", function () {
-            var config = new Configurator('.');
-            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
-            spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
-                cb(null, null, [
-                    {id : 1, name : "test-adx"}
-                ]);
-            });
-
-            runSync(function (done) {
-                var deleteMock = spyOn(fakeClient.articles, "delete");
-                var id;
-                deleteMock.andCallFake(function (i) {
-                    id = i;
-                });
-                publisherZenDesk.publish(function() {});
-                expect(deleteMock).toHaveBeenCalled();
-                expect(id).toBe(1);
-                done();
-            });
-        });
-        
-        it("should not delete the article when it not found", function () {
-            var config = new Configurator('.');
-            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
-            
-            runSync(function (done) {
-                var deleteMock = spyOn(fakeClient.articles, "delete");
-                publisherZenDesk.publish(function() {});
-                expect(deleteMock).not.toHaveBeenCalled();
-                done();
             });
         });
     });
