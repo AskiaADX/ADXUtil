@@ -53,48 +53,6 @@ function PublisherZenDesk(configurator, preferences, options) {
 }
 
 /**
- * Create the JSON formatted article
- * @param {PublisherZenDesk} self
- * @param {Function} callback
- * @param {Error} [callback.err=null]
- */
-function createJSONArticle (self, callback) {
-    fs.readFile(path.join(__dirname,"../../", common.ZENDESK_ARTICLE_TEMPLATE_PATH), 'utf-8', function(err, data) {
-        if (err) {
-            callback(err);
-            return;
-        }
-        
-        var conf = self.configurator.get();
-        var replacements = [{
-            pattern : /\{\{ADXNotes\}\}/gi,
-            replacement : self.mdNotesToHtml(path.join(self.configurator.path, "Readme.md"))
-        },
-        {
-            pattern : /\{\{ADXProperties:HTML\}\}/gi,
-            replacement : self.propertiesToHTML(conf.properties)
-        },
-        {
-            pattern : /\{\{ADXListKeyWords\}\}/gi,
-            replacement : "adc; adc2; javascript; control; design; askiadesign; " + conf.info.name
-        },
-        {
-            pattern : /\{\{ADXConstraints\}\}/gi,
-            replacement : self.constraintsToSentence(conf.info.constraints)
-        }];
-        
-        callback(null, {
-            "article": {
-                "title": conf.info.name,
-                "body": common.evalTemplate(data, conf, replacements),
-                "promoted": self.options.promoted,
-                "comments_disabled": self.options.comments_disabled
-            }
-        });
-    });
-}
-
-/**
  * Find the section id of a section with the Title
  * @param {PublisherZenDesk} self
  * @param {Function} callback
@@ -128,6 +86,48 @@ function findSectionIdByTitle(self, callback) {
         }
         
         callback(errMsg.unexistingSection);
+    });
+}
+
+/**
+ * Create the JSON formatted article
+ * @param {PublisherZenDesk} self
+ * @param {Function} callback
+ * @param {Error} [callback.err=null]
+ */
+function createJSONArticle (self, callback) {
+    fs.readFile(path.join(__dirname,"../../", common.ZENDESK_ARTICLE_TEMPLATE_PATH), 'utf-8', function(err, data) {
+        if (err) {
+            callback(err);
+            return;
+        }
+        
+        var conf = self.configurator.get();
+        var replacements = [{
+            pattern : /\{\{ADXNotes\}\}/gi,
+            replacement : self.mdNotesToHtml(path.join(self.configurator.path, "Readme.md"))
+        },
+        {
+            pattern : /\{\{ADXProperties:HTML\}\}/gi,
+            replacement : self.propertiesToHTML(conf.properties)
+        },
+        {
+            pattern : /\{\{ADXListKeyWords\}\}/gi,
+            replacement : "adc; adc2; javascript; control; design; askiadesign; " + conf.info.name
+        },
+        {
+            pattern : /\{\{ADXConstraints\}\}/gi,
+            replacement : self.constraintsToSentence(conf.info.constraints)
+        }];
+
+        callback(null, {
+            "article": {
+                "title": conf.info.name,
+                "body": common.evalTemplate(data, conf, replacements),
+                "promoted": self.options.promoted,
+                "comments_disabled": self.options.comments_disabled
+            }
+        });
     });
 }
 
@@ -172,6 +172,48 @@ function deleteArticle(self, title, section_id, callback) {
             callback(err);
         });
     });
+}
+
+/**
+ * Upload all the files that are available (.adc, .qex, .png)
+ * @param {PublisherZenDesk} self
+ * @param {Array} files An array containing Strings which are the absolute paths of the files
+ * @param {Number} articleId The Id of the article
+ * @param {Function} callback
+ */
+function uploadAvailableFiles(self, files, articleId, callback) {
+    var attachmentsIDs = {};
+
+    function uploadAvailableFilesRecursive(index) {
+
+        var formData = {
+            'file' : fs.createReadStream(files[index])
+        };
+
+        request.post({
+            url: self.options.remoteUri + "/articles/" + articleId + "/attachments.json",
+            formData: formData,
+            headers : {
+                'Authorization' : "Basic " + new Buffer(self.options.username + ":" + self.options.password).toString('base64')
+            }
+        }, function(err, resp, body) {
+            if (err) {
+                callback(err);
+                return;
+            }
+            body = JSON.parse(body);
+            attachmentsIDs[files[index].match(/\.([a-z]{2,4})$/i)[1] + 'ID']   = body.article_attachment.id;
+            attachmentsIDs[files[index].match(/\.([a-z]{2,4})$/i)[1] + 'Name'] = body.article_attachment.file_name;
+            index++;
+            if (index >= files.length) {
+                callback(null, attachmentsIDs)
+            } else {
+                uploadAvailableFilesRecursive(index);
+            }
+        });
+    };
+    
+    uploadAvailableFilesRecursive(0);
 }
 
 /**
@@ -227,7 +269,7 @@ PublisherZenDesk.prototype.publish = function(callback) {
                                 if(stats && stats.isFile()) {
                                     filesToPush.push(path.resolve(path.join(self.configurator.path, 'preview.png')));
                                 }
-                                self.uploadAvailableFiles(filesToPush, article.id, function(err, attachmentsIDs){
+                                uploadAvailableFiles(self, filesToPush, article.id, function(err, attachmentsIDs){
                                     if (err) {
                                         callback(err);
                                         return;
@@ -285,48 +327,7 @@ PublisherZenDesk.prototype.listSections = function(callback) {
     });
 };
 
-/**
- * Upload all the files that are available (.adc, .qex, .png)
- * @param {Array} files An array containing Strings which are the absolute paths of the files
- * @param {Number} articleId The Id of the article
- * @param {Function} callback
- */
-PublisherZenDesk.prototype.uploadAvailableFiles = function(files, articleId, callback) {
-    
-    var self = this ;
-    var attachmentsIDs = {};
-        
-    function uploadAvailableFilesRecursive(index) {
-        
-        var formData = {
-            'file' : fs.createReadStream(files[index])
-        };
-        
-        request.post({
-            url: self.options.remoteUri + "/articles/" + articleId + "/attachments.json",
-            formData: formData,
-            headers : {
-                'Authorization' : "Basic " + new Buffer(self.options.username + ":" + self.options.password).toString('base64')
-            }
-        }, function(err, resp, body) {
-            if (err) {
-                callback(err);
-                return;
-            }
-            body = JSON.parse(body);
-            attachmentsIDs[files[index].match(/\.([a-z]{2,4})$/i)[1] + 'ID']   = body.article_attachment.id;
-            attachmentsIDs[files[index].match(/\.([a-z]{2,4})$/i)[1] + 'Name'] = body.article_attachment.file_name;
-            index++;
-            if (index >= files.length) {
-                callback(null, attachmentsIDs)
-            } else {
-                uploadAvailableFilesRecursive(index);
-            }
-        });
-    };
-    
-    uploadAvailableFilesRecursive(0);
-};
+
 
 
 

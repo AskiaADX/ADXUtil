@@ -109,7 +109,6 @@ describe("ADXPublisherZenDesk", function() {
         });
     });
 
-
     describe("#Constructor", function() {
 
         it("should throw an error when the `configurator` argument is missing", function() {
@@ -204,7 +203,6 @@ describe("ADXPublisherZenDesk", function() {
                 });
             });
 
-            //HERE
             it("should output an error when the section's title is not a string'", function() {
                 var config = new Configurator('.');
                 var publisherZenDesk = new PublisherZenDesk(config, {}, {
@@ -251,7 +249,7 @@ describe("ADXPublisherZenDesk", function() {
                         done();
                     });
 
-                    publisherZenDesk.publish(function(err) {});
+                    publisherZenDesk.publish(function() {});
                 });
             });
 
@@ -275,44 +273,45 @@ describe("ADXPublisherZenDesk", function() {
                     publisherZenDesk.publish(function(err) {});
                 });
             });
-            //END HERE
         });
 
-        it("should output an error when the .adc file is missing in " + common.ADC_PATH, function() {
-            var config = new Configurator('.');
-            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
-            spies.fs.stat.andCallFake(function (p, cb) {
-                if (/test-adx\.adc$/.test(p)) {
-                    cb(new Error('something wrong'));
-                    return;
-                }
-                cb(null, {
-                    isFile : function () {
-                        return true;
-                    }
+        describe("createJSONArticle", function() {
+            it("should output an error when it could not read the article template", function () {
+                var config = new Configurator('.');
+                var error = new Error('An error');
+                var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+                spies.fs.readFile.andCallFake(function (p, o, cb) {
+                    cb(error);
+                });
+
+                runSync(function (done) {
+                    publisherZenDesk.publish(function(err) {
+                        expect(err).toBe(error);
+                        done();
+                    });
                 });
             });
 
-            runSync(function (done) {
-                publisherZenDesk.publish(function(err) {
-                    expect(err).toBe(errMsg.badNumberOfADCFiles);
-                    done();
+            it("should output an error when the JSON article is not correct", function() {
+                var config = new Configurator('.');
+                var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+                spies.fs.readFile.andCallFake(function (p, o, cb) {
+                    cb(null, "body article");
                 });
-            });
-        });
 
-        it("should output an error when it could not read the article template", function () {
-            var config = new Configurator('.');
-            var error = new Error('An error');
-            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
-            spies.fs.readFile.andCallFake(function (p, o, cb) {
-                cb(error);
-            });
-
-            runSync(function (done) {
-                publisherZenDesk.publish(function(err) {
-                    expect(err).toBe(error);
-                    done();
+                runSync(function (done) {
+                    spyOn(fakeClient.articles, "create").andCallFake(function (id, JSON, cb) {
+                        expect(JSON).toEqual({
+                            "article" : {
+                                "title": "test-adx",
+                                "body": "body article",
+                                "promoted": false,
+                                "comments_disabled": false
+                            }
+                        });
+                        done();
+                    });
+                    publisherZenDesk.publish(function() {});
                 });
             });
         });
@@ -382,6 +381,29 @@ describe("ADXPublisherZenDesk", function() {
                     var deleteMock = spyOn(fakeClient.articles, "delete");
                     publisherZenDesk.publish(function() {});
                     expect(deleteMock).not.toHaveBeenCalled();
+                    done();
+                });
+            });
+        });
+        
+        it("should output an error when the .adc file is missing in " + common.ADC_PATH, function() {
+            var config = new Configurator('.');
+            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+            spies.fs.stat.andCallFake(function (p, cb) {
+                if (/test-adx\.adc$/.test(p)) {
+                    cb(new Error('something wrong'));
+                    return;
+                }
+                cb(null, {
+                    isFile : function () {
+                        return true;
+                    }
+                });
+            });
+
+            runSync(function (done) {
+                publisherZenDesk.publish(function(err) {
+                    expect(err).toBe(errMsg.badNumberOfADCFiles);
                     done();
                 });
             });
