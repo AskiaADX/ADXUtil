@@ -185,13 +185,12 @@ function uploadAvailableFiles(self, files, articleId, callback) {
     var attachmentsIDs = {};
 
     function uploadAvailableFilesRecursive(index) {
-
         var formData = {
             'file' : fs.createReadStream(files[index])
         };
 
         request.post({
-            url: self.options.remoteUri + "/articles/" + articleId + "/attachments.json",
+            url		: self.options.remoteUri + "/articles/" + articleId + "/attachments.json",
             formData: formData,
             headers : {
                 'Authorization' : "Basic " + new Buffer(self.options.username + ":" + self.options.password).toString('base64')
@@ -201,18 +200,19 @@ function uploadAvailableFiles(self, files, articleId, callback) {
                 callback(err);
                 return;
             }
+
             body = JSON.parse(body);
-            attachmentsIDs[files[index].match(/\.([a-z]{2,4})$/i)[1] + 'ID']   = body.article_attachment.id;
-            attachmentsIDs[files[index].match(/\.([a-z]{2,4})$/i)[1] + 'Name'] = body.article_attachment.file_name;
+            attachmentsIDs[files[index].match(/\.([a-z]+)$/i)[1] + 'ID']   = body.article_attachment.id;
+            attachmentsIDs[files[index].match(/\.([a-z]+)$/i)[1] + 'Name'] = body.article_attachment.file_name;
             index++;
             if (index >= files.length) {
-                callback(null, attachmentsIDs)
+                callback(null, attachmentsIDs);
             } else {
                 uploadAvailableFilesRecursive(index);
             }
         });
     };
-    
+
     uploadAvailableFilesRecursive(0);
 }
 
@@ -288,14 +288,14 @@ PublisherZenDesk.prototype.publish = function(callback) {
                                     // TODO : /!\ change the url ! We don't want a redirection to the pic, but a redirection to survey demo on demo.askia...
                                     // we should upload the file to the demo server from this app
                                     var urlToPointAt = (!self.options.surveyDemoUrl) ? '/hc/en-us/article_attachments/' + attachmentsIDs.pngID + '/' + attachmentsIDs.pngName :
-                                    self.options.surveyDemoUrl ;
+                                    self.options.surveyDemoUrl;
                                     replacements.push({
                                         pattern         : /\{\{ADXQexPicture\}\}/gi,
                                         replacement     : (!attachmentsIDs.pngID)  ? '' : '<p><a href="' + urlToPointAt + '" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentsIDs.pngID + '/' + attachmentsIDs.pngName + '" alt="" /> </a></p>'
                                     });
                                     replacements.push({
                                         pattern         : /\{\{ADXSentence:accesSurvey\}\}/gi,
-                                        replacement     : (!self.options.surveyDemoUrl) ? '' : '<li>To access to the live survey, click on the picture above.</li>'
+                                        replacement     : (!self.options.surveyDemoUrl) ? '' : '<li><a href="' + self.options.surveyDemoUrl + '" target="_blank">To access to the live survey, click on the picture above.</a></li>'
                                     });
 
                                     var articleUpdated = common.evalTemplate(article.body, {}, replacements);
@@ -326,13 +326,6 @@ PublisherZenDesk.prototype.listSections = function(callback) {
         callback(res);
     });
 };
-
-
-
-
-
-
-
 
 
 /**
