@@ -5,7 +5,6 @@ var path            = require('path');
 var errMsg          = common.messages.error;
 var Configurator    = require('../configurator/ADXConfigurator.js').Configurator;
 var request         = require('request');
-var md              = require('markdown').markdown;
 
 /**
  * Instantiate a PublisherZendesk
@@ -90,6 +89,99 @@ function findSectionIdByTitle(self, callback) {
 }
 
 /**
+ * Generate an HTML string which is a line of a 3 columns array with the name of the property category.
+ * @param {Object} an object which represents a category of properties.
+ */
+ function generateHTMLcodeForCategory(category) {
+    return '<tr>\n' +
+        '<th data-sheets-value="[null,2,&quot;' + category.name + '&quot;]">' + category.name + '</th>\n' +
+        '<td> </td>\n' +
+        '<td> </td>\n' +
+        '</tr>\n' ;
+};
+
+/**
+ * Generate a string which is the concatenation of all the options separated by ' '.
+ * @param {Object} an object containing the options of a property.
+ */
+function generateHTMLcodeForOptions(opt) {
+    var values = [];
+    for (var i = 0 , l = opt.length ; i < l ; i++) {
+        values.push(opt[i].text);
+    }
+    return values.join(", ");    
+};
+
+/**
+ * Generate an HTML string which is a line of a 3 columns array with the standard description of a property.
+ * @param {Object} an object which represents a property.
+ */
+ function generateHTMLcodeForProperty(property) {
+    var value = property.value
+    if (value === undefined) {
+        value = "";
+    }
+    return  '<tr>\n' +
+            '<td data-sheets-value="[null,2,&quot;' + property.name + '&quot;]">' + property.name + '</td>\n' +
+            '<td data-sheets-value="[null,2,&quot;' + property.type + '&quot;]">' + property.type + '</td>\n' +
+            '<td data-sheets-value="[null,2,&quot;' + property.description + ' ' + value + '&quot;,null,null,null,1]">' + (property.description ? ('Description : ' + property.description) : "") + (property.value ? ('<br/>Value : ' + property.value) : "") + (property.options ? ('<br/>Options : ' + generateHTMLcodeForOptions(property.options)) : "") + (property.colorFormat ? ('<br/>ColorFormat : ' + property.colorFormat) : "") +'</td>\n' +
+            '</tr>\n' ;
+};
+
+/**
+ * Transform the constraints of an adc(from the config) to a sentence
+ * @param {Object} constraints The constraints.
+ */
+function constraintsToSentence(constraints) {
+    var questions = [], controls = [], key
+    
+    if (constraints.questions) {
+        for (key in constraints.questions) {
+            if (constraints.questions.hasOwnProperty(key) && constraints.questions[key]) {
+                questions.push(key);
+            }
+        }
+    }
+    if (constraints.controls) {
+        for (key in constraints.controls) {
+            if (constraints.controls.hasOwnProperty(key) && constraints.controls[key]) {
+                controls.push(key);
+            }
+        }
+    }
+
+    var numberOfResponses = '';
+    numberOfResponses = ".\n Number minimum of responses : " + constraints.responses.min;
+    numberOfResponses += ".\n Number maximum of responses : " + constraints.responses.max;
+
+    return "This control is compatible with " +
+        questions.join(", ") +
+        " questions" + numberOfResponses +
+        ".\n You can use the following controls : " +
+        controls.join(", ") + ".";
+};
+
+/**
+ * Create a String which contains an html dynamic array with the properties
+ * @param {Object} properties The properties. Should give configurator.get().properties
+ */
+function propertiesToHTML(prop) {
+    if (!prop) {
+        throw new Error(errMsg.missingPropertiesArg);
+    }
+
+    var result = '<table class="askiatable" dir="ltr" cellspacing="0" cellpadding="0"><colgroup><col width="281" /><col width="192" /><col width="867" /></colgroup><tbody><tr><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Parameters&quot;]">Parameters</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Type&quot;]">Type</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Comments and/or possible value&quot;]">Comments and/or possible value</td></tr><tr><td> </td><td> </td><td> </td></tr>';
+    
+    for (var i = 0, l = prop.categories.length; i < l; i++) {
+        result += generateHTMLcodeForCategory(prop.categories[i]);
+        for (var j = 0, k = prop.categories[i].properties.length; j < k; j++) {
+            result += generateHTMLcodeForProperty(prop.categories[i].properties[j]);
+        }
+    }
+    return result + '</tbody></table>';
+};
+
+/**
  * Create the JSON formatted article
  * @param {PublisherZenDesk} self
  * @param {Function} callback
@@ -104,12 +196,8 @@ function createJSONArticle (self, callback) {
         
         var conf = self.configurator.get();
         var replacements = [{
-            pattern : /\{\{ADXNotes\}\}/gi,
-            replacement : self.mdNotesToHtml(path.join(self.configurator.path, "Readme.md"))
-        },
-        {
             pattern : /\{\{ADXProperties:HTML\}\}/gi,
-            replacement : self.propertiesToHTML(conf.properties)
+            replacement : propertiesToHTML(conf.properties)
         },
         {
             pattern : /\{\{ADXListKeyWords\}\}/gi,
@@ -117,7 +205,7 @@ function createJSONArticle (self, callback) {
         },
         {
             pattern : /\{\{ADXConstraints\}\}/gi,
-            replacement : self.constraintsToSentence(conf.info.constraints)
+            replacement : constraintsToSentence(conf.info.constraints)
         }];
 
         callback(null, {
@@ -202,8 +290,9 @@ function uploadAvailableFiles(self, files, articleId, callback) {
             }
 
             body = JSON.parse(body);
-            attachmentsIDs[files[index].match(/\.([a-z]+)$/i)[1] + 'ID']   = body.article_attachment.id;
-            attachmentsIDs[files[index].match(/\.([a-z]+)$/i)[1] + 'Name'] = body.article_attachment.file_name;
+            var prefix = files[index].match(/\.([a-z]+)$/i)[1];
+            attachmentsIDs[prefix + 'ID']   = body.article_attachment.id;
+            attachmentsIDs[prefix + 'Name'] = body.article_attachment.file_name;
             index++;
             if (index >= files.length) {
                 callback(null, attachmentsIDs);
@@ -310,7 +399,6 @@ PublisherZenDesk.prototype.publish = function(callback) {
     });
 };
 
-
 /**
  * List all the sections. This method has been implemented for the integration in ADXStudio
  * @param {Function} callback
@@ -326,142 +414,6 @@ PublisherZenDesk.prototype.listSections = function(callback) {
         callback(res);
     });
 };
-
-
-/**
- * Generate an HTML string which is a line of a 3 columns array with the name of the property category.
- * @param {Object} an object which represents a category of properties.
- */
-generateHTMLcodeForCategory = function (category) {
-    return '<tr>\n' +
-        '<th data-sheets-value="[null,2,&quot;' + category.name + '&quot;]">' + category.name + '</th>\n' +
-        '<td> </td>\n' +
-        '<td> </td>\n' +
-        '</tr>\n' ;
-};
-
-
-/**
- * Generate a string which is the concatenation of all the options separated by ' '.
- * @param {Object} an object containing the options of a property.
- */
-generateHTMLcodeForOptions = function(opt){
-    
-    var values = [];
-    for(var i = 0 , j = opt.length ; i < j ; ++i) {
-        values.push(opt[i].text);
-    }
-    return values.join(", ");
-    
-};
-
-
-/**
- * Generate an HTML string which is a line of a 3 columns array with the standard description of a property.
- * @param {Object} an object which represents a property.
- */
-generateHTMLcodeForProperty = function (property) {
-    return  '<tr>\n' +
-            '<td data-sheets-value="[null,2,&quot;' + property.name + '&quot;]">' + property.name + '</td>\n' +
-            '<td data-sheets-value="[null,2,&quot;' + property.type + '&quot;]">' + property.type + '</td>\n' +
-            '<td data-sheets-value="[null,2,&quot;' + property.description + ' ' + property.value + '&quot;,null,null,null,1]">' + (property.description ? ('Description : ' + property.description) : "") + (property.value ? ('<br/>Value : ' + property.value) : "") + (property.options ? ('<br/>Options : ' + generateHTMLcodeForOptions(property.options)) : "") + (property.colorFormat ? ('<br/>ColorFormat : ' + property.colorFormat) : "") +'</td>\n' +
-            '</tr>\n' ;
-};
-
-/**
- * Create a String which contains an html dynamic array with the properties
- * @param {Object} properties The properties. Should give configurator.get().properties
- */
-PublisherZenDesk.prototype.propertiesToHTML = function (prop) {
-    if (!prop) {
-        throw new Error(errMsg.missingPropertiesArg);
-    }
-
-
-    var result = '<table class="askiatable" dir="ltr" cellspacing="0" cellpadding="0"><colgroup><col width="281" /><col width="192" /><col width="867" /></colgroup><tbody><tr><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Parameters&quot;]">Parameters</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Type&quot;]">Type</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Comments and/or possible value&quot;]">Comments and/or possible value</td></tr><tr><td> </td><td> </td><td> </td></tr>';
-
-    for (var category in prop.categories) {
-        result += generateHTMLcodeForCategory(prop.categories[category]);
-        for (var property in prop.categories[category].properties) {
-            result += generateHTMLcodeForProperty(prop.categories[category].properties[property]);
-        }
-    }
-    return result + '</tbody></table>' ;
-};
-
-
-/**
- * Transform the constraints of an adc(from the config) to a sentence
- * @param {Object} constraints The constraints.
- */
-PublisherZenDesk.prototype.constraintsToSentence = function(constraints) {
-    
-    var questions = [], controls = [], key
-
-    if (constraints.questions) {
-        for (key in constraints.questions) {
-            if (constraints.questions.hasOwnProperty(key) && constraints.questions[key]) {
-                questions.push(key);
-            }
-        }
-    }
-    if (constraints.controls) {
-        for (key in constraints.controls) {
-            if (constraints.controls.hasOwnProperty(key) && constraints.controls[key]) {
-                controls.push(key);
-            }
-        }
-    }
-
-    var responseMin = null;
-    if (constraints.responses && constraints.responses.min === "*") {
-        responseMin = constraints.responses.min;
-    }
-
-    var responseMax = null;
-    if (constraints.responses && constraints.responses.max === "*") {
-        responseMax = constraints.responses.max;
-    }
-    var numberOfResponses = '';
-    if (responseMin !== null && responseMax !== null) {
-        numberOfResponses = ". Number of responses(min-max) : ";
-        numberOfResponses +=  responseMin || 0;
-        numberOfResponses += " - " + (responseMax || 0);
-    }
-
-    return "This control is compatible with " +
-        questions.join(", ") +
-        " questions" + numberOfResponses +
-        ". You can use the following controls : " +
-        controls.join(", ") + ".";
-};
-
-/**
- * Parse the readme.md file to read notes and convert them to an html list
- * @param {String | Buffer} p The path to the readme.md file
- */
-PublisherZenDesk.prototype.mdNotesToHtml = function(p){
-
-    var file = fs.readFileSync(path.resolve(p), 'utf-8');
-    var tree = md.parse(file);
-    var res = "";
-    for(var i = 0 ; i < tree.length ; i++){
-        if (tree[i][0] === 'header' && tree[i][1].level == 2 && tree[i][2] === 'Notes') {
-            if(typeof tree[i+1][1] === "string"){
-                res += tree[i+1][1];
-            }
-        }
-    }
-    if(res.length > 0){
-        res = res.replace(/\n\-\ /g, "<li></li>");
-        res = res.substring(2);
-        res = '<p><span class="wysiwyg-underline">Notes:</span></p><ul><li>' + res + '</li></ul>';
-    }
-
-    return res;
-};
-
-
 
 //Make it public
 exports.PublisherZenDesk = PublisherZenDesk ;

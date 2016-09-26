@@ -9,7 +9,6 @@
     "elementtree": "^0.1.6",
     "github": "^2.4.0",
     "jszip": "^2.2.2",
-    "markdown": "^0.5.0",
     "node-uuid": "^1.4.0",
     "node-zendesk": "^1.1.10",
     "request": "^2.74.0",

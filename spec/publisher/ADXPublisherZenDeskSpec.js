@@ -72,13 +72,78 @@ describe("ADXPublisherZenDesk", function() {
         };
         spies.configurator.get.andReturn({
             info : {
-                name : 'test-adx',
-                constraints : {}
+                name 		: 'test-adx',
+                constraints : {
+                    questions : {
+                        single : true,
+                        multiple : true,
+                        open : false
+                    },
+                    controls : {
+                        label : true,
+                        responseblock : true
+                    },
+                    responses : {
+                        min : 2,
+                        max : '*'
+                    }
+                }
             },
-            properties : [{
-                id : 'something',
-                name : 'something'
-            }]
+            properties : {
+                categories : [
+                    {
+                        name: "General",
+                        properties: [
+                            {
+                                id: "renderingType",
+                                name: "Rendering type",
+                                type: "string",
+                                description: "Type of rendering",
+                                value: "classic",
+                                options: [
+                                    {
+                                        value: "classic",
+                                        text: "Classic"
+                                    },
+                                    {
+                                        value: "image",
+                                        text: "Image"
+                                    }
+                                ]
+                            },
+                            {
+                                id: "other",
+                                name: "Open-ended question for semi-open",
+                                type: "question",
+                                numeric : true,
+                                open : true,
+                                description: "Additional open-ended question that could be use to emulate semi-open"
+                            }
+                        ]
+                    },
+                    {
+                        name : "Rendering type images",
+                        properties : [
+                            {
+                                id : "singleImage",
+                                name : "Image for single question",
+                                type : "file",
+                                fileExtension : ".png, .gif, .jpg",
+                                description : "Image of single question when the rendering type is image",
+                                value : "Single.png"
+                            },
+                            {
+                                id : "multipleImage",
+                                name : "Image for multiple question",
+                                type : "file",
+                                fileExtension : ".png, .gif, .jpg",
+                                description : "Image of multiple question when the rendering type is image",
+                                value : "Multiple.png"
+                            }
+                        ]
+                    }
+                ]
+            }
         });
         spies.fs = {
             readFile 			: spyOn(fs, 'readFile'),
@@ -116,7 +181,6 @@ describe("ADXPublisherZenDesk", function() {
     });
 
     describe("#Constructor", function() {
-
         it("should throw an error when the `configurator` argument is missing", function() {
             expect(function() {
                 var publisherZenDesk = new PublisherZenDesk();
@@ -318,6 +382,64 @@ describe("ADXPublisherZenDesk", function() {
                         done();
                     });
                     publisherZenDesk.publish(function() {});
+                });
+            });
+            
+            it("should eval the body with the right patterns", function () {
+                var config = new Configurator('.');
+                var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+                var name = config.get().info.name;
+                spies.fs.readFile.andCallFake(function (p, o, cb) {
+                    cb(null, '{{ADXProperties:HTML}}, {{ADXListKeyWords}}, {{ADXConstraints}}');
+                });
+                
+                runSync(function (done) {
+                    spyOn(fakeClient.articles, "create").andCallFake(function (id, JSON, cb) {
+                        var str = '<table class="askiatable" dir="ltr" cellspacing="0" cellpadding="0"><colgroup><col width="281" /><col width="192" /><col width="867" /></colgroup><tbody><tr><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Parameters&quot;]">Parameters</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Type&quot;]">Type</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Comments and/or possible value&quot;]">Comments and/or possible value</td></tr><tr><td> </td><td> </td><td> </td></tr>' +
+                            '<tr>\n' +
+                            '<th data-sheets-value="[null,2,&quot;General&quot;]">General</th>\n' +
+                            '<td> </td>\n' +
+                            '<td> </td>\n' +
+                            '</tr>\n' +
+                            '<tr>\n' +
+                            '<td data-sheets-value="[null,2,&quot;Rendering type&quot;]">Rendering type</td>\n' +
+                            '<td data-sheets-value="[null,2,&quot;string&quot;]">string</td>\n' +
+                            '<td data-sheets-value="[null,2,&quot;Type of rendering classic&quot;,null,null,null,1]">Description : Type of rendering<br/>Value : classic<br/>Options : Classic, Image</td>\n' +
+                            '</tr>\n' +
+                            '<tr>\n' +
+                            '<td data-sheets-value="[null,2,&quot;Open-ended question for semi-open&quot;]">Open-ended question for semi-open</td>\n' +
+                            '<td data-sheets-value="[null,2,&quot;question&quot;]">question</td>\n' +
+                            '<td data-sheets-value="[null,2,&quot;Additional open-ended question that could be use to emulate semi-open &quot;,null,null,null,1]">Description : Additional open-ended question that could be use to emulate semi-open</td>\n' +
+                            '</tr>\n' +
+                            '<tr>\n' +
+                            '<th data-sheets-value="[null,2,&quot;Rendering type images&quot;]">Rendering type images</th>\n' +
+                            '<td> </td>\n' +
+                            '<td> </td>\n' +
+                            '</tr>\n' +
+                            '<tr>\n' +
+                            '<td data-sheets-value="[null,2,&quot;Image for single question&quot;]">Image for single question</td>\n' +
+                            '<td data-sheets-value="[null,2,&quot;file&quot;]">file</td>\n' +
+                            '<td data-sheets-value="[null,2,&quot;Image of single question when the rendering type is image Single.png&quot;,null,null,null,1]">Description : Image of single question when the rendering type is image<br/>Value : Single.png</td>\n' +
+                            '</tr>\n' +
+                            '<tr>\n' +
+                            '<td data-sheets-value="[null,2,&quot;Image for multiple question&quot;]">Image for multiple question</td>\n' +
+                            '<td data-sheets-value="[null,2,&quot;file&quot;]">file</td>\n' +
+                            '<td data-sheets-value="[null,2,&quot;Image of multiple question when the rendering type is image Multiple.png&quot;,null,null,null,1]">Description : Image of multiple question when the rendering type is image<br/>Value : Multiple.png</td>\n' +
+                            '</tr>\n' +
+                            '</tbody></table>, ' +
+                            'adc; adc2; javascript; control; design; askiadesign; test-adx, ' +
+                            'This control is compatible with ' + 
+                            'single, multiple' +
+                            ' questions.\n Number minimum of responses : 2' +
+                        	'.\n Number maximum of responses : *' +
+                            '.\n You can use the following controls : ' +
+                            'label, responseblock.';
+                        
+                        expect(JSON.article.body).toEqual(str);
+                        done();
+                    });
+                    publisherZenDesk.publish(function() {});
+                    
                 });
             });
         });
