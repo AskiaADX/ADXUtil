@@ -229,11 +229,11 @@ describe("ADXPublisherZenDesk", function() {
                 section_title     : 'a section title'
             });
 
-            expect(publisherZenDesk.options).toEqual({
-                username          : 'zendesk@askia.com',
-                password          : 'secret',
-                remoteUri	      : 'https://uri/api/v2/help_center',
-                section_title     : 'a section title'
+            expect(spies.zendesk.createClient).toHaveBeenCalledWith({
+                username          	: 'zendesk@askia.com',
+                password          	: 'secret',
+                remoteUri	      	: 'https://uri/api/v2/help_center',
+                helpcenter			: true
             });
         });
 
@@ -252,6 +252,99 @@ describe("ADXPublisherZenDesk", function() {
     });
 
     describe("#publish", function() {
+        it("should request to post the adc file when he is present in " + common.ADC_PATH, function() {
+            var config = new Configurator('.');
+            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+            var name = config.get().info.name;
+            var p = path.resolve(path.join(config.path, common.ADC_PATH, name + '.adc'));
+            
+            runSync(function (done) {
+                spies.request.post.andCallFake(function (obj, cb) {
+                    expect(obj.formData).toEqual({
+                        file : p
+                    });
+                    done();
+                });
+                publisherZenDesk.publish(function() {});
+            });
+        });
+
+        it("should request to post the qex file when he is present in " + common.QEX_PATH, function() {
+            var config = new Configurator('.');
+            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+            var name = config.get().info.name;
+            var p = path.resolve(path.join(config.path, common.QEX_PATH, name + '.qex'));
+            var n = 0;
+            
+            runSync(function (done) {
+                spies.request.post.andCallFake(function (obj, cb) {
+                    if (n === 1) {
+                        expect(obj.formData).toEqual({
+                            file : p
+                        });
+                        done();
+                    }
+                    n++;
+                    cb(null, null, JSON.stringify({
+                        article_attachment : {
+                            id : 'an id',
+                            file_name : 'a file_name'
+                        }
+                    }));
+                });
+                publisherZenDesk.publish(function() {});
+            });
+        });
+           
+        it("should request to post the png file when he is present in root", function() {
+            var config = new Configurator('.');
+            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+            var name = config.get().info.name;
+            var p = path.resolve(path.join(config.path, 'preview.png'));
+            var n = 0;
+            
+            runSync(function (done) {
+                spies.request.post.andCallFake(function (obj, cb) {
+                    if (n === 2) {
+                        expect(obj.formData).toEqual({
+                            file : p
+                        });
+                        done();
+                    }
+                    n++;
+                    cb(null, null, JSON.stringify({
+                        article_attachment : {
+                            id : 'an id',
+                            file_name : 'a file_name'
+                        }
+                    }));
+                });
+                publisherZenDesk.publish(function() {});
+            });
+        });
+        
+        it("should output an error when the .adc file is missing in " + common.ADC_PATH, function() {
+            var config = new Configurator('.');
+            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+            spies.fs.stat.andCallFake(function (p, cb) {
+                if (/test-adx\.adc$/.test(p)) {
+                    cb(new Error('something wrong'));
+                    return;
+                }
+                cb(null, {
+                    isFile : function () {
+                        return true;
+                    }
+                });
+            });
+
+            runSync(function (done) {
+                publisherZenDesk.publish(function(err) {
+                    expect(err).toBe(errMsg.badNumberOfADCFiles);
+                    done();
+                });
+            });
+        });
 
         describe("findSectionIdByTitle", function() {
             it("should output an error when the section is not found", function() {
@@ -384,7 +477,7 @@ describe("ADXPublisherZenDesk", function() {
                     publisherZenDesk.publish(function() {});
                 });
             });
-            
+
             it("should eval the body with the right patterns", function () {
                 var config = new Configurator('.');
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
@@ -392,7 +485,7 @@ describe("ADXPublisherZenDesk", function() {
                 spies.fs.readFile.andCallFake(function (p, o, cb) {
                     cb(null, '{{ADXProperties:HTML}}, {{ADXListKeyWords}}, {{ADXConstraints}}');
                 });
-                
+
                 runSync(function (done) {
                     spyOn(fakeClient.articles, "create").andCallFake(function (id, JSON, cb) {
                         var str = '<table class="askiatable" dir="ltr" cellspacing="0" cellpadding="0"><colgroup><col width="281" /><col width="192" /><col width="867" /></colgroup><tbody><tr><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Parameters&quot;]">Parameters</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Type&quot;]">Type</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Comments and/or possible value&quot;]">Comments and/or possible value</td></tr><tr><td> </td><td> </td><td> </td></tr>' +
@@ -431,19 +524,19 @@ describe("ADXPublisherZenDesk", function() {
                             'This control is compatible with ' + 
                             'single, multiple' +
                             ' questions.\n Number minimum of responses : 2' +
-                        	'.\n Number maximum of responses : *' +
+                            '.\n Number maximum of responses : *' +
                             '.\n You can use the following controls : ' +
                             'label, responseblock.';
-                        
+
                         expect(JSON.article.body).toEqual(str);
                         done();
                     });
                     publisherZenDesk.publish(function() {});
-                    
+
                 });
             });
         });
-        
+
         describe("deleteArticle", function(){
             it("should output an error when it could not retrieve the list of article within the section", function () {
                 var config = new Configurator('.');
@@ -513,7 +606,7 @@ describe("ADXPublisherZenDesk", function() {
                 });
             });
         });
-        
+
         describe("uploadAvailableFiles", function() {
             it("should output an error when it could not send the request", function () {
                 var config = new Configurator('.');
@@ -530,6 +623,57 @@ describe("ADXPublisherZenDesk", function() {
                     });
                 });
             });
+
+            function testPost(o, index) {
+                it("should call request.post with the correct arguments for " + o.name, function() {
+                    var config = new Configurator('.');
+                    var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+                    var name = config.get().info.name;
+                    o.path = path.resolve(path.join(config.path, o.suffix));
+                    var n = 0;
+
+
+                    runSync(function (done) {
+                        spies.request.post.andCallFake(function (obj, cb) {
+                            if (index === n) {
+                                expect(obj).toEqual({
+                                    url		: "https://uri/api/v2/help_center/articles/12/attachments.json",
+                                    formData: {
+                                        file : o.path
+                                    },
+                                    headers : {
+                                        'Authorization' : "Basic " + new Buffer("zendesk@askia.com:mdp").toString('base64')
+                                    }
+                                })
+                                done();
+                            }
+                            n++;
+                            cb(null, null, JSON.stringify({
+                                article_attachment : {
+                                    id : 'an id',
+                                    file_name : 'a file_name'
+                                }
+                            }));
+                        });
+                        publisherZenDesk.publish(function() {});
+                    });
+                });
+            }
+
+            [
+                {
+                    name 	: "adc",
+                    suffix 	: path.join(common.ADC_PATH, 'test-adx.adc')
+                },
+                {
+                    name 	: "qex",
+                    suffix 	: path.join(common.QEX_PATH, 'test-adx.qex')
+                }, 
+                {
+                    name 	: "png",
+                    suffix 	: 'preview.png'
+                }
+            ].forEach(testPost);
         });
         
         describe("update article with attachments", function() {
@@ -556,100 +700,6 @@ describe("ADXPublisherZenDesk", function() {
                     });
                     publisherZenDesk.publish(function() {});
                     
-                });
-            });
-        });
-                
-        it("should request to post the adc file when he is present in " + common.ADC_PATH, function() {
-            var config = new Configurator('.');
-            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
-            var name = config.get().info.name;
-            var p = path.resolve(path.join(config.path, common.ADC_PATH, name + '.adc'));
-            
-            runSync(function (done) {
-                spies.request.post.andCallFake(function (obj, cb) {
-                    expect(obj.formData).toEqual({
-                        file : p
-                    });
-                    done();
-                });
-                publisherZenDesk.publish(function() {});
-            });
-        });
-
-        it("should request to post the qex file when he is present in " + common.QEX_PATH, function() {
-            var config = new Configurator('.');
-            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
-            var name = config.get().info.name;
-            var p = path.resolve(path.join(config.path, common.QEX_PATH, name + '.qex'));
-            var n = 0;
-            
-            runSync(function (done) {
-                spies.request.post.andCallFake(function (obj, cb) {
-                    if (n === 1) {
-                        expect(obj.formData).toEqual({
-                            file : p
-                        });
-                        done();
-                    }
-                    n++;
-                    cb(null, null, JSON.stringify({
-                        article_attachment : {
-                            id : 'an id',
-                            file_name : 'a file_name'
-                        }
-                    }));
-                });
-                publisherZenDesk.publish(function() {});
-            });
-        });
-           
-        it("should request to post the png file when he is present in root", function() {
-            var config = new Configurator('.');
-            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
-            var name = config.get().info.name;
-            var p = path.resolve(path.join(config.path, 'preview.png'));
-            var n = 0;
-            
-            runSync(function (done) {
-                spies.request.post.andCallFake(function (obj, cb) {
-                    if (n === 2) {
-                        expect(obj.formData).toEqual({
-                            file : p
-                        });
-                        done();
-                    }
-                    n++;
-                    cb(null, null, JSON.stringify({
-                        article_attachment : {
-                            id : 'an id',
-                            file_name : 'a file_name'
-                        }
-                    }));
-                });
-                publisherZenDesk.publish(function() {});
-            });
-        });
-        
-        it("should output an error when the .adc file is missing in " + common.ADC_PATH, function() {
-            var config = new Configurator('.');
-            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
-            spies.fs.stat.andCallFake(function (p, cb) {
-                if (/test-adx\.adc$/.test(p)) {
-                    cb(new Error('something wrong'));
-                    return;
-                }
-                cb(null, {
-                    isFile : function () {
-                        return true;
-                    }
-                });
-            });
-
-            runSync(function (done) {
-                publisherZenDesk.publish(function(err) {
-                    expect(err).toBe(errMsg.badNumberOfADCFiles);
-                    done();
                 });
             });
         });

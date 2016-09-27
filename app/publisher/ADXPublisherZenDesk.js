@@ -42,11 +42,10 @@ function PublisherZenDesk(configurator, preferences, options) {
         }
     }
 
-    this.options.remoteUri += "/api/v2/help_center";
     this.client = zenDesk.createClient({
         username    : this.options.username,
         password    : this.options.password,
-        remoteUri	: this.options.remoteUri,
+        remoteUri	: this.options.remoteUri + "/api/v2/help_center",
         helpcenter 	: true  // IMPORTANT: Should be always set to true, otherwise the article methods are not available
     });
 }
@@ -271,14 +270,18 @@ function deleteArticle(self, title, section_id, callback) {
  */
 function uploadAvailableFiles(self, files, articleId, callback) {
     var attachmentsIDs = {};
+    var nameAndId = {
+        id 	 : null,
+        name : null
+    };
 
     function uploadAvailableFilesRecursive(index) {
         var formData = {
             'file' : fs.createReadStream(files[index])
         };
-
+        
         request.post({
-            url		: self.options.remoteUri + "/articles/" + articleId + "/attachments.json",
+            url		: self.options.remoteUri + "/api/v2/help_center/articles/" + articleId + "/attachments.json",
             formData: formData,
             headers : {
                 'Authorization' : "Basic " + new Buffer(self.options.username + ":" + self.options.password).toString('base64')
@@ -291,8 +294,9 @@ function uploadAvailableFiles(self, files, articleId, callback) {
 
             body = JSON.parse(body);
             var prefix = files[index].match(/\.([a-z]+)$/i)[1];
-            attachmentsIDs[prefix + 'ID']   = body.article_attachment.id;
-            attachmentsIDs[prefix + 'Name'] = body.article_attachment.file_name;
+            nameAndId.id = body.article_attachment.id;
+            nameAndId.name = body.article_attachment.file_name;
+            attachmentsIDs[prefix] = nameAndId;
             index++;
             if (index >= files.length) {
                 callback(null, attachmentsIDs);
@@ -312,7 +316,7 @@ function uploadAvailableFiles(self, files, articleId, callback) {
 */
 PublisherZenDesk.prototype.publish = function(callback) {
     var self = this;
-
+    
     findSectionIdByTitle(self, function(err, id) {
         if (err) {
             if (typeof callback === "function") {
@@ -366,21 +370,21 @@ PublisherZenDesk.prototype.publish = function(callback) {
                                     var replacements = [
                                         {
                                             pattern : /\{\{ADXQexFileURL\}\}/gi,
-                                            replacement : (attachmentsIDs.qexID) ?  ('<li>To download the qex file, <a href="/hc/en-us/article_attachments/' + attachmentsIDs.qexID + '/' + attachmentsIDs.qexName + '">click here</a></li>') : ""
+                                            replacement : (attachmentsIDs.qex.id) ?  ('<li>To download the qex file, <a href="/hc/en-us/article_attachments/' + attachmentsIDs.qex.id + '/' + attachmentsIDs.qex.name + '">click here</a></li>') : ""
                                         },
                                         {
                                             pattern : /\{\{ADXAdcFileURL\}\}/gi,
-                                            replacement : '<a href="/hc/en-us/article_attachments/' + attachmentsIDs.adcID + '/' + attachmentsIDs.adcName + '">click here</a>'
+                                            replacement : '<a href="/hc/en-us/article_attachments/' + attachmentsIDs.adc.id + '/' + attachmentsIDs.adc.name + '">click here</a>'
                                         }
                                     ];
 
                                     // TODO : /!\ change the url ! We don't want a redirection to the pic, but a redirection to survey demo on demo.askia...
                                     // we should upload the file to the demo server from this app
-                                    var urlToPointAt = (!self.options.surveyDemoUrl) ? '/hc/en-us/article_attachments/' + attachmentsIDs.pngID + '/' + attachmentsIDs.pngName :
+                                    var urlToPointAt = (!self.options.surveyDemoUrl) ? '/hc/en-us/article_attachments/' + attachmentsIDs.png.id + '/' + attachmentsIDs.png.name :
                                     self.options.surveyDemoUrl;
                                     replacements.push({
                                         pattern         : /\{\{ADXQexPicture\}\}/gi,
-                                        replacement     : (!attachmentsIDs.pngID)  ? '' : '<p><a href="' + urlToPointAt + '" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentsIDs.pngID + '/' + attachmentsIDs.pngName + '" alt="" /> </a></p>'
+                                        replacement     : (!attachmentsIDs.png.id)  ? '' : '<p><a href="' + urlToPointAt + '" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentsIDs.png.id + '/' + attachmentsIDs.png.name + '" alt="" /> </a></p>'
                                     });
                                     replacements.push({
                                         pattern         : /\{\{ADXSentence:accesSurvey\}\}/gi,
