@@ -270,10 +270,6 @@ function deleteArticle(self, title, section_id, callback) {
  */
 function uploadAvailableFiles(self, files, articleId, callback) {
     var attachmentsIDs = {};
-    var nameAndId = {
-        id 	 : null,
-        name : null
-    };
 
     function uploadAvailableFilesRecursive(index) {
         var formData = {
@@ -294,9 +290,10 @@ function uploadAvailableFiles(self, files, articleId, callback) {
 
             body = JSON.parse(body);
             var prefix = files[index].match(/\.([a-z]+)$/i)[1];
-            nameAndId.id = body.article_attachment.id;
-            nameAndId.name = body.article_attachment.file_name;
-            attachmentsIDs[prefix] = nameAndId;
+            attachmentsIDs[prefix] = {
+                id   : body.article_attachment.id,
+            	name : body.article_attachment.file_name
+            }
             index++;
             if (index >= files.length) {
                 callback(null, attachmentsIDs);
