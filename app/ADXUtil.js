@@ -28,10 +28,7 @@ program
     .option('--pwd <password>', 'the password login to connect to the platform')
     .option('--sectionTitle <title>', 'The name of the section where the adc will be posted (ZenDesk)')
     .option('--remoteUri <uri>', 'The remote URI of the platform')
-    .option('--useremail <email>', 'The email login to connect to the platform (GitHub Only)')
-    .option('--message <msg>', 'The commit message (GitHub only)')
     .option('--token <token>', 'The token that allows you to publish')
-    .option('--organization <org>', 'The name of the organization to publish adc')
     .option('--surveyDemoUrl <url>' , 'The url to start the demo survey online');
 
 
@@ -62,20 +59,11 @@ program
             if ('username' in program) {
                 options.username = program.username;
             }
-            if ('message' in program) {
-                options.message = program.message;
-            }
             if ('remoteUri' in program) {
                 options.remoteUri = program.remoteUri;
             }
             if ('pwd' in program) {
                 options.password = program.pwd;
-            }
-            if ('useremail' in program) {
-                options.useremail = program.useremail;
-            }
-            if ('organization' in program) {
-                options.organization = program.organization;
             }
             if ('surveyDemoUrl' in program) {
                 options.surveyDemoUrl = program.surveyDemoUrl;

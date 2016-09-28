@@ -51,12 +51,7 @@ function PublisherGitHub(configurator, preferences, options) {
     }
     
     this.git 	= git(this.configurator.path.replace(/\\/g, "/"));
-    this.github	= new Github({});[core]
-repositoryformatversion = 0  
-filemode = true  
-bare = false
-logallrefupdates = true  
-ignorecase = true  
+    this.github	= new Github({});
 }
 
 /**

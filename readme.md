@@ -70,9 +70,6 @@ This application works through Windows PowerShell
     --pwd <password>          the password login to connect to the platform
     --sectionTitle <title>    The name of the section where the adc will be posted (ZenDesk)
     --remoteUri <uri>         The remote URI of the platform
-    --useremail <email>       The email login to connect to the platform (GitHub Only)
-    --message <msg>           The commit message (GitHub only)
-    --organization <org>      The name of the organization to publish (GitHub Only)
 	--surveyDemoUrl <url>	The url to start the survey demo
     
 ### Generate
@@ -160,21 +157,6 @@ Once you have called publish with ZenDesk and the right args, it will :
 * Create an article with the informations of the adc and post it in the section 'sectionTitle'
 * Upload the article attachents like the .adc, the .png (pic of an example of the survey) or the .qex.
 * Create a link to start a demo of the survey if it is available by clicking on the picture. (/!\ TODO ! Don't have the API of demo.askia ...)
-
-II - GitHub :
-
-The options needed are : 'username', 'useremail', 'organization', 'pwd', 'message'.  
-
-The user must be able to create repos and to push in the organization otherwise it will fail and output an error 401 or 403.
-
-Once you have called publish with GitHub and the right args, it will :  
-
-* create a repo with the name of the adc if it does not exist
-* call git add with all files of the adc folder
-* call git commit with the message 'message'
-* and then call git push
-
-If some problems happen (people changing the adc from the platform) you may fix it by using the git command.
 
 
 #### List of possible error messages
