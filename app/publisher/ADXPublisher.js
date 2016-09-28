@@ -5,7 +5,6 @@ var preferences     = require('../preferences/ADXPreferences.js');
 
 exports.platforms = {
     'ZenDesk'   :   require('./ADXPublisherZenDesk.js')
-    //'GitHub'    :   require('./ADXPublisherGitHub.js')
 };
 
 /**

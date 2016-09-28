@@ -7,12 +7,10 @@
     "cli-color": "^0.2.2",
     "commander": "^1.1.1",
     "elementtree": "^0.1.6",
-    "github": "^2.4.0",
     "jszip": "^2.2.2",
     "node-uuid": "^1.4.0",
     "node-zendesk": "^1.1.10",
     "request": "^2.74.0",
-    "simple-git": "^1.44.0",
     "wrench": "^1.5.1"
   },
   "bin": {
