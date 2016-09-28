@@ -4,8 +4,8 @@ var Configurator	= require('../configurator/ADXConfigurator.js').Configurator;
 var preferences     = require('../preferences/ADXPreferences.js');
 
 exports.platforms = {
-    'ZenDesk'   :   require('./ADXPublisherZenDesk.js'),
-    'GitHub'    :   require('./ADXPublisherGitHub.js')
+    'ZenDesk'   :   require('./ADXPublisherZenDesk.js')
+    //'GitHub'    :   require('./ADXPublisherGitHub.js')
 };
 
 /**

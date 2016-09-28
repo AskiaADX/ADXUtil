@@ -248,7 +248,6 @@ describe("ADXPublisherZenDesk", function() {
 
             expect(publisherZenDesk.client).toBe(fakeClient);
         });
-
     });
 
     describe("#publish", function() {
