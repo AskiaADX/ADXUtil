@@ -118,46 +118,34 @@ Or
 ### Publish
 
 Start `Windows PowerShell` (`Start > All programs > Accessories > Windows PowerShell > Windows PowerShell`). 
-Target your ADC directory.
+Target your ADX directory.
 
     cd C:\Users\user_name\Documents\ADXProjects\my_adx_name
     
 Then enter the following command with a platform argument and then the options you want:
 
-    ADXUtil publish ZenDesk --sectionTitle MyFavouriteSection --pwd amazingSecret
+    ADXUtil publish ZenDesk --url http://url/to/zendesk --section mySection --username myName --password secret
 
-You must enter all the needed options otherwise an error will be thrown. If you don't enter all of them, the
-program will try to load your user preferences and if they don't exist it will output an error with the missing option.
 
-In case of succes, that should produce an output like:
+You can use following command line options for the ZenDesk publisher:
 
-![publish (Example output)](ADCUtilPublish.png "validate (Example output)")
+* --url 
+URL of the ZenDesk where to push
 
-In this case, the missing options in the command line were stored in the preferences.json.
+* --section  
+Name of the section within which the article will be created
 
-Let's describe how it works more precisely:  
+* --username           
+Username to connect into ZenDesk
+ 
+* --password           
+Password to connect into ZenDesk
 
-First of all, the folder of the adc may have a particular pattern in order to correctly upload the different files.  
-The screenshot's file name of the survey must be 'preview.png'. This file is optional but it is recomended to have one.  
-The adc file must be located in the sub-folder '/bin' and must be named NAME_OF_THE_ADC.adc, where 'NAME_OF_THE_ADC' is obviously the name of the adc.  
-The qex file (if there is one because it is not needed) must be located in the sub-folder '/example' and must be named NAME_OF_THE_ADC.adc, where 'NAME_OF_THE_ADC' is obviously the name of the adc.  
+* --promoted           
+Create a promoted article
 
-I - ZenDesk :  
-
-The options needed are : 'username', 'pwd', 'remoteUri', 'sectionTitle'.  
-The 'remoteUri' should have this pattern : `https://myZendeskPlatform.zendesk.com`.  
-There are tree more optional options : 'enableComments', 'promoted' and 'surveyDemoUrl'  
-If 'promoted' is set to true, the article correponding to the adc will be promoted and will appear on the main page of your zendesk platform.  
-If 'enableComments' is set to true, the people will be able to comment the article corresponding to the adc.  
-If there is 'surveyDemoUrl' a link to the survey will be available if you you click on the picture. Otherwise if you click on the picture it will redirect on the pic itself.  
-The Readme.md of the adc must contains a line containing `Notes` header level 2 with the notes following this header in order to have 
-a Note section in the article.  
-Once you have called publish with ZenDesk and the right args, it will :  
-
-* Create an article with the informations of the adc and post it in the section 'sectionTitle'
-* Upload the article attachents like the .adc, the .png (pic of an example of the survey) or the .qex.
-* Create a link to start a demo of the survey if it is available by clicking on the picture. (/!\ TODO ! Don't have the API of demo.askia ...)
-
+* --disableComments
+Create an article with disabled commentscd 
 
 #### List of possible error messages
 
@@ -168,7 +156,7 @@ Once you have called publish with ZenDesk and the right args, it will :
     "Invalid `configurator` argument"
     "Invalid `options` argument"
     "Invalid `title` argument"
-    "Unexisting section. Please check the section title or your logins"
+    "Non-existing section. Please check the section title or your logins"
     "Missing `configurator` argument"
     "The number of .adc files is incorrect"
     "Error when updating or creating this article : There are already at least two instances of this article on ZenDesk (Check in draft mode if you don't see them in help_center mode)"

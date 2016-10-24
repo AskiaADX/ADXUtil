@@ -227,6 +227,24 @@ describe('ADXUtil', function () {
         });
     });
 
+    describe('cmd `publish`', function () {
+        it('should call ADXPublish#publish when the program args contains `publish`', function () {
+            process.argv = [
+                'node',
+                'app/ADXUtil.js',
+                'publish',
+                'Platform'
+            ];
+
+            var adxPublish = require('../app/publisher/ADXPublisher.js');
+            spyOn(adxPublish, 'publish');
+
+            require("../app/ADXUtil.js");
+
+            expect(adxPublish.publish).toHaveBeenCalled();
+        });
+    });
+
     describe('cmd `config`', function () {
         it('should call ADXPreferences#read when the program args contains `config` and nothing else', function () {
             process.argv = [

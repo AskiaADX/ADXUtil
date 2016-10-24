@@ -3,14 +3,24 @@ var fs              = require('fs');
 var common          = require('../common/common.js');
 var path            = require('path');
 var errMsg          = common.messages.error;
+var successMsg      = common.messages.success;
 var Configurator    = require('../configurator/ADXConfigurator.js').Configurator;
 var request         = require('request');
 
 /**
  * Instantiate a PublisherZendesk
+ *
  * @param {Configurator} configurator the configuration of the article
  * @param {Object} preferences User preferences
  * @param {Object} options Options of the platform, if the options are not specified the user preferences will be loaded.
+ * @param {String} options.username ZenDesk username
+ * @param {String} options.password ZenDesk password
+ * @param {String} options.url ZenDesk base URL
+ * @param {String} options.section Title of the ZenDesk section into where the publish should be done
+ * @param {Boolean} [options.promoted=false] Promoted article
+ * @param {Boolean} [options.disableComments=false] Disabled comments
+ * @param {String} [options.demoUrl] URL to the online demo
+ * @param {Boolean} [options.silent=false] Don't write in the console
  */
 function PublisherZenDesk(configurator, preferences, options) {
     if (!configurator) {
@@ -23,18 +33,18 @@ function PublisherZenDesk(configurator, preferences, options) {
     this.options = options || {};
     this.configurator = configurator;
 
-    if (preferences) {
-        for (var option in preferences.zendesk) {
-            if (preferences.zendesk.hasOwnProperty(option)) {
+    if (preferences && preferences.ZenDesk) {
+        for (var option in preferences.ZenDesk) {
+            if (preferences.ZenDesk.hasOwnProperty(option)) {
                 if (!(option in this.options)) {
-                    this.options[option] = preferences.zendesk[option];
+                    this.options[option] = preferences.ZenDesk[option];
                 }
             }
         }
     }
 
     // All of these options must be present either in the command line either in the preference file of the user
-    var neededOptions = ['username', 'password', 'remoteUri', 'section_title'];
+    var neededOptions = ['username', 'password', 'url', 'section'];
     for (var i = 0, l = neededOptions.length; i < l; i++) {
         var neededOption = neededOptions[i];
         if (!this.options.hasOwnProperty(neededOption)) {
@@ -45,10 +55,43 @@ function PublisherZenDesk(configurator, preferences, options) {
     this.client = zenDesk.createClient({
         username    : this.options.username,
         password    : this.options.password,
-        remoteUri	: this.options.remoteUri + "/api/v2/help_center",
+        remoteUri	: this.options.url + "/api/v2/help_center",
         helpcenter 	: true  // IMPORTANT: Should be always set to true, otherwise the article methods are not available
     });
 }
+
+/**
+ * Write an error output in the console
+ * @param {String} text Text to write in the console
+ */
+PublisherZenDesk.prototype.writeError = function writeError(text) {
+    common.writeError.apply(common, arguments);
+};
+
+/**
+ * Write a warning output in the console
+ * @param {String} text Text to write in the console
+ */
+PublisherZenDesk.prototype.writeWarning = function writeWarning(text) {
+    common.writeWarning.apply(common, arguments);
+};
+
+/**
+ * Write a success output in the console
+ * @param {String} text Text to write in the console
+ */
+PublisherZenDesk.prototype.writeSuccess = function writeSuccess(text) {
+    common.writeSuccess.apply(common, arguments);
+};
+
+/**
+ * Write an arbitrary message in the console without specific prefix
+ * @param {String} text Text to write in the console
+ */
+PublisherZenDesk.prototype.writeMessage = function writeMessage(text) {
+    common.writeMessage.apply(common, arguments);
+};
+
 
 /**
  * Find the section id of a section with the Title
@@ -57,10 +100,10 @@ function PublisherZenDesk(configurator, preferences, options) {
  * @param {Error} [callback.err=null]
  */
 function findSectionIdByTitle(self, callback) {
-    var title = self.options.section_title;
+    var title = self.options.section;
     
     if (typeof title !== 'string') {
-        callback(errMsg.invalidSectionTitleArg);
+        callback(errMsg.invalidSectionArg);
         return;
     }
     
@@ -75,64 +118,71 @@ function findSectionIdByTitle(self, callback) {
         }
 
         for (var section in result) {
-            if (result[section].name.toLowerCase() === title) {
-                if (typeof callback === "function") {
-                	callback(null, result[section].id);
-                    return;
+            if (result.hasOwnProperty(section)) {
+                if (result[section].name.toLowerCase() === title) {
+                    if (typeof callback === "function") {
+                        callback(null, result[section].id);
+                        return;
+                    }
                 }
             }
         }
         
-        callback(errMsg.unexistingSection);
+        callback(errMsg.nonExistingSection);
     });
 }
 
 /**
  * Generate an HTML string which is a line of a 3 columns array with the name of the property category.
- * @param {Object} an object which represents a category of properties.
+ *
+ * @param {Object} category object which represents a category of properties.
  */
- function generateHTMLcodeForCategory(category) {
+ function generateHtmlCodeForCategory(category) {
     return '<tr>\n' +
         '<th data-sheets-value="[null,2,&quot;' + category.name + '&quot;]">' + category.name + '</th>\n' +
         '<td> </td>\n' +
         '<td> </td>\n' +
         '</tr>\n' ;
-};
+}
 
 /**
  * Generate a string which is the concatenation of all the options separated by ' '.
- * @param {Object} an object containing the options of a property.
+ * @param {Object} opt object containing the options of a property.
  */
-function generateHTMLcodeForOptions(opt) {
+function generateHtmlCodeForOptions(opt) {
     var values = [];
     for (var i = 0 , l = opt.length ; i < l ; i++) {
         values.push(opt[i].text);
     }
     return values.join(", ");    
-};
+}
 
 /**
  * Generate an HTML string which is a line of a 3 columns array with the standard description of a property.
- * @param {Object} an object which represents a property.
+ * @param {Object} property object which represents a property.
  */
- function generateHTMLcodeForProperty(property) {
-    var value = property.value
+ function generateHtmlCodeForProperty(property) {
+    var value = property.value;
     if (value === undefined) {
         value = "";
     }
     return  '<tr>\n' +
             '<td data-sheets-value="[null,2,&quot;' + property.name + '&quot;]">' + property.name + '</td>\n' +
             '<td data-sheets-value="[null,2,&quot;' + property.type + '&quot;]">' + property.type + '</td>\n' +
-            '<td data-sheets-value="[null,2,&quot;' + property.description + ' ' + value + '&quot;,null,null,null,1]">' + (property.description ? ('Description : ' + property.description) : "") + (property.value ? ('<br/>Value : ' + property.value) : "") + (property.options ? ('<br/>Options : ' + generateHTMLcodeForOptions(property.options)) : "") + (property.colorFormat ? ('<br/>ColorFormat : ' + property.colorFormat) : "") +'</td>\n' +
+            '<td data-sheets-value="[null,2,&quot;' + property.description + ' ' + value + '&quot;,null,null,null,1]">' +
+                    (property.description ? ('Description : ' + property.description) : "") +
+                    (property.value ? ('<br/>Value : ' + property.value) : "") +
+                    (property.options ? ('<br/>Options : ' + generateHtmlCodeForOptions(property.options)) : "") +
+                    (property.colorFormat ? ('<br/>ColorFormat : ' + property.colorFormat) : "") +'</td>\n' +
             '</tr>\n' ;
-};
+}
 
 /**
- * Transform the constraints of an adc(from the config) to a sentence
+ * Transform the constraints of an adc (from the config) to a sentence
  * @param {Object} constraints The constraints.
  */
 function constraintsToSentence(constraints) {
-    var questions = [], controls = [], key
+    var questions = [], controls = [], key;
     
     if (constraints.questions) {
         for (key in constraints.questions) {
@@ -149,36 +199,50 @@ function constraintsToSentence(constraints) {
         }
     }
 
+    // TODO::PLEASE PUT ALL OF THE FOLLOWING HARD-CODED STRING IN THE common.js
     var numberOfResponses = '';
-    numberOfResponses = ".\n Number minimum of responses : " + constraints.responses.min;
-    numberOfResponses += ".\n Number maximum of responses : " + constraints.responses.max;
+    if (constraints.responses) {
+        if ("min" in constraints.responses) {
+            numberOfResponses = "Number minimum of responses : " + constraints.responses.min + ".\n";
+        }
+        if ("max" in constraints.responses) {
+            numberOfResponses += "Number maximum of responses : " + constraints.responses.max + ".\n";
+        }
+    }
+
 
     return "This control is compatible with " +
         questions.join(", ") +
-        " questions" + numberOfResponses +
-        ".\n You can use the following controls : " +
+        " questions.\n" + numberOfResponses +
+        "You can use the following controls : " +
         controls.join(", ") + ".";
-};
+}
 
 /**
  * Create a String which contains an html dynamic array with the properties
- * @param {Object} properties The properties. Should give configurator.get().properties
+ * @param {Object} prop The properties. Should give configurator.get().properties
  */
-function propertiesToHTML(prop) {
+function propertiesToHtml(prop) {
     if (!prop) {
         throw new Error(errMsg.missingPropertiesArg);
     }
 
-    var result = '<table class="askiatable" dir="ltr" cellspacing="0" cellpadding="0"><colgroup><col width="281" /><col width="192" /><col width="867" /></colgroup><tbody><tr><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Parameters&quot;]">Parameters</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Type&quot;]">Type</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Comments and/or possible value&quot;]">Comments and/or possible value</td></tr><tr><td> </td><td> </td><td> </td></tr>';
+    var result = ['<table class="askiatable" dir="ltr" cellspacing="0" cellpadding="0">',
+                 '<colgroup><col width="281" /><col width="192" /><col width="867" /></colgroup>',
+                 '<tbody><tr><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Parameters&quot;]">Parameters</td>',
+                 '<td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Type&quot;]">Type</td>',
+                 '<td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Comments and/or possible value&quot;]">Comments and/or possible value</td>',
+                 '</tr><tr><td> </td><td> </td><td> </td></tr>'];
     
     for (var i = 0, l = prop.categories.length; i < l; i++) {
-        result += generateHTMLcodeForCategory(prop.categories[i]);
+        result.push(generateHtmlCodeForCategory(prop.categories[i]));
         for (var j = 0, k = prop.categories[i].properties.length; j < k; j++) {
-            result += generateHTMLcodeForProperty(prop.categories[i].properties[j]);
+            result.push(generateHtmlCodeForProperty(prop.categories[i].properties[j]));
         }
     }
-    return result + '</tbody></table>';
-};
+    result.push('</tbody></table>');
+    return result.join('');
+}
 
 /**
  * Create the JSON formatted article
@@ -196,7 +260,7 @@ function createJSONArticle (self, callback) {
         var conf = self.configurator.get();
         var replacements = [{
             pattern : /\{\{ADXProperties:HTML\}\}/gi,
-            replacement : propertiesToHTML(conf.properties)
+            replacement : propertiesToHtml(conf.properties)
         },
         {
             pattern : /\{\{ADXListKeyWords\}\}/gi,
@@ -208,11 +272,11 @@ function createJSONArticle (self, callback) {
         }];
 
         callback(null, {
-            "article": {
-                "title": conf.info.name,
-                "body": common.evalTemplate(data, conf, replacements),
-                "promoted": self.options.promoted,
-                "comments_disabled": self.options.comments_disabled
+            article : {
+                title               : conf.info.name,
+                body                : common.evalTemplate(data, conf, replacements),
+                promoted            : self.options.promoted,
+                comments_disabled   : !!self.options.disableComments // Make it boolean
             }
         });
     });
@@ -269,7 +333,7 @@ function deleteArticle(self, title, section_id, callback) {
  * @param {Function} callback
  */
 function uploadAvailableFiles(self, files, articleId, callback) {
-    var attachmentsIDs = {};
+    var attachments = {};
 
     function uploadAvailableFilesRecursive(index) {
         var formData = {
@@ -277,7 +341,7 @@ function uploadAvailableFiles(self, files, articleId, callback) {
         };
         
         request.post({
-            url		: self.options.remoteUri + "/api/v2/help_center/articles/" + articleId + "/attachments.json",
+            url		: self.options.url + "/api/v2/help_center/articles/" + articleId + "/attachments.json",
             formData: formData,
             headers : {
                 'Authorization' : "Basic " + new Buffer(self.options.username + ":" + self.options.password).toString('base64')
@@ -289,16 +353,20 @@ function uploadAvailableFiles(self, files, articleId, callback) {
             }
 
             body = JSON.parse(body);
+
             var prefix = files[index].match(/\.([a-z]+)$/i)[1];
-            attachmentsIDs[prefix] = {
+            attachments[prefix] = {
                 id   : body.article_attachment.id,
             	name : body.article_attachment.file_name
-            }
+            };
+
             index++;
-            if (index >= files.length) {
-                callback(null, attachmentsIDs);
-            } else {
+
+            if (index < files.length) {
                 uploadAvailableFilesRecursive(index);
+            } else {
+                // The latest iteration
+                callback(null, attachments);
             }
         });
     };
@@ -313,7 +381,7 @@ function uploadAvailableFiles(self, files, articleId, callback) {
 */
 PublisherZenDesk.prototype.publish = function(callback) {
     var self = this;
-    
+
     findSectionIdByTitle(self, function(err, id) {
         if (err) {
             if (typeof callback === "function") {
@@ -321,6 +389,9 @@ PublisherZenDesk.prototype.publish = function(callback) {
             }
             return;
         }
+
+        self.writeSuccess(successMsg.zenDeskSectionFound);
+
         createJSONArticle(self, function(err, jsonArticle) {
             if (err) {
                 if (typeof callback === "function") {
@@ -328,6 +399,7 @@ PublisherZenDesk.prototype.publish = function(callback) {
                 }
                 return;
             }
+
             deleteArticle(self, jsonArticle.article.title, id, function(err) {
                 if (err) {
                     if (typeof callback === "function") {
@@ -335,6 +407,10 @@ PublisherZenDesk.prototype.publish = function(callback) {
                     }
                     return;
                 }
+
+
+                self.writeSuccess("Article successfully deleted...");
+
                 self.client.articles.create(id, jsonArticle, function(err, req, article) {
                     if (err) {
                         if (typeof callback === "function") {
@@ -342,54 +418,68 @@ PublisherZenDesk.prototype.publish = function(callback) {
                         }
                         return;
                     }
+
+                    self.writeSuccess(successMsg.zenDeskArticleCreated);
+
                     var filesToPush = [];
                     var name = self.configurator.get().info.name;
-                    fs.stat(path.resolve(path.join(self.configurator.path, common.ADC_PATH, name + '.adc')), function(err, stats) {
-                        if(stats && stats.isFile()) {
-                            filesToPush.push(path.resolve(path.join(self.configurator.path, common.ADC_PATH, name + '.adc')));
+                    fs.stat(path.resolve(path.join(self.configurator.path, common.ADX_BIN_PATH, name + '.adc')), function(err, stats) {
+                        if (stats && stats.isFile()) {
+                            filesToPush.push(path.resolve(path.join(self.configurator.path, common.ADX_BIN_PATH, name + '.adc')));
                         } else {
-                            callback(errMsg.badNumberOfADCFiles);
+                            callback(errMsg.badNumberOfADXFiles);
                             return;
                         }
                         fs.stat(path.resolve(path.join(self.configurator.path, common.QEX_PATH, name + '.qex')), function(err, stats) {
-                            if(stats && stats.isFile()) {
+                            if (stats && stats.isFile()) {
                                 filesToPush.push(path.resolve(path.join(self.configurator.path, common.QEX_PATH, name + '.qex')));
                             }
                             fs.stat(path.resolve(path.join(self.configurator.path, 'preview.png')), function(err, stats) {
-                                if(stats && stats.isFile()) {
+                                if (stats && stats.isFile()) {
                                     filesToPush.push(path.resolve(path.join(self.configurator.path, 'preview.png')));
                                 }
-                                uploadAvailableFiles(self, filesToPush, article.id, function(err, attachmentsIDs){
+                                uploadAvailableFiles(self, filesToPush, article.id, function(err, attachments) {
                                     if (err) {
                                         callback(err);
                                         return;
                                     }
+
+                                    self.writeSuccess(successMsg.zenDeskAttachmentsUploaded);
+
                                     var replacements = [
                                         {
                                             pattern : /\{\{ADXQexFileURL\}\}/gi,
-                                            replacement : (attachmentsIDs.qex.id) ?  ('<li>To download the qex file, <a href="/hc/en-us/article_attachments/' + attachmentsIDs.qex.id + '/' + attachmentsIDs.qex.name + '">click here</a></li>') : ""
+                                            replacement : (attachments.qex) ?  ('<li>To download the qex file, <a href="/hc/en-us/article_attachments/' + attachments.qex.id + '/' + attachments.qex.name + '">click here</a></li>') : ""
                                         },
                                         {
-                                            pattern : /\{\{ADXAdcFileURL\}\}/gi,
-                                            replacement : '<a href="/hc/en-us/article_attachments/' + attachmentsIDs.adc.id + '/' + attachmentsIDs.adc.name + '">click here</a>'
+                                            pattern : /\{\{ADXFileURL\}\}/gi,
+                                            replacement : '<a href="/hc/en-us/article_attachments/' + attachments.adc.id + '/' + attachments.adc.name + '">click here</a>'
                                         }
                                     ];
 
-                                    // TODO : /!\ change the url ! We don't want a redirection to the pic, but a redirection to survey demo on demo.askia...
-                                    // we should upload the file to the demo server from this app
-                                    var urlToPointAt = (!self.options.surveyDemoUrl) ? '/hc/en-us/article_attachments/' + attachmentsIDs.png.id + '/' + attachmentsIDs.png.name :
-                                    self.options.surveyDemoUrl;
+                                    // TODO::We should upload the file to the demo server from this app
+                                    var urlToPointAt = self.options.demoUrl || '';
+                                    if (!urlToPointAt && attachments.png) {
+                                        urlToPointAt = '/hc/en-us/article_attachments/' + attachments.png.id + '/' + attachments.png.name;
+                                    }
                                     replacements.push({
-                                        pattern         : /\{\{ADXQexPicture\}\}/gi,
-                                        replacement     : (!attachmentsIDs.png.id)  ? '' : '<p><a href="' + urlToPointAt + '" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentsIDs.png.id + '/' + attachmentsIDs.png.name + '" alt="" /> </a></p>'
+                                        pattern         : /\{\{ADXPreview\}\}/gi,
+                                        replacement     : (!attachments.png)  ? '' : '<p><a href="' + urlToPointAt + '" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachments.png.id + '/' + attachments.png.name + '" alt="" /> </a></p>'
                                     });
                                     replacements.push({
-                                        pattern         : /\{\{ADXSentence:accesSurvey\}\}/gi,
-                                        replacement     : (!self.options.surveyDemoUrl) ? '' : '<li><a href="' + self.options.surveyDemoUrl + '" target="_blank">To access to the live survey, click on the picture above.</a></li>'
+                                        pattern         : /\{\{ADXLiveDemo\}\}/gi,
+                                        replacement     : (!self.options.demoUrl) ? '' : '<li><a href="' + self.options.demoUrl + '" target="_blank">To access to the live survey, click on the picture above.</a></li>'
                                     });
 
                                     var articleUpdated = common.evalTemplate(article.body, {}, replacements);
-                                    self.client.translations.updateForArticle(article.id, 'en-us', {body:articleUpdated}, callback);
+                                    self.client.translations.updateForArticle(article.id, 'en-us', {body:articleUpdated}, function (err) {
+                                        if (!err) {
+                                            self.writeSuccess(successMsg.zenDeskArticleUpdated);
+                                        }
+                                        if (typeof callback === 'function') {
+                                            callback(err);
+                                        }
+                                    });
                                 });
                             });
                         });
@@ -408,7 +498,7 @@ PublisherZenDesk.prototype.listSections = function(callback) {
     var self = this ;
     
     self.client.sections.list(function(err, req, res) {
-        if(err) {
+        if (err) {
             callback(err);
             return;
         } 

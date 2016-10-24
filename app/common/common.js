@@ -138,14 +138,14 @@
             missingPlatformArg: "Missing `platform` argument",
             invalidConfiguratorArg: "Invalid `configurator` argument",
             invalidOptionsArg: "Invalid `options` argument",
-            invalidSectionTitleArg: "Invalid `title` argument",
-            unexistingSection: "Unexisting section. Please check the section title or your logins",
+            invalidSectionArg: "Invalid `title` argument",
+            missingSectionArg: "Missing `title` arg",
+            nonExistingSection: "Non-existing section. Please check the section title or your logins",
             missingConfiguratorArg: "Missing `configurator` argument",
-            badNumberOfADCFiles: "The number of .adc files is incorrect",
+            badNumberOfADXFiles: "The number of .adx files is incorrect",
             tooManyArticlesExisting: "Error when updating or creating this article : There are already at least two instances of this article on ZenDesk (Check in draft mode if you don't see them in help_center mode)",
-            missingSectionTitleArg: "Missing `title` arg",
-            missingPublishArgs: "Arguments are missing. Check the arguments in command line or your personal preferences file"
-
+            missingPublishArgs: "Arguments are missing. Check the arguments in command line or your personal preferences file",
+            publishFailed   : "Publish on %s failed with errors."
         },
         warning: {
             // Validator
@@ -181,7 +181,14 @@
 
             // Builder
             buildSucceed: "ADX file was successfully generated.\r\nOutput: file:///%s",
-            buildSucceedWithWarning: "ADX file was successfully generated with %d warnings.\r\nOutput: file:///%s"
+            buildSucceedWithWarning: "ADX file was successfully generated with %d warnings.\r\nOutput: file:///%s",
+
+            // Publisher
+            publishSucceed : "ADX file was successfully published on %s",
+            zenDeskSectionFound : "The ZenDesk section as successfully found...",
+            zenDeskArticleCreated : "The ZenDesk article successfully created...",
+            zenDeskAttachmentsUploaded :"The ZenDesk attachments were successfully uploaded...",
+            zenDeskArticleUpdated   : "The ZenDesk article successfully updated..."
         },
         message: {
             // Validator
@@ -198,7 +205,6 @@
     //Publish
 
     exports.ZENDESK_ARTICLE_TEMPLATE_PATH = exports.TEMPLATES_PATH + 'publish/zendesk/article.html';
-    exports.ADC_PATH = '/bin';
     exports.QEX_PATH = '/example';
 
    

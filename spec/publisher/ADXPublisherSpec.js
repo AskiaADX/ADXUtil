@@ -1,10 +1,12 @@
 describe('ADXPublisher', function(){
     var fs					= require('fs'),
+        path                = require('path'),
         spies               = {},
         ADXPublisher 		= require("../../app/publisher/ADXPublisher.js"),
         Publisher           = ADXPublisher.Publisher,
         platforms           = ADXPublisher.platforms,
         common				= require('../../app/common/common.js'),
+        successMsg          = common.messages.success,
         errMsg				= common.messages.error,
         Configurator 		= require('../../app/configurator/ADXConfigurator.js').Configurator,
         preferences         = require('../../app/preferences/ADXPreferences.js');
@@ -36,6 +38,16 @@ describe('ADXPublisher', function(){
         spies.readPreferences.andCallFake(function(a, cb) {
             cb({});
         });
+        spies.configurator = {
+            load : spyOn(Configurator.prototype, 'load')
+        };
+        spies.configurator.load.andCallFake(function (cb) {
+            cb(null);
+        });
+
+        spies.writeError = spyOn(common, 'writeError');
+        spies.writeSuccess = spyOn(common, 'writeSuccess');
+        spies.writeMessage = spyOn(common, 'writeMessage');
     });
 
     function runSync(fn) {
@@ -51,26 +63,26 @@ describe('ADXPublisher', function(){
     }
     
     describe("#constructor", function() {
-        
-        it("should instantiate the publisher with a good `configurator` argument", function() {
-            var conf = new Configurator('.');
-            var publisher = new Publisher(conf);
-            expect(publisher.configurator).toBe(conf);
-        });
-        
-        it("should throw an error when the `configurator` argument is not correct", function() {
-            expect(function() {
-                var publisher = new Publisher({});
-            }).toThrow(errMsg.invalidConfiguratorArg);
+
+        it("should set the property #adxDirectoryPath with the path in arg", function () {
+            var publisher = new Publisher("my/path");
+            expect(publisher.adxDirectoryPath).toEqual(path.normalize("my/path"));
         });
 
+        it("should set the property #adxDirectoryPath with the process.cwd if the path is not defined", function () {
+            spyOn(process, 'cwd').andReturn('cwd/');
+
+            var publisher = new Publisher();
+            expect(publisher.adxDirectoryPath).toEqual("cwd/");
+        });
     });
 
     describe("#publish", function() {
-        
+
+
         it("should return an error when the platform argument is unknown", function() {
             runSync(function (done) {
-                var publisher = new Publisher(new Configurator('.'));
+                var publisher = new Publisher("/my/path");
                 publisher.publish("unknown publisher", null, function (err) {
                     expect(err.message).toEqual(errMsg.invalidPlatformArg);
                     done();
@@ -80,7 +92,7 @@ describe('ADXPublisher', function(){
 
         it("should return an error when the `platform` argument is not specified", function() {
             runSync(function (done) {
-                var publisher = new Publisher(new Configurator('.'));
+                var publisher = new Publisher("/my/path");
                 publisher.publish(undefined, null, function (err) {
                     expect(err.message).toEqual(errMsg.missingPlatformArg);
                     done();
@@ -88,9 +100,37 @@ describe('ADXPublisher', function(){
             });
         });
 
+        it("should try to load the configuration with the adx directory path", function () {
+            runSync(function (done) {
+                spies.configurator.load.andCallFake(function () {
+                    expect(this.path).toEqual(path.normalize("/my/path"));
+                    done();
+                });
+
+                var publisher = new Publisher("/my/path");
+                publisher.publish("Fake", {});
+            });
+        });
+
+        it("should return the configuration error when failed to load the configuration", function () {
+            runSync(function (done) {
+                var error = new Error("an error");
+                spies.configurator.load.andCallFake(function (cb) {
+                    cb(error);
+                });
+
+                var publisher = new Publisher("/my/path");
+                publisher.publish("Fake", {}, function (err) {
+                    expect(err).toBe(error);
+                    done();
+                });
+            });
+        });
+
+
         it("should instantiate the right `platform`", function() {
             runSync(function (done) {
-                var publisher = new Publisher(new Configurator('.'));
+                var publisher = new Publisher("/my/path");
                 publisher.publish('Fake', {}, function (err) {
                     expect(spies.subPublisher.constructor).toHaveBeenCalled();
                     done();
@@ -103,22 +143,16 @@ describe('ADXPublisher', function(){
             spies.readPreferences.andCallFake(function(a, cb) {
                 cb(prefs);
             });
-            runSync(function (done) {
-                var configurator = new Configurator('.');
-                var opts = {opt1 : 'value1'};
-                var publisher = new Publisher(configurator);
-                publisher.publish('Fake', opts , function (err) {
-                    expect(spies.subPublisher.constructor).toHaveBeenCalledWith(configurator, prefs, opts);
-                    done();
-                });
+            var conf;
+            spies.configurator.load.andCallFake(function (cb) {
+                conf = this;
+                cb(null);
             });
-        });
-
-        it("should call #publish method on the right `platform` argument", function() {
             runSync(function (done) {
-                var publisher = new Publisher(new Configurator('.'));
-                publisher.publish('Fake', {}, function (err) {
-                    expect(PublisherFake.prototype.publish).toHaveBeenCalled();
+                var opts = {opt1 : 'value1'};
+                var publisher = new Publisher("/my/path");
+                publisher.publish('Fake', opts , function (err) {
+                    expect(spies.subPublisher.constructor).toHaveBeenCalledWith(conf, prefs, opts);
                     done();
                 });
             });
@@ -131,12 +165,55 @@ describe('ADXPublisher', function(){
             });
 
             runSync(function (done) {
-                var publisher = new Publisher(new Configurator('.'));
+                var publisher = new Publisher("/my/path");
                 publisher.publish('Fake', {}, function (err) {
                     expect(err).toBe(subPublisherError);
                     done();
                 });
             });
         });
+
+        it("should write the error message using common#writeError when the publish failed", function () {
+            var subPublisherError = new Error("SOMETHING WRONG");
+            spies.subPublisher.publish.andCallFake(function (cb) {
+                cb(subPublisherError);
+            });
+
+            runSync(function (done) {
+                var publisher = new Publisher("/my/path");
+                publisher.publish('Fake', {}, function (err) {
+                    expect(spies.writeError).toHaveBeenCalledWith(errMsg.publishFailed, "Fake");
+                    done();
+                });
+            });
+        });
+
+        it("should write the success message using common#writeSuccess when the publish succeed", function () {
+            spies.subPublisher.publish.andCallFake(function (cb) {
+                cb(null);
+            });
+
+            runSync(function (done) {
+                var publisher = new Publisher("/my/path");
+                publisher.publish('Fake', {}, function (err) {
+                    expect(spies.writeSuccess).toHaveBeenCalledWith(successMsg.publishSucceed, "Fake");
+                    done();
+                });
+            });
+        });
     });
+
+    describe("static .publish", function () {
+        it("should call the #publish method a new publisher instance with the right `path` arg", function () {
+            runSync(function (done) {
+                spies.subPublisher.constructor.andCallFake(function (conf, prefs, opts) {
+                    expect(conf.path).toEqual(path.normalize("my/path"));
+                    done();
+                });
+
+                ADXPublisher.publish({}, "Fake", "my/path");
+            });
+        });
+    });
+
 });
