@@ -315,22 +315,17 @@ Generator.prototype.updateFiles = function updateFiles() {
                 return;
             }
 
-            var result = data, authorFullName = '';
-
-            result = result.replace(/\{\{ADXName\}\}/gi, self.adxName);
-            result = result.replace(/\{\{ADXGuid\}\}/gi, uuid.v4());
-            result = result.replace(/\{\{ADXDescription\}\}/gi, self.adxDescription);
-            result = result.replace(/\{\{ADXAuthor.Name\}\}/gi, self.adxAuthor.name);
-            result = result.replace(/\{\{ADXAuthor.Email\}\}/gi, self.adxAuthor.email);
-            result = result.replace(/\{\{ADXAuthor.Company\}\}/gi, self.adxAuthor.company);
-            result = result.replace(/\{\{ADXAuthor.website\}\}/gi, self.adxAuthor.website);
-            authorFullName = self.adxAuthor.name || '';
-            if (self.adxAuthor.email) {
-                authorFullName += ' <' + self.adxAuthor.email + '>';
-            }
-            result = result.replace(/\{\{ADXAuthor\}\}/gi, authorFullName);
-            result = result.replace(/2000-01-01/, common.formatXmlDate());
-            result = result.replace('\ufeff', ''); // Remove the BOM characters (Marker of the UTF-8 in the string)
+            var result = common.evalTemplate(data, {
+                info : {
+                    name : self.adxName ,
+                    type :	 self.adxType, 
+                    description : self.adxDescription,
+                    author : self.adxAuthor.name,
+                    email : self.adxAuthor.email,
+                    company : self.adxAuthor.company,
+                    site : self.adxAuthor.website
+                }
+            });
 
             fs.writeFile(file, result, function writeFileCallback(err) {
                 treat++;

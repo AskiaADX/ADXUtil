@@ -2,6 +2,7 @@ var fs      = require('fs');
 var path    = require('path');
 var common  = require('../common/common.js');
 var msg     = common.messages.message;
+
 /**
  * Manage the user preferences
  *
@@ -62,6 +63,13 @@ Preferences.prototype.writeMessage = function writeMessage(text) {
  * @param {String} [callback.preferences.author.email] Default Email of the ADX author
  * @param {String} [callback.preferences.author.company] Default Company of the ADX author
  * @param {String} [callback.preferences.author.webSite] Default WebSite of the ADX author
+ * @param {Object} [callback.preferences.ZenDesk] Default ZenDesk options
+ * @param {String} [callback.preferences.ZenDesk.url] Default ZenDesk URL
+ * @param {String} [callback.preferences.ZenDesk.section] Default ZenDesk section
+ * @param {String} [callback.preferences.ZenDesk.username] Default ZenDesk username
+ * @param {String} [callback.preferences.ZenDesk.password] Default ZenDesk password
+ * @param {String} [callback.preferences.ZenDesk.promoted] ZenDesk: create promoted article on article by default
+ * @param {String} [callback.preferences.ZenDesk.disabledComments] ZenDesk: disabled article comments by default
  */
 Preferences.prototype.read = function read(options, callback) {
     // Swap arguments
@@ -72,7 +80,7 @@ Preferences.prototype.read = function read(options, callback) {
 
     var filePath = path.join(process.env.APPDATA, common.APP_NAME, common.PREFERENCES_FILE_NAME);
     var self = this;
-    fs.readFile(filePath, function onReadPreferencesFile(err, data) {
+    fs.readFile(filePath, 'utf-8', function (err, data) {
         if (err || !data) {
             if (!options || !options.silent) {
                 self.writeMessage(msg.noPreferences);
@@ -82,6 +90,7 @@ Preferences.prototype.read = function read(options, callback) {
             }
             return;
         }
+
         var json = JSON.parse(data.toString());
         if (!options || !options.silent) {
             self.writeMessage(JSON.stringify(json, null, 2));
@@ -109,6 +118,13 @@ Preferences.prototype.read = function read(options, callback) {
  * @param {String} [callback.preferences.author.email] Default Email of the ADX author
  * @param {String} [callback.preferences.author.company] Default Company of the ADX author
  * @param {String} [callback.preferences.author.website] Default Website of the ADX author
+ * @param {Object} [callback.preferences.ZenDesk] Default ZenDesk options
+ * @param {String} [callback.preferences.ZenDesk.url] Default ZenDesk URL
+ * @param {String} [callback.preferences.ZenDesk.section] Default ZenDesk section
+ * @param {String} [callback.preferences.ZenDesk.username] Default ZenDesk username
+ * @param {String} [callback.preferences.ZenDesk.password] Default ZenDesk password
+ * @param {String} [callback.preferences.ZenDesk.promoted] ZenDesk: create promoted article on article by default
+ * @param {String} [callback.preferences.ZenDesk.disabledComments] ZenDesk: disabled article comments by default
  */
 Preferences.prototype.write = function write(preferences, callback) {
     if (!preferences || !preferences.author) {
@@ -134,6 +150,48 @@ Preferences.prototype.write = function write(preferences, callback) {
         if ("website" in preferences.author) {
             currentPrefs.author.website  = preferences.author.website;
         }
+
+        if (preferences.ZenDesk) {
+            currentPrefs.ZenDesk = currentPrefs.ZenDesk || {};
+            if ("url" in preferences.ZenDesk) {
+                currentPrefs.ZenDesk.url = preferences.ZenDesk.url;
+            }
+            if ("section" in preferences.ZenDesk) {
+                currentPrefs.ZenDesk.section = preferences.ZenDesk.section;
+            }
+            if ("username" in preferences.ZenDesk) {
+                currentPrefs.ZenDesk.username = preferences.ZenDesk.username;
+            }
+            if ("password" in preferences.ZenDesk) {
+                currentPrefs.ZenDesk.password = preferences.ZenDesk.password;
+            }
+            if ("promoted" in preferences.ZenDesk) {
+                currentPrefs.ZenDesk.promoted = preferences.ZenDesk.promoted;
+            }
+            if ("disabledComments" in preferences.ZenDesk) {
+                currentPrefs.ZenDesk.disabledComments = preferences.ZenDesk.disabledComments;
+            }
+        }
+
+        /* DEPRECATED GITHUB PUBLISHER
+         if (preferences.github) {
+         currentPrefs.github = currentPrefs.github || {};
+         if ("username" in preferences.github) {
+         currentPrefs.github.username = preferences.github.username;
+         }
+         if ("remoteUri" in preferences.github) {
+         currentPrefs.github.remoteUri = preferences.github.remoteUri;
+         }
+         if ("useremail" in preferences.github) {
+         currentPrefs.github.useremail = preferences.github.useremail;
+         }
+         if ("message" in preferences.github) {
+         currentPrefs.github.message = preferences.github.message;
+         }
+         if ("token" in preferences.github) {
+         currentPrefs.github.token = preferences.github.token;
+         }
+         }*/
 
         var filePath = path.join(process.env.APPDATA, common.APP_NAME, common.PREFERENCES_FILE_NAME);
         // Make sure the directory exist
@@ -173,6 +231,11 @@ exports.preferences = Preferences.getInstance();
  * @param {String} [callback.preferences.author.email] Default Email of the ADX author
  * @param {String} [callback.preferences.author.company] Default Company of the ADX author
  * @param {String} [callback.preferences.author.website] Default Website of the ADX author
+ * @param {Object} [callback.preferences.zendesk] Default zendesk options
+ * @param {String} [callback.preferences.zendesk.username] Default zendesk username
+ * @param {String} [callback.preferences.zendesk.remoteUri] Default zendesk uri
+ * @param {String} [callback.preferences.zendesk.promoted] Default zendesk promoted
+ * @param {String} [callback.preferences.zendesk.comments_disabled] Default zendesk comments_disabled
  */
 exports.read = function read(options, callback) {
     exports.preferences.read(options, callback);
@@ -195,6 +258,13 @@ exports.read = function read(options, callback) {
  * @param {String} [callback.preferences.author.email] Default Email of the ADX author
  * @param {String} [callback.preferences.author.company] Default Company of the ADX author
  * @param {String} [callback.preferences.author.webSite] Default WebSite of the ADX author
+ * @param {Object} [callback.preferences.ZenDesk] Default ZenDesk options
+ * @param {String} [callback.preferences.ZenDesk.url] Default ZenDesk URL
+ * @param {String} [callback.preferences.ZenDesk.section] Default ZenDesk section
+ * @param {String} [callback.preferences.ZenDesk.username] Default ZenDesk username
+ * @param {String} [callback.preferences.ZenDesk.password] Default ZenDesk password
+ * @param {String} [callback.preferences.ZenDesk.promoted] ZenDesk: create promoted article on article by default
+ * @param {String} [callback.preferences.ZenDesk.disabledComments] ZenDesk: disabled article comments by default
  */
 exports.write = function write(preferences, callback) {
     exports.preferences.write(preferences, callback);

@@ -36,6 +36,10 @@ describe('ADXPreferences', function () {
             mkdir: spyOn(fs, 'mkdir')
         };
 
+        spies.fs.mkdir.andCallFake(function (p, cb) {
+            cb();
+        });
+
         spies.writeError = spyOn(common, 'writeError');
         spies.writeSuccess = spyOn(common, 'writeSuccess');
         spies.writeMessage = spyOn(common, 'writeMessage');
@@ -47,14 +51,15 @@ describe('ADXPreferences', function () {
     describe('#read', function () {
         it("should try to read the `preferences.json` file", function () {
             var fileRead;
-            spies.fs.readFile.andCallFake(function (filePath) {
+            spies.fs.readFile.andCallFake(function (filePath, encoding, cb) {
                 fileRead = filePath;
+                cb(new Error('AN ERROR'));
             });
             adxPreferences.read();
             expect(fileRead).toEqual(path.join(process.env.APPDATA, common.APP_NAME, common.PREFERENCES_FILE_NAME));
         });
         it("should output the `No preferences defined` when the `preferences.json` file is not found", function () {
-            spies.fs.readFile.andCallFake(function (filePath, cb) {
+            spies.fs.readFile.andCallFake(function (filePath, encoding, cb) {
                 cb(new Error('AN ERROR'));
             });
             adxPreferences.read();
@@ -69,7 +74,7 @@ describe('ADXPreferences', function () {
                     website : "the website"
                 }
             };
-            spies.fs.readFile.andCallFake(function (f, cb) {
+            spies.fs.readFile.andCallFake(function (f, encoding, cb) {
                 cb(null, JSON.stringify(obj));
             });
             adxPreferences.read();
@@ -84,7 +89,7 @@ describe('ADXPreferences', function () {
                     website : "the website"
                 }
             };
-            spies.fs.readFile.andCallFake(function (f, cb) {
+            spies.fs.readFile.andCallFake(function (f, encoding, cb) {
                 cb(null, JSON.stringify(obj));
             });
             runSync(function (done) {
@@ -95,7 +100,7 @@ describe('ADXPreferences', function () {
             });
         });
         it("should not output at all when the `options.silent` is true and the file is not found", function () {
-            spies.fs.readFile.andCallFake(function (filePath, cb) {
+            spies.fs.readFile.andCallFake(function (filePath, encoding, cb) {
                 cb(new Error('AN ERROR'));
             });
             adxPreferences.read({silent : true});
@@ -110,7 +115,7 @@ describe('ADXPreferences', function () {
                     website : "the website"
                 }
             };
-            spies.fs.readFile.andCallFake(function (f, cb) {
+            spies.fs.readFile.andCallFake(function (f, encoding, cb) {
                 cb(null, JSON.stringify(obj));
             });
             adxPreferences.read({silent : true});
@@ -121,7 +126,7 @@ describe('ADXPreferences', function () {
     describe('#write', function () {
         it("should not try to write in the `preferences.json` file if no options is define", function () {
             runSync(function (done) {
-                spies.fs.readFile.andCallFake(function (filePath, cb) {
+                spies.fs.readFile.andCallFake(function (filePath, encoding, cb) {
                     cb(new Error('AN ERROR'));
                 });
                 adxPreferences.write(null, function () {
@@ -140,10 +145,7 @@ describe('ADXPreferences', function () {
                     website : "the website"
                 }
             };
-            spies.fs.mkdir.andCallFake(function (p, cb) {
-              cb();
-            });
-            spies.fs.readFile.andCallFake(function (p, cb) {
+            spies.fs.readFile.andCallFake(function (p, encoding, cb) {
                 cb(new Error("An error"), null);
             });
             runSync(function (done) {
@@ -178,11 +180,8 @@ describe('ADXPreferences', function () {
                     website : "add a website"
                 }
             };
-            spies.fs.readFile.andCallFake(function (p, cb) {
+            spies.fs.readFile.andCallFake(function (p, encoding, cb) {
                 cb(null, JSON.stringify(objRead));
-            });
-            spies.fs.mkdir.andCallFake(function (p, cb) {
-                cb();
             });
             runSync(function (done) {
                 spies.fs.writeFile.andCallFake(function (p, content) {
@@ -192,6 +191,109 @@ describe('ADXPreferences', function () {
                 adxPreferences.write(obj);
             });
         });
+
+        it("should try to write the zendesk preferences when it's define", function () {
+            spies.fs.readFile.andCallFake(function (p, encoding, cb) {
+                cb(null, JSON.stringify({
+                    author : {
+                        email : "test@test.com"
+                    }
+                }));
+            });
+
+            spies.fs.writeFile.andCallFake(function (p, content, options, cbbWrite) {
+                spies.fs.readFile.andCallFake(function (p, encoding, cbRead) {
+                    cbRead(null, content);
+                });
+                cbbWrite();
+            });
+            var obj = {
+                author : {
+                    name : 'test'
+                },
+                ZenDesk : {
+                    url              : 'http?//uri',
+                    section          : 'the_section',
+                    username         : "un",
+                    password         : 'pwd',
+                    promoted         : true,
+                    disabledComments : false
+                }
+            };
+            var expectedObj = {
+                author : {
+                    name : 'test',
+                    email : "test@test.com"
+                },
+                ZenDesk : {
+                    url              : 'http?//uri',
+                    section          : 'the_section',
+                    username         : "un",
+                    password         : 'pwd',
+                    promoted         : true,
+                    disabledComments : false
+                }
+            };
+            runSync(function (done) {
+                adxPreferences.write(obj, function (result) {
+                    expect(result).toEqual(expectedObj);
+                    done();
+                });
+            });
+
+        });
+        
+        /*
+        DEPRECATED PUBLISHER
+        it("should try to write the github preferences when it's define", function () {
+            spies.fs.readFile.andCallFake(function (p, encoding, cb) {
+                cb(null, JSON.stringify({
+                    author : {
+                        email : "test@test.com"
+                    }
+                }));
+            });
+
+            spies.fs.writeFile.andCallFake(function (p, content, options, cbbWrite) {
+                spies.fs.readFile.andCallFake(function (p, encoding, cbRead) {
+                    cbRead(null, content);
+                });
+                cbbWrite();
+            });
+            var obj = {
+                author : {
+                    name : 'test'
+                },
+                github : {
+                    username : "un",
+                    useremail : 'em',
+                    remoteUri : "ru",
+                    token : "050zf05grgz",
+                    message : "a msg"
+                }
+            };
+            var expectedObj = {
+                author : {
+                    name : 'test',
+                    email : "test@test.com"
+                },
+                github : {
+                    username : "un",
+                    useremail :"em",
+                    remoteUri : 'ru',
+                    token : "050zf05grgz",
+                    message : "a msg"
+                }
+            };
+            runSync(function (done) {
+                adxPreferences.write(obj, function (result) {
+                    expect(result).toEqual(expectedObj);
+                    done();
+                });
+            });
+
+        });
+        */
 
         it("should return the preferences in the callback when it's defined", function () {
             var objRead = {
@@ -215,14 +317,12 @@ describe('ADXPreferences', function () {
                     website : "add a website"
                 }
             };
-            spies.fs.readFile.andCallFake(function (p, cb) {
+            spies.fs.readFile.andCallFake(function (p, encoding, cb) {
                 cb(null, JSON.stringify(objRead));
             });
-            spies.fs.mkdir.andCallFake(function (p, cb) {
-                cb();
-            });
+
             spies.fs.writeFile.andCallFake(function (p, content, options, cbbWrite) {
-                spies.fs.readFile.andCallFake(function (p, cbRead) {
+                spies.fs.readFile.andCallFake(function (p, encoding, cbRead) {
                     cbRead(null, content);
                 });
                 cbbWrite();

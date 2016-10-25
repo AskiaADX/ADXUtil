@@ -43,6 +43,7 @@ This application works through Windows PowerShell
 
     generate <type> <name>        generate a new ADP or ADC structure (type is `adc` or `adp`)
     validate [<path>]             validate the uncompressed ADX structure
+    publish <platform>            publish the adc on a web platform
     build [<path>]                build the ADX file
     show [<path>]                 show the output of the ADX
     config                        get or set the configuration (use the --authorXXX flags to set the config)
@@ -63,6 +64,13 @@ This application works through Windows PowerShell
     --authorEmail <email>     default email of the author to set in the config
     --authorCompany <name>    default company of the author to set in the config
     --authorWebsite <website> default website of the author to set in the config
+    --promoted                the article will be promoted (appear with a star in ZenDesk Platform)
+    --enableComments          the comments will be enabled on the article corresponding to the ADC on ZenDesk
+    --username <name>         the username login to connect to the platform
+    --pwd <password>          the password login to connect to the platform
+    --sectionTitle <title>    The name of the section where the adc will be posted (ZenDesk)
+    --remoteUri <uri>         The remote URI of the platform
+	--surveyDemoUrl <url>	The url to start the survey demo
     
 ### Generate
 
@@ -105,6 +113,55 @@ Or
     "The directory @%s@ already exists."
     "Incorrect ADX name. The name of the ADX should only contains letters, digits, spaces, @_,-,.@ characters"
     "Cannot found the @%s@ template"
+
+
+### Publish
+
+Start `Windows PowerShell` (`Start > All programs > Accessories > Windows PowerShell > Windows PowerShell`). 
+Target your ADX directory.
+
+    cd C:\Users\user_name\Documents\ADXProjects\my_adx_name
+    
+Then enter the following command with a platform argument and then the options you want:
+
+    ADXUtil publish ZenDesk --url http://url/to/zendesk --section mySection --username myName --password secret
+
+
+You can use following command line options for the ZenDesk publisher:
+
+* --url 
+URL of the ZenDesk where to push
+
+* --section  
+Name of the section within which the article will be created
+
+* --username           
+Username to connect into ZenDesk
+ 
+* --password           
+Password to connect into ZenDesk
+
+* --promoted           
+Create a promoted article
+
+* --disableComments
+Create an article with disabled commentscd 
+
+#### List of possible error messages
+
+**Errors**
+
+    "Invalid `platform` argument"
+    "Missing `platform` argument"
+    "Invalid `configurator` argument"
+    "Invalid `options` argument"
+    "Invalid `title` argument"
+    "Non-existing section. Please check the section title or your logins"
+    "Missing `configurator` argument"
+    "The number of .adc files is incorrect"
+    "Error when updating or creating this article : There are already at least two instances of this article on ZenDesk (Check in draft mode if you don't see them in help_center mode)"
+    "Missing `title` arg"
+    "Arguments are missing. Check the arguments in command line or your personal preferences file"
 
 ### Validate
 

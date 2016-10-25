@@ -18,8 +18,10 @@ describe('common', function () {
 
     var fs              = require('fs'),
         clc             = require('cli-color'),
+        uuid        = require('node-uuid'),
         pathHelper      = require('path'),
         util            = require('util'),
+        path            = require('path'),
         spies           = {},
         common,
         errMsg;
@@ -42,6 +44,9 @@ describe('common', function () {
             readFileSync : spyOn(fs, 'readFileSync')
         };
 
+        // Court-circuit the uuid generator
+        spyOn(uuid, 'v4').andReturn('guid');
+
     });
 
     function runSync(fn) {
@@ -55,7 +60,6 @@ describe('common', function () {
             return wasCalled;
         });
     }
-
     // Run the test in a given architecture (x64, ia32)
     function runInArch(arch, fn) {
         // process.arch is read-only use the propertyDescriptor to override it's value
@@ -571,6 +575,82 @@ describe('common', function () {
            var formattedDate = common.formatXmlDate(date);
            expect(formattedDate).toBe('2000-01-01');
        });
+    });
+
+    describe('#evalTemplate', function () {
+
+        function testReplacement(obj) {
+            it("should replace the `" + obj.pattern + "` by the right value", function () {
+                spyOn(common, 'formatXmlDate').andReturn('2013-12-31');
+                var result = common.evalTemplate(obj.pattern, {
+                    info : {
+                        name   : 'adxname',
+                        description : 'My description',
+                        author : 'MySelf',
+                        email : 'myself@test.com',
+                        company : 'My Company',
+                        site : 'http://my/web/site.com'
+                    }
+                });
+                expect(result).toBe(obj.replacement);
+            });
+        }
+
+        var replacement = [
+            {
+                pattern : "{{ADXName}}",
+                replacement : "adxname"
+            },
+            {
+                pattern : "{{ADXGuid}}",
+                replacement : "guid"
+            },
+            {
+                pattern : "2000-01-01",
+                replacement : "2013-12-31"
+            },
+            {
+                pattern : '{{ADXDescription}}',
+                replacement : 'My description'
+            },
+            {
+                pattern : '{{ADXAuthor}}',
+                replacement : 'MySelf <myself@test.com>'
+            },
+            {
+                pattern : '{{ADXAuthor.Name}}',
+                replacement : 'MySelf'
+            },
+            {
+                pattern : '{{ADXAuthor.Email}}',
+                replacement : 'myself@test.com'
+            },
+            {
+                pattern : '{{ADXAuthor.Company}}',
+                replacement : 'My Company'
+            },
+            {
+                pattern : '{{ADXAuthor.website}}',
+                replacement : 'http://my/web/site.com'
+            }
+        ];
+        replacement.forEach(testReplacement);
+
+        it('should use the third array arguments to do additional replacements', function () {
+           var additionalRepls = [
+               {
+                   pattern : /toto/gi,
+                   replacement : 'popo'
+               },
+               {
+                   pattern: /titi/gi,
+                   replacement: 'pipi'
+               }
+           ];
+
+            var result = common.evalTemplate('Titi and toto was TITI and TOTO etc...', {}, additionalRepls);
+            expect(result).toEqual('pipi and popo was pipi and popo etc...');
+        });
     });
 
     describe('Sequence', function () {

@@ -2,6 +2,7 @@
 
 var Command = require('../node_modules/commander').Command;
 var program = new Command();
+var common  = require('../app/common/common.js')
 
 
 program
@@ -19,7 +20,17 @@ program
     .option('--authorName <name>', 'default name of the author to set in the config')
     .option('--authorEmail <email>', 'default email of the author to set in the config')
     .option('--authorCompany <name>', 'default company of the author to set in the config')
-    .option('--authorWebsite <website>', 'default website of the author to set in the config');
+    .option('--authorWebsite <website>', 'default website of the author to set in the config')
+    // Options for the publisher
+    .option('--username <name>', 'platform username for the publish')
+    .option('--password <password>', 'platform password for the publish')
+    .option('--url <uri>', 'platform URL for the publish')
+    .option('--demoUrl <url>' , 'Demo URL of the demo, mostly used for the publish')
+    // Optiosn for the publisher ZenDesk specific
+    .option('--section <title>', 'ZenDesk section where to publish')
+    .option('--promoted', 'ZenDesk promoted article')
+    .option('--disableComments', 'ZenDesk disable comments on the published article');
+
 
 program
     .command('generate <type> <name>')
@@ -27,6 +38,14 @@ program
     .action(function generateADX(type, name) {
         var adxGenerator = require('./generator/ADXGenerator.js');
         adxGenerator.generate(program, type, name);
+    });
+
+program
+    .command('publish <platform> [<path>]')
+    .description('publish an ADX on a platform')
+    .action(function publishADX(platform, path) {
+        var adxPublisher = require('./publisher/ADXPublisher.js');
+        adxPublisher.publish(program, platform, path)
     });
 
 program
