@@ -12,6 +12,45 @@ describe("ADXPublisherZenDesk", function() {
                 id: 60
             }
         ],
+        attachmentsLists = {
+            article_attachments : [
+                {
+                    "id":           1428,
+                    "article_id":   23,
+                    "file_name":    "preview.png",
+                    "content_url":  "https://aski.zendesk.com/hc/article_attachments/200109629/preview.png",
+                    "content_type": "application/png",
+                    "size":         1428,
+                    "inline":       true
+                },
+                {
+                    "id":           2857,
+                    "article_id":   23,
+                    "file_name":    "test-adx.qex",
+                    "content_url":  "https://company.zendesk.com/hc/article_attachments/200109629/test-adx.qex",
+                    "content_type": "application/qex",
+                    "size":         58298,
+                    "inline":       false
+                },
+                {
+                    "id":           3485,
+                    "article_id":   23,
+                    "file_name":    "test-adx.adc",
+                    "content_url":  "https://company.zendesk.com/hc/article_attachments/200109629/test-adx.adc",
+                    "content_type": "application/adc",
+                    "size":         58298,
+                    "inline":       false
+                }
+            ]
+        },
+        article = {
+            article : {
+                "id":                1635,
+                "author_id":         3465,
+                "draft":             true,
+                "comments_disabled": false
+            }
+        },
         options				= {
             username	:	'zendesk@askia.com',
             remoteUri	:	'https://uri',
@@ -40,6 +79,9 @@ describe("ADXPublisherZenDesk", function() {
                 },
                 delete : function (id, cb) {
                     cb(null);
+                },
+                show : function (id, cb) {
+                    cb(article);
                 }
             },
             translations : {
@@ -50,6 +92,14 @@ describe("ADXPublisherZenDesk", function() {
             sections : {
                 list : function (cb){
                     cb(null, null, sectionLists);
+                }
+            },
+            articleattachments : {
+                list : function (articleId, cb) {
+                    cb(null, 200, attachmentsLists);
+                },
+                delete : function (id, cb) {
+                    cb(null);
                 }
             }
         };
@@ -536,7 +586,7 @@ describe("ADXPublisherZenDesk", function() {
             });
         });
 
-        describe("deleteArticle", function(){
+        describe("deleteAttachments", function(){
             it("should output an error when it could not retrieve the list of article within the section", function () {
                 var config = new Configurator('.');
                 var error = new Error('An error');
@@ -553,6 +603,27 @@ describe("ADXPublisherZenDesk", function() {
                 });
             });
 
+            it("should output an error when it could not retrieve the list of attachments within the article", function () {
+                var config = new Configurator('.');
+                var error = new Error('An error');
+                var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+                spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
+                    cb(null, null, [
+                        {id : 1, name : "test-adx"}
+                    ]);
+                });
+                spyOn(fakeClient.articleattachments, "list").andCallFake(function (id, cb) {
+                    cb(error);
+                });
+
+                runSync(function (done) {
+                    publisherZenDesk.publish(function(err) {
+                        expect(err).toBe(error);
+                        done();
+                    });
+                });
+            });
+            
             it("should output an error when it found duplicate article title", function () {
                 var config = new Configurator('.');
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
@@ -571,7 +642,7 @@ describe("ADXPublisherZenDesk", function() {
                 });
             });
 
-            it("should delete the article when it found one with the same name", function () {
+            it("should delete the article's attachments when it found one article with the same name and if it have attachments", function () {
                 var config = new Configurator('.');
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
                 spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
@@ -581,27 +652,41 @@ describe("ADXPublisherZenDesk", function() {
                 });
 
                 runSync(function (done) {
-                    var deleteMock = spyOn(fakeClient.articles, "delete");
-                    var id;
-                    deleteMock.andCallFake(function (i) {
-                        id = i;
-                    });
+                    var deleteMock = spyOn(fakeClient.articleattachments, "delete");
                     publisherZenDesk.publish(function() {});
                     expect(deleteMock).toHaveBeenCalled();
-                    expect(id).toBe(1);
                     done();
                 });
             });
 
-            it("should not delete the article when it not found", function () {
+            it("should not delete article's attachments when it not found the article", function () {
                 var config = new Configurator('.');
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
 
                 runSync(function (done) {
-                    var deleteMock = spyOn(fakeClient.articles, "delete");
+                    var deleteMock = spyOn(fakeClient.articleattachments, "list");
                     publisherZenDesk.publish(function() {});
                     expect(deleteMock).not.toHaveBeenCalled();
                     done();
+                });
+            });
+            
+            it("should return the id of the article whitch already exist", function () {
+                var config = new Configurator('.');
+                var error = new Error('An error');
+                var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+                spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
+                    cb(null, null, [
+                        {id : 1, name : "test-adx"}
+                    ]);
+                });
+
+                runSync(function (done) {
+                    spyOn(fakeClient.articles, "show").andCallFake(function (id, cb) {
+                        expect(id).toEqual(1);
+                        done();
+                    });
+                    publisherZenDesk.publish(function() {});
                 });
             });
         });

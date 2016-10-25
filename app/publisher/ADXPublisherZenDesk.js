@@ -58,14 +58,14 @@ function PublisherZenDesk(configurator, preferences, options) {
  */
 function findSectionIdByTitle(self, callback) {
     var title = self.options.section_title;
-    
+
     if (typeof title !== 'string') {
         callback(errMsg.invalidSectionTitleArg);
         return;
     }
-    
+
     title = title.toLowerCase();
-    
+
     self.client.sections.list(function (err, req, result) {
         if (err) {
             if (typeof callback === "function") {
@@ -77,12 +77,12 @@ function findSectionIdByTitle(self, callback) {
         for (var section in result) {
             if (result[section].name.toLowerCase() === title) {
                 if (typeof callback === "function") {
-                	callback(null, result[section].id);
+                    callback(null, result[section].id);
                     return;
                 }
             }
         }
-        
+
         callback(errMsg.unexistingSection);
     });
 }
@@ -91,7 +91,7 @@ function findSectionIdByTitle(self, callback) {
  * Generate an HTML string which is a line of a 3 columns array with the name of the property category.
  * @param {Object} an object which represents a category of properties.
  */
- function generateHTMLcodeForCategory(category) {
+function generateHTMLcodeForCategory(category) {
     return '<tr>\n' +
         '<th data-sheets-value="[null,2,&quot;' + category.name + '&quot;]">' + category.name + '</th>\n' +
         '<td> </td>\n' +
@@ -115,16 +115,16 @@ function generateHTMLcodeForOptions(opt) {
  * Generate an HTML string which is a line of a 3 columns array with the standard description of a property.
  * @param {Object} an object which represents a property.
  */
- function generateHTMLcodeForProperty(property) {
+function generateHTMLcodeForProperty(property) {
     var value = property.value
     if (value === undefined) {
         value = "";
     }
     return  '<tr>\n' +
-            '<td data-sheets-value="[null,2,&quot;' + property.name + '&quot;]">' + property.name + '</td>\n' +
-            '<td data-sheets-value="[null,2,&quot;' + property.type + '&quot;]">' + property.type + '</td>\n' +
-            '<td data-sheets-value="[null,2,&quot;' + property.description + ' ' + value + '&quot;,null,null,null,1]">' + (property.description ? ('Description : ' + property.description) : "") + (property.value ? ('<br/>Value : ' + property.value) : "") + (property.options ? ('<br/>Options : ' + generateHTMLcodeForOptions(property.options)) : "") + (property.colorFormat ? ('<br/>ColorFormat : ' + property.colorFormat) : "") +'</td>\n' +
-            '</tr>\n' ;
+        '<td data-sheets-value="[null,2,&quot;' + property.name + '&quot;]">' + property.name + '</td>\n' +
+        '<td data-sheets-value="[null,2,&quot;' + property.type + '&quot;]">' + property.type + '</td>\n' +
+        '<td data-sheets-value="[null,2,&quot;' + property.description + ' ' + value + '&quot;,null,null,null,1]">' + (property.description ? ('Description : ' + property.description) : "") + (property.value ? ('<br/>Value : ' + property.value) : "") + (property.options ? ('<br/>Options : ' + generateHTMLcodeForOptions(property.options)) : "") + (property.colorFormat ? ('<br/>ColorFormat : ' + property.colorFormat) : "") +'</td>\n' +
+        '</tr>\n' ;
 };
 
 /**
@@ -133,7 +133,7 @@ function generateHTMLcodeForOptions(opt) {
  */
 function constraintsToSentence(constraints) {
     var questions = [], controls = [], key
-    
+
     if (constraints.questions) {
         for (key in constraints.questions) {
             if (constraints.questions.hasOwnProperty(key) && constraints.questions[key]) {
@@ -170,7 +170,7 @@ function propertiesToHTML(prop) {
     }
 
     var result = '<table class="askiatable" dir="ltr" cellspacing="0" cellpadding="0"><colgroup><col width="281" /><col width="192" /><col width="867" /></colgroup><tbody><tr><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Parameters&quot;]">Parameters</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Type&quot;]">Type</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Comments and/or possible value&quot;]">Comments and/or possible value</td></tr><tr><td> </td><td> </td><td> </td></tr>';
-    
+
     for (var i = 0, l = prop.categories.length; i < l; i++) {
         result += generateHTMLcodeForCategory(prop.categories[i]);
         for (var j = 0, k = prop.categories[i].properties.length; j < k; j++) {
@@ -192,20 +192,20 @@ function createJSONArticle (self, callback) {
             callback(err);
             return;
         }
-        
+
         var conf = self.configurator.get();
         var replacements = [{
             pattern : /\{\{ADXProperties:HTML\}\}/gi,
             replacement : propertiesToHTML(conf.properties)
         },
-        {
-            pattern : /\{\{ADXListKeyWords\}\}/gi,
-            replacement : "adc; adc2; javascript; control; design; askiadesign; " + conf.info.name
-        },
-        {
-            pattern : /\{\{ADXConstraints\}\}/gi,
-            replacement : constraintsToSentence(conf.info.constraints)
-        }];
+                            {
+                                pattern : /\{\{ADXListKeyWords\}\}/gi,
+                                replacement : "adc; adc2; javascript; control; design; askiadesign; " + conf.info.name
+                            },
+                            {
+                                pattern : /\{\{ADXConstraints\}\}/gi,
+                                replacement : constraintsToSentence(conf.info.constraints)
+                            }];
 
         callback(null, {
             "article": {
@@ -219,14 +219,14 @@ function createJSONArticle (self, callback) {
 }
 
 /**
- * Delete the article (if already exist) in the specified section
+ * Delete article's attachments (if the article already exist) in the specified section
  * pre-condition : there is the possibility to have two articles with the same name but not in the same section
  * @param {PublisherZenDesk} self
  * @param {String} title The title of the article to check
  * @param {Function} callback
  * @param {Error} [callback.err=null]
  */
-function deleteArticle(self, title, section_id, callback) {
+function deleteAttachmentsIfArticle(self, title, section_id, callback) {
     self.client.articles.listBySection(section_id, function(err, req, result) {
         if (err) {
             if (typeof callback === "function") {
@@ -237,14 +237,13 @@ function deleteArticle(self, title, section_id, callback) {
 
         //the part below is needed to check if some people added articles directly from the web
         var idToDelete = 0;
-
         for (var i = 0, l = result.length; i < l; i += 1) {
             if (result[i].name === title) {
                 if (idToDelete) { // Already exist
                     callback(errMsg.tooManyArticlesExisting);
                     return;
                 }
-                idToDelete = result[i].id ;
+                idToDelete = result[i].id;
             }
         }
 
@@ -254,9 +253,23 @@ function deleteArticle(self, title, section_id, callback) {
             return;
         }
 
-        // Delete the article
-        self.client.articles.delete(idToDelete, function(err) {
-            callback(err);
+        //Find all attachments of an article
+        self.client.articleattachments.list(idToDelete, function(err, status, attachments) {
+            if (err) {
+                callback(err);
+                return;
+            }
+            
+            attachments = attachments.article_attachments;
+            for (var i = 0, l = attachments.length; i < l; i++) {
+                self.client.articleattachments.delete(attachments[i].id, function(err) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    }
+                });
+            }
+            callback(null, idToDelete);
         });
     });
 }
@@ -275,7 +288,7 @@ function uploadAvailableFiles(self, files, articleId, callback) {
         var formData = {
             'file' : fs.createReadStream(files[index])
         };
-        
+
         request.post({
             url		: self.options.remoteUri + "/api/v2/help_center/articles/" + articleId + "/attachments.json",
             formData: formData,
@@ -292,7 +305,7 @@ function uploadAvailableFiles(self, files, articleId, callback) {
             var prefix = files[index].match(/\.([a-z]+)$/i)[1];
             attachmentsIDs[prefix] = {
                 id   : body.article_attachment.id,
-            	name : body.article_attachment.file_name
+                name : body.article_attachment.file_name
             }
             index++;
             if (index >= files.length) {
@@ -307,13 +320,40 @@ function uploadAvailableFiles(self, files, articleId, callback) {
 }
 
 /**
+ * Check if we already have an article or if we need to create one
+ * @param {PublisherZenDesk} self
+ * @param {Int} articleToUpdateId The id of the article to update
+ * @param {Int} id The id of the article to create if the article does not exist
+ * @param {JSON} json of the article to create if the article does not exist
+ * @param {Function} callback
+ * @param {Error} [callback.err=null]
+ */
+function createArticle(publisher, articleToUpdateId, id, jsonArticle, cb) {
+    if (articleToUpdateId) {
+        publisher.client.articles.show(articleToUpdateId, function (err, req, article) {
+            if (err) {
+                cb(err);
+                return;
+            }
+            article.title = jsonArticle.article.title;
+            article.body = jsonArticle.article.body;
+            article.promoted = jsonArticle.article.promoted;
+            article.comments_disabled = jsonArticle.article.comments_disabled;
+            cb(err, req, article);
+        });
+    } else {
+        publisher.client.articles.create(id, jsonArticle, cb);    
+    }
+}
+
+/**
  * Publish the article on the ZenDesk platform
  * @param {Function} callback
  * @param {Error} [callback.err=null]
 */
 PublisherZenDesk.prototype.publish = function(callback) {
     var self = this;
-    
+
     findSectionIdByTitle(self, function(err, id) {
         if (err) {
             if (typeof callback === "function") {
@@ -328,14 +368,14 @@ PublisherZenDesk.prototype.publish = function(callback) {
                 }
                 return;
             }
-            deleteArticle(self, jsonArticle.article.title, id, function(err) {
+            deleteAttachmentsIfArticle(self, jsonArticle.article.title, id, function(err, articleToUpdateId) {
                 if (err) {
                     if (typeof callback === "function") {
                         callback(err);
                     }
                     return;
                 }
-                self.client.articles.create(id, jsonArticle, function(err, req, article) {
+                createArticle(self, articleToUpdateId, id, jsonArticle, function(err, req, article) {
                     if (err) {
                         if (typeof callback === "function") {
                             callback(err);
@@ -367,7 +407,7 @@ PublisherZenDesk.prototype.publish = function(callback) {
                                     var replacements = [
                                         {
                                             pattern : /\{\{ADXQexFileURL\}\}/gi,
-                                            replacement : (attachmentsIDs.qex.id) ?  ('<li>To download the qex file, <a href="/hc/en-us/article_attachments/' + attachmentsIDs.qex.id + '/' + attachmentsIDs.qex.name + '">click here</a></li>') : ""
+                                            replacement : (attachmentsIDs.qex && attachmentsIDs.qex.id) ?  ('<li>To download the qex file, <a href="/hc/en-us/article_attachments/' + attachmentsIDs.qex.id + '/' + attachmentsIDs.qex.name + '">click here</a></li>') : ""
                                         },
                                         {
                                             pattern : /\{\{ADXAdcFileURL\}\}/gi,
@@ -377,11 +417,11 @@ PublisherZenDesk.prototype.publish = function(callback) {
 
                                     // TODO : /!\ change the url ! We don't want a redirection to the pic, but a redirection to survey demo on demo.askia...
                                     // we should upload the file to the demo server from this app
-                                    var urlToPointAt = (!self.options.surveyDemoUrl) ? '/hc/en-us/article_attachments/' + attachmentsIDs.png.id + '/' + attachmentsIDs.png.name :
-                                    self.options.surveyDemoUrl;
+                                    //'/hc/en-us/article_attachments/' + attachmentsIDs.png.id + '/' + attachmentsIDs.png.name 
+                                    var urlToPointAt = (!self.options.surveyDemoUrl) ? "" : self.options.surveyDemoUrl;
                                     replacements.push({
                                         pattern         : /\{\{ADXQexPicture\}\}/gi,
-                                        replacement     : (!attachmentsIDs.png.id)  ? '' : '<p><a href="' + urlToPointAt + '" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentsIDs.png.id + '/' + attachmentsIDs.png.name + '" alt="" /> </a></p>'
+                                        replacement     : (attachmentsIDs.png && attachmentsIDs.png.id)? '<p><a href="' + urlToPointAt + '" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachmentsIDs.png.id + '/' + attachmentsIDs.png.name + '" alt="" /> </a></p>' : "ad"
                                     });
                                     replacements.push({
                                         pattern         : /\{\{ADXSentence:accesSurvey\}\}/gi,
@@ -406,7 +446,6 @@ PublisherZenDesk.prototype.publish = function(callback) {
  */
 PublisherZenDesk.prototype.listSections = function(callback) {
     var self = this ;
-    
     self.client.sections.list(function(err, req, res) {
         if(err) {
             callback(err);
