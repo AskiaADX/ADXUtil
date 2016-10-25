@@ -22,14 +22,14 @@ program
     .option('--authorCompany <name>', 'default company of the author to set in the config')
     .option('--authorWebsite <website>', 'default website of the author to set in the config')
     // Options for the publisher
-    .option('--promoted', 'the article will be promoted (appear with a star in ZenDesk Platform)')
-    .option('--enableComments', 'the comments will be enabled on the article corresponding to the ADC on ZenDesk')
-    .option('--username <name>', 'the username login to connect to the platform')
-    .option('--pwd <password>', 'the password login to connect to the platform')
-    .option('--sectionTitle <title>', 'The name of the section where the adc will be posted (ZenDesk)')
-    .option('--remoteUri <uri>', 'The remote URI of the platform')
-    .option('--token <token>', 'The token that allows you to publish')
-    .option('--surveyDemoUrl <url>' , 'The url to start the demo survey online');
+    .option('--username <name>', 'platform username for the publish')
+    .option('--password <password>', 'platform password for the publish')
+    .option('--url <uri>', 'platform URL for the publish')
+    .option('--demoUrl <url>' , 'Demo URL of the demo, mostly used for the publish')
+    // Optiosn for the publisher ZenDesk specific
+    .option('--section <title>', 'ZenDesk section where to publish')
+    .option('--promoted', 'ZenDesk promoted article')
+    .option('--disableComments', 'ZenDesk disable comments on the published article');
 
 
 program
@@ -41,43 +41,11 @@ program
     });
 
 program
-    .command('publish [<platform>]')
+    .command('publish <platform> [<path>]')
     .description('publish an ADX on a platform')
-    .action(function publishADX(platform) {
-        var Configurator = require('./configurator/ADXConfigurator.js').Configurator;
-        var configurator = new Configurator(process.cwd());
-        configurator.load(function (err) {
-
-            var options = {};
-            if ('promoted' in program) {
-                options.promoted = true;
-            }
-            options.comments_disabled = !('enableComments' in program);
-            if ('sectionTitle' in program) {
-                options.section_title = program.sectionTitle;
-            }
-            if ('username' in program) {
-                options.username = program.username;
-            }
-            if ('remoteUri' in program) {
-                options.remoteUri = program.remoteUri;
-            }
-            if ('pwd' in program) {
-                options.password = program.pwd;
-            }
-            if ('surveyDemoUrl' in program) {
-                options.surveyDemoUrl = program.surveyDemoUrl;
-            }
-            var adxPublisher = require('./publisher/ADXPublisher.js');
-            var publisher = new adxPublisher.Publisher(configurator);
-            publisher.publish(platform, options, function (err) {
-                if (err) {
-                    common.writeError("Failed to publish the ADC : " + err);
-                    return;
-                }
-                common.writeSuccess("ADC succesfuly uploaded");
-            });
-        });
+    .action(function publishADX(platform, path) {
+        var adxPublisher = require('./publisher/ADXPublisher.js');
+        adxPublisher.publish(program, platform, path)
     });
 
 program

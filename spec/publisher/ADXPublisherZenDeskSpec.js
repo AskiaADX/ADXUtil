@@ -1,8 +1,14 @@
 describe("ADXPublisherZenDesk", function() {
     var fs					= require('fs'),
         path            	= require('path'),
+        common              = require('../../app/common/common.js'),
+        errMsg              = common.messages.error,
+        Configurator        = require('../../app/configurator/ADXConfigurator.js').Configurator,
+        PublisherZenDesk	= require('../../app/publisher/ADXPublisherZenDesk.js').PublisherZenDesk,
+        zenDesk             = require('node-zendesk'),
+        request             = require('request'),
         spies				= {},
-        sectionLists = [
+        sectionLists        = [
             {
                 name: "a_section",
                 id: 40
@@ -52,20 +58,14 @@ describe("ADXPublisherZenDesk", function() {
             }
         },
         options				= {
-            username	:	'zendesk@askia.com',
-            remoteUri	:	'https://uri',
-            password    :   'mdp',
-            promoted    :    false,
-            comments_disabled : false,
-            section_title : 'a_section',
-            surveyDemoUrl : 'http://demo'
+            url              :'https://uri',
+            section          : 'a_section',
+            username	     : 'a_username',
+            password         : 'mdp',
+            promoted         : false,
+            disabledComments : false,
+            demoUrl          : 'http://demo'
         },
-        common              = require('../../app/common/common.js'),
-        errMsg              = common.messages.error,
-        Configurator        = require('../../app/configurator/ADXConfigurator.js').Configurator,
-        PublisherZenDesk	= require('../../app/publisher/ADXPublisherZenDesk.js').PublisherZenDesk,
-        zenDesk             = require('node-zendesk'),
-        request             = require('request'),
         fakeClient          = {
             articles : {
                 create : function (id, jsonArticle, cb) {
@@ -86,7 +86,9 @@ describe("ADXPublisherZenDesk", function() {
             },
             translations : {
                 updateForArticle : function (a, b, c, cb) {
-                    cb(null);
+                    if (typeof cb === 'function') {
+                        cb(null);
+                    }
                 }
             },
             sections : {
@@ -228,6 +230,10 @@ describe("ADXPublisherZenDesk", function() {
                 }
             }));
         });
+
+        spies.writeError = spyOn(common, 'writeError');
+        spies.writeSuccess = spyOn(common, 'writeSuccess');
+        spies.writeMessage = spyOn(common, 'writeMessage');
     });
 
     describe("#Constructor", function() {
@@ -243,69 +249,53 @@ describe("ADXPublisherZenDesk", function() {
             }).toThrow(errMsg.invalidConfiguratorArg);
         });
 
-        it("should throw an error when options are missing", function() {
-            expect(function() {
-                var notCompletedOptions = {
-                    username	:	'zendesk@askia.com',
-                    remoteUri	:	'https://uri',
-                    promoted    :    false,
-                    comments_disabled : false
-                };
-                var config = new Configurator('.');
-                var publisherZenDesk = new PublisherZenDesk(config, {}, notCompletedOptions);
-            }).toThrow(errMsg.missingPublishArgs + '\n missing argument : password'); //first missing arg here is password
+        ['url', 'section', 'username', 'password'].forEach(function removeAnOption(option) {
+            it("should throw an error when options `" + option + "`are missing", function() {
+                expect(function() {
+                    var notCompletedOptions = JSON.parse(JSON.stringify(options));
+                    delete notCompletedOptions[option];
+
+                    var config = new Configurator('.');
+                    var publisherZenDesk = new PublisherZenDesk(config, {}, notCompletedOptions);
+                }).toThrow(errMsg.missingPublishArgs + '\n missing argument : ' + option);
+            });
         });
 
-        it('should instantiate the zendesk#configurator when everyting is ok', function () {
+        it('should instantiate the #configurator when everything is ok', function () {
             var config = new Configurator('.');
 
-            var publisherZenDesk = new PublisherZenDesk(config, {}, {
-                username          : 'zendesk@askia.com',
-                password          : 'secret',
-                remoteUri	      : 'https://uri',
-                section_title     : 'a section title'
-            });
+            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
 
             expect(publisherZenDesk.configurator).toBe(config);
         });
 
-        it("should instantiate the zendesk with the right options", function() {
+        it("should instantiate the zendesk client with the right options", function() {
 
             var config = new Configurator('.');
-            var publisherZenDesk = new PublisherZenDesk(config, {}, {
-                username          : 'zendesk@askia.com',
-                password          : 'secret',
-                remoteUri	      : 'https://uri',
-                section_title     : 'a section title'
-            });
+            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
 
             expect(spies.zendesk.createClient).toHaveBeenCalledWith({
-                username          	: 'zendesk@askia.com',
-                password          	: 'secret',
-                remoteUri	      	: 'https://uri/api/v2/help_center',
+                username          	: options.username,
+                password          	: options.password,
+                remoteUri	      	: options.url + '/api/v2/help_center',
                 helpcenter			: true
             });
         });
 
         it("should instantiate the zendesk#client when everything is ok", function() {
             var config = new Configurator('.');
-            var publisherZenDesk = new PublisherZenDesk(config, {}, {
-                username          : 'zendesk@askia.com',
-                password          : 'secret',
-                remoteUri	      : 'https://uri',
-                section_title     : 'a section title'
-            });
+            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
 
             expect(publisherZenDesk.client).toBe(fakeClient);
         });
     });
 
     describe("#publish", function() {
-        it("should request to post the adc file when he is present in " + common.ADC_PATH, function() {
+        it("should request to post the adc file when he is present in " + common.ADX_BIN_PATH, function() {
             var config = new Configurator('.');
             var publisherZenDesk = new PublisherZenDesk(config, {}, options);
             var name = config.get().info.name;
-            var p = path.resolve(path.join(config.path, common.ADC_PATH, name + '.adc'));
+            var p = path.resolve(path.join(config.path, common.ADX_BIN_PATH, name + '.adc'));
             
             runSync(function (done) {
                 spies.request.post.andCallFake(function (obj, cb) {
@@ -314,7 +304,7 @@ describe("ADXPublisherZenDesk", function() {
                     });
                     done();
                 });
-                publisherZenDesk.publish(function() {});
+                publisherZenDesk.publish();
             });
         });
 
@@ -341,14 +331,13 @@ describe("ADXPublisherZenDesk", function() {
                         }
                     }));
                 });
-                publisherZenDesk.publish(function() {});
+                publisherZenDesk.publish();
             });
         });
            
         it("should request to post the png file when he is present in root", function() {
             var config = new Configurator('.');
             var publisherZenDesk = new PublisherZenDesk(config, {}, options);
-            var name = config.get().info.name;
             var p = path.resolve(path.join(config.path, 'preview.png'));
             var n = 0;
             
@@ -368,11 +357,11 @@ describe("ADXPublisherZenDesk", function() {
                         }
                     }));
                 });
-                publisherZenDesk.publish(function() {});
+                publisherZenDesk.publish();
             });
         });
         
-        it("should output an error when the .adc file is missing in " + common.ADC_PATH, function() {
+        it("should output an error when the .adc file is missing in " + common.ADX_BIN_PATH, function() {
             var config = new Configurator('.');
             var publisherZenDesk = new PublisherZenDesk(config, {}, options);
             spies.fs.stat.andCallFake(function (p, cb) {
@@ -389,23 +378,19 @@ describe("ADXPublisherZenDesk", function() {
 
             runSync(function (done) {
                 publisherZenDesk.publish(function(err) {
-                    expect(err).toBe(errMsg.badNumberOfADCFiles);
+                    expect(err).toBe(errMsg.badNumberOfADXFiles);
                     done();
                 });
             });
         });
 
+
         describe("findSectionIdByTitle", function() {
             it("should output an error when the section is not found", function() {
                 var config = new Configurator('.');
-                var publisherZenDesk = new PublisherZenDesk(config, {}, {
-                    username	:	'zendesk@askia.com',
-                    remoteUri	:	'https://uri',
-                    password    :   'mdp',
-                    promoted    :    false,
-                    comments_disabled : false,
-                    section_title : 'an unexisting section'
-                });
+                var opts = JSON.parse(JSON.stringify(options));
+                opts.section = 'an non-existing section';
+                var publisherZenDesk = new PublisherZenDesk(config, {}, opts);
 
                 runSync(function (done) {
                     publisherZenDesk.publish(function(err) {
@@ -417,18 +402,13 @@ describe("ADXPublisherZenDesk", function() {
 
             it("should output an error when the section's title is not a string'", function() {
                 var config = new Configurator('.');
-                var publisherZenDesk = new PublisherZenDesk(config, {}, {
-                    username	:	'zendesk@askia.com',
-                    remoteUri	:	'https://uri',
-                    password    :   'mdp',
-                    promoted    :    false,
-                    comments_disabled : false,
-                    section_title : {name :'an unexisting section'}
-                });
+                var opts = JSON.parse(JSON.stringify(options));
+                opts.section = {name : 'a weird object'};
+                var publisherZenDesk = new PublisherZenDesk(config, {}, opts);
 
                 runSync(function (done) {
                     publisherZenDesk.publish(function(err) {
-                        expect(err).toBe(errMsg.invalidSectionTitleArg);
+                        expect(err).toBe(errMsg.invalidSectionArg);
                         done();
                     });
                 });
@@ -451,30 +431,25 @@ describe("ADXPublisherZenDesk", function() {
                 });
             });
 
-            it("should create an article whith the right section ID", function() {
+            it("should create an article with the right section ID", function() {
                 var config = new Configurator('.');
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
 
                 runSync(function (done) {
-                    spyOn(fakeClient.articles, "create").andCallFake(function (id, JSON, cb) {
+                    spyOn(fakeClient.articles, "create").andCallFake(function (id) {
                         expect(id).toBe(40);
                         done();
                     });
 
-                    publisherZenDesk.publish(function() {});
+                    publisherZenDesk.publish();
                 });
             });
 
             it("should find the section with the same name case insensitive", function() {
                 var config = new Configurator('.');
-                var publisherZenDesk = new PublisherZenDesk(config, {}, {
-                    username	:	'zendesk@askia.com',
-                    remoteUri	:	'https://uri',
-                    password    :   'mdp',
-                    promoted    :    false,
-                    comments_disabled : false,
-                    section_title : 'A_SECTION'
-                });
+                var opts = JSON.parse(JSON.stringify(options));
+                opts.section = 'A_SECTION';
+                var publisherZenDesk = new PublisherZenDesk(config, {}, opts);
 
                 runSync(function (done) {
                     spyOn(fakeClient.articles, "create").andCallFake(function (id, JSON, cb) {
@@ -512,8 +487,8 @@ describe("ADXPublisherZenDesk", function() {
                 });
 
                 runSync(function (done) {
-                    spyOn(fakeClient.articles, "create").andCallFake(function (id, JSON, cb) {
-                        expect(JSON).toEqual({
+                    spyOn(fakeClient.articles, "create").andCallFake(function (id, json) {
+                        expect(json).toEqual({
                             "article" : {
                                 "title": "test-adx",
                                 "body": "body article",
@@ -523,7 +498,7 @@ describe("ADXPublisherZenDesk", function() {
                         });
                         done();
                     });
-                    publisherZenDesk.publish(function() {});
+                    publisherZenDesk.publish();
                 });
             });
 
@@ -536,8 +511,13 @@ describe("ADXPublisherZenDesk", function() {
                 });
 
                 runSync(function (done) {
-                    spyOn(fakeClient.articles, "create").andCallFake(function (id, JSON, cb) {
-                        var str = '<table class="askiatable" dir="ltr" cellspacing="0" cellpadding="0"><colgroup><col width="281" /><col width="192" /><col width="867" /></colgroup><tbody><tr><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Parameters&quot;]">Parameters</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Type&quot;]">Type</td><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Comments and/or possible value&quot;]">Comments and/or possible value</td></tr><tr><td> </td><td> </td><td> </td></tr>' +
+                    spyOn(fakeClient.articles, "create").andCallFake(function (id, json) {
+                        var str = '<table class="askiatable" dir="ltr" cellspacing="0" cellpadding="0">' +
+                            '<colgroup><col width="281" /><col width="192" /><col width="867" /></colgroup>' +
+                            '<tbody><tr><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Parameters&quot;]">Parameters</td>' +
+                            '<td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Type&quot;]">Type</td>' +
+                            '<td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Comments and/or possible value&quot;]">Comments and/or possible value</td>' +
+                            '</tr><tr><td> </td><td> </td><td> </td></tr>' +
                             '<tr>\n' +
                             '<th data-sheets-value="[null,2,&quot;General&quot;]">General</th>\n' +
                             '<td> </td>\n' +
@@ -572,12 +552,13 @@ describe("ADXPublisherZenDesk", function() {
                             'adc; adc2; javascript; control; design; askiadesign; test-adx, ' +
                             'This control is compatible with ' + 
                             'single, multiple' +
-                            ' questions.\n Number minimum of responses : 2' +
-                            '.\n Number maximum of responses : *' +
-                            '.\n You can use the following controls : ' +
+                            ' questions.\n' +
+                            'Number minimum of responses : 2.\n' +
+                            'Number maximum of responses : *.\n' +
+                            'You can use the following controls : ' +
                             'label, responseblock.';
 
-                        expect(JSON.article.body).toEqual(str);
+                        expect(json.article.body).toEqual(str);
                         done();
                     });
                     publisherZenDesk.publish(function() {});
@@ -726,7 +707,7 @@ describe("ADXPublisherZenDesk", function() {
                                         file : o.path
                                     },
                                     headers : {
-                                        'Authorization' : "Basic " + new Buffer("zendesk@askia.com:mdp").toString('base64')
+                                        'Authorization' : "Basic " + new Buffer(options.username + ":" + options.password).toString('base64')
                                     }
                                 })
                                 done();
@@ -747,7 +728,7 @@ describe("ADXPublisherZenDesk", function() {
             [
                 {
                     name 	: "adc",
-                    suffix 	: path.join(common.ADC_PATH, 'test-adx.adc')
+                    suffix 	: path.join(common.ADX_BIN_PATH, 'test-adx.adc')
                 },
                 {
                     name 	: "qex",
@@ -768,7 +749,7 @@ describe("ADXPublisherZenDesk", function() {
                 spyOn(fakeClient.articles, "create").andCallFake(function (id, jsonArticle, cb) {
                     cb(null, null, {
                         id : 12,
-                        body : '{{ADXQexFileURL}}, {{ADXAdcFileURL}}, {{ADXQexPicture}}, {{ADXSentence:accesSurvey}}'
+                        body : '{{ADXQexFileURL}}, {{ADXFileURL}}, {{ADXPreview}}, {{ADXLiveDemo}}'
                     });
                 });
                 

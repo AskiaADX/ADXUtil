@@ -211,11 +211,13 @@ describe('ADXPreferences', function () {
                 author : {
                     name : 'test'
                 },
-                zendesk : {
-                    username : "un",
-                    remoteUri : 'ru',
-                    promoted : true,
-                    comments_disabled : false
+                ZenDesk : {
+                    url              : 'http?//uri',
+                    section          : 'the_section',
+                    username         : "un",
+                    password         : 'pwd',
+                    promoted         : true,
+                    disabledComments : false
                 }
             };
             var expectedObj = {
@@ -223,11 +225,13 @@ describe('ADXPreferences', function () {
                     name : 'test',
                     email : "test@test.com"
                 },
-                zendesk : {
-                    username : "un",
-                    remoteUri : 'ru',
-                    promoted : true,
-                    comments_disabled : false
+                ZenDesk : {
+                    url              : 'http?//uri',
+                    section          : 'the_section',
+                    username         : "un",
+                    password         : 'pwd',
+                    promoted         : true,
+                    disabledComments : false
                 }
             };
             runSync(function (done) {
@@ -239,8 +243,9 @@ describe('ADXPreferences', function () {
 
         });
         
-        
-         it("should try to write the github preferences when it's define", function () {
+        /*
+        DEPRECATED PUBLISHER
+        it("should try to write the github preferences when it's define", function () {
             spies.fs.readFile.andCallFake(function (p, encoding, cb) {
                 cb(null, JSON.stringify({
                     author : {
@@ -288,6 +293,7 @@ describe('ADXPreferences', function () {
             });
 
         });
+        */
 
         it("should return the preferences in the callback when it's defined", function () {
             var objRead = {
