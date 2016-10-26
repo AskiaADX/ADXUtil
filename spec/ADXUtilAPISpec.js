@@ -10,6 +10,8 @@ describe('ADXUtilAPI', function () {
         Validator,
         adxBuilder,
         Builder,
+        adxPublisher,
+        Publisher,
         adxShow,
         Show,
         adxGenerator,
@@ -65,7 +67,11 @@ describe('ADXUtilAPI', function () {
         adxBuilder = require('../app/builder/ADXBuilder.js');
         Builder = adxBuilder.Builder;
         spies.build = spyOn(Builder.prototype, 'build');
-
+        
+        adxPublisher = require('../app/publisher/ADXPublisher.js');
+        Publisher = adxPublisher.Publisher;
+        spies.publish = spyOn(Publisher.prototype, 'publish');
+        
         adxShow = require('../app/show/ADXShow.js');
         Show = adxShow.Show;
         spies.show = spyOn(Show.prototype, 'show');
@@ -252,6 +258,39 @@ describe('ADXUtilAPI', function () {
                 var cb = function () {};
                 adx.build({}, cb);
                 expect(spies.build).toHaveBeenCalledWith({
+                    adxShell : adx._adxShell
+                }, cb);
+            });
+        });
+        
+        describe("#publish", function () {
+            it("should instantiate a new Publisher object with the path of the ADX", function () {
+                var firstInstance, firstInstancePath, secondInstance, secondInstancePath;
+                spies.publish.andCallFake(function () {
+                    firstInstance = this;
+                    firstInstancePath = this.adxDirectoryPath;
+                });
+                var first = new ADX('first/path');
+                first.publish();
+
+                spies.publish.andCallFake(function () {
+                    secondInstance= this;
+                    secondInstancePath = this.adxDirectoryPath;
+                });
+
+                var second = new ADX('second/path');
+                second.publish();
+
+
+                expect(firstInstance).not.toBe(secondInstance);
+                expect(firstInstancePath).toEqual('first\\path');
+                expect(secondInstancePath).toEqual('second\\path');
+            });
+            it("should call the Publisher#publish with the arguments", function () {
+                var adx = new ADX('some/path');
+                var cb = function () {};
+                adx.publish("platform", {}, cb);
+                expect(spies.publish).toHaveBeenCalledWith("platform", {
                     adxShell : adx._adxShell
                 }, cb);
             });

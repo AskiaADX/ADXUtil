@@ -5,6 +5,7 @@ var common  = require('./common/common.js');
 var errMsg  = common.messages.error;
 var Validator    = require('./validator/ADXValidator.js').Validator;
 var Builder      = require('./builder/ADXBuilder.js').Builder;
+var Publisher = require('./publisher/ADXPublisher.js').Publisher;
 var Show         = require('./show/ADXShow.js').Show;
 var Generator    = require('./generator/ADXGenerator.js').Generator;
 var Configurator = require('./configurator/ADXConfigurator.js').Configurator;
@@ -195,6 +196,31 @@ ADX.prototype.build = function build(options, callback){
     options = options || {};
     options.adxShell = this._adxShell;
     builder.build(options, callback);
+};
+
+
+/**
+ * Publish to publisher
+ *
+ *		var ADX = require('adxutil').ADX;
+ *      var myAdx = new ADX('path/to/adx/dir');
+ *
+ *      // Publish the ADC
+ *      myAdx.publish(platform,{username : "", password : "",  --url : "https://...", --demoUrl : "https://..."} ,function (err) {
+ *          // Callback when the ADC has been published
+ *      });
+ *
+ * @param {String} platform Name of the platform to push
+ * @param {Object} options Options of the platform
+ * @param {Boolean} [options.silent=false] By pass the output
+ * @param {Function} callback
+ * @param {Error} [callback.err=null]
+ */
+ADX.prototype.publish = function publish(platform, options, callback){
+  var publisher = new Publisher(this.path);
+    options = options || {};
+    options.adxShell = this._adxShell;
+    publisher.publish(platform, options, callback);
 };
 
 /**
