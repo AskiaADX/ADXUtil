@@ -231,9 +231,11 @@ describe("ADXPublisherZenDesk", function() {
             }));
         });
 
-        spies.writeError = spyOn(common, 'writeError');
+        // Court-circuit the validation outputs
+        spies.writeError   = spyOn(common, 'writeError');
         spies.writeSuccess = spyOn(common, 'writeSuccess');
         spies.writeMessage = spyOn(common, 'writeMessage');
+        spies.writeWarning = spyOn(common, 'writeWarning');
     });
 
     describe("#Constructor", function() {
@@ -769,4 +771,53 @@ describe("ADXPublisherZenDesk", function() {
             });
         });
     });
+    
+    function testLogger(method) {
+        var className = method.toLowerCase().replace('write', '');
+        describe('#'  + method, function () {
+            it('should call the `common.' + method + '` when no #logger is defined', function () {
+                var config = new Configurator('.');
+                var publisherZendeskInstance = new PublisherZenDesk(config, {}, options);
+                publisherZendeskInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(common[method]).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
+            });
+
+            it('should call the `common.' + method + '` when the #logger is defined but without the ' + method + ' method.', function () {
+                var config = new Configurator('.');
+                var publisherZendeskInstance = new PublisherZenDesk(config, {}, options);
+                publisherZendeskInstance.logger = {};
+                publisherZendeskInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(common[method]).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
+            });
+
+            it('should not call the `common.' + method + '` when the #logger is defined with the ' + method + ' method.', function () {
+                var config = new Configurator('.');
+                var publisherZendeskInstance = new PublisherZenDesk(config, {}, options);
+                publisherZendeskInstance.logger = {};
+                publisherZendeskInstance.logger[method] = function () {};
+                publisherZendeskInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(common[method]).not.toHaveBeenCalled();
+            });
+
+            it('should call the `logger.' + method + '` when it\'s defined', function () {
+                var config = new Configurator('.');
+                var publisherZendeskInstance = new PublisherZenDesk(config, {}, options);
+                publisherZendeskInstance.logger = {};
+                publisherZendeskInstance.logger[method] = function () {};
+                var spy = spyOn(publisherZendeskInstance.logger, method);
+                publisherZendeskInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(spy).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
+            });
+
+            it('should wrap the message inside a div with the `' + className + '` when the printMode=html', function () {
+                var config = new Configurator('.');
+                var publisherZendeskInstance = new PublisherZenDesk(config, {}, options);
+                publisherZendeskInstance.printMode = 'html';
+                publisherZendeskInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(common[method]).toHaveBeenCalledWith('<div class="' + className + '">a message</div>', 'arg 1', 'arg 2');
+            });
+        });
+    }
+
+    ['writeMessage', 'writeSuccess', 'writeWarning', 'writeError'].forEach(testLogger);
 });

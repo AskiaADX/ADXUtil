@@ -28,7 +28,15 @@ Publisher.prototype.constructor = Publisher;
  * @param {String} text Text to write in the console
  */
 Publisher.prototype.writeError = function writeError(text) {
-    common.writeError.apply(common, arguments);
+    var args = Array.prototype.slice.call(arguments);
+    if (this.printMode === 'html' && args.length) {
+        args[0] = '<div class="error">' + args[0] + '</div>';
+    }
+    if (this.logger && typeof this.logger.writeError === 'function') {
+        this.logger.writeError.apply(this.logger, args);
+    } else {
+        common.writeError.apply(common, args);
+    }
 };
 
 /**
@@ -36,7 +44,15 @@ Publisher.prototype.writeError = function writeError(text) {
  * @param {String} text Text to write in the console
  */
 Publisher.prototype.writeWarning = function writeWarning(text) {
-    common.writeWarning.apply(common, arguments);
+    var args = Array.prototype.slice.call(arguments);
+    if (this.printMode === 'html' && args.length) {
+        args[0] = '<div class="warning">' + args[0] + '</div>';
+    }
+    if (this.logger && typeof this.logger.writeWarning === 'function') {
+        this.logger.writeWarning.apply(this.logger, args);
+    } else {
+        common.writeWarning.apply(common, args);
+    }
 };
 
 /**
@@ -44,7 +60,15 @@ Publisher.prototype.writeWarning = function writeWarning(text) {
  * @param {String} text Text to write in the console
  */
 Publisher.prototype.writeSuccess = function writeSuccess(text) {
-    common.writeSuccess.apply(common, arguments);
+    var args = Array.prototype.slice.call(arguments);
+    if (this.printMode === 'html' && args.length) {
+        args[0] = '<div class="success">' + args[0] + '</div>';
+    }
+    if (this.logger && typeof this.logger.writeSuccess === 'function') {
+        this.logger.writeSuccess.apply(this.logger, args);
+    } else {
+        common.writeSuccess.apply(common, args);
+    }
 };
 
 /**
@@ -52,7 +76,15 @@ Publisher.prototype.writeSuccess = function writeSuccess(text) {
  * @param {String} text Text to write in the console
  */
 Publisher.prototype.writeMessage = function writeMessage(text) {
-    common.writeMessage.apply(common, arguments);
+    var args = Array.prototype.slice.call(arguments);
+    if (this.printMode === 'html' && args.length) {
+        args[0] = '<div class="message">' + args[0] + '</div>';
+    }
+    if (this.logger && typeof this.logger.writeMessage === 'function') {
+        this.logger.writeMessage.apply(this.logger, args);
+    } else {
+        common.writeMessage.apply(common, args);
+    }
 };
 
 /**
@@ -80,8 +112,16 @@ Publisher.prototype.publish = function (platform, options, callback) {
 
     var self = this;
     var configurator = new Configurator(this.adxDirectoryPath);
+    if (options.logger) {
+        this.logger = options.logger;
+    }
+    if (options.printMode) {
+        this.printMode = options.printMode || 'default';
+    }
+    
     configurator.load(function onLoadConfiguration(err) {
         if (err) {
+            self.writeError(err.message);
             callback(err);
             return;
         }

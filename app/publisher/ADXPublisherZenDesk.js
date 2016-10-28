@@ -32,7 +32,13 @@ function PublisherZenDesk(configurator, preferences, options) {
 
     this.options = options || {};
     this.configurator = configurator;
-
+    if (options.logger) {
+        this.logger = options.logger;
+    }
+    if (options.printMode) {
+        this.printMode = options.printMode || 'default';
+    }
+    
     if (preferences && preferences.ZenDesk) {
         for (var option in preferences.ZenDesk) {
             if (preferences.ZenDesk.hasOwnProperty(option)) {
@@ -65,7 +71,15 @@ function PublisherZenDesk(configurator, preferences, options) {
  * @param {String} text Text to write in the console
  */
 PublisherZenDesk.prototype.writeError = function writeError(text) {
-    common.writeError.apply(common, arguments);
+    var args = Array.prototype.slice.call(arguments);
+    if (this.printMode === 'html' && args.length) {
+        args[0] = '<div class="error">' + args[0] + '</div>';
+    }
+    if (this.logger && typeof this.logger.writeError === 'function') {
+        this.logger.writeError.apply(this.logger, args);
+    } else {
+        common.writeError.apply(common, args);
+    }
 };
 
 /**
@@ -73,7 +87,15 @@ PublisherZenDesk.prototype.writeError = function writeError(text) {
  * @param {String} text Text to write in the console
  */
 PublisherZenDesk.prototype.writeWarning = function writeWarning(text) {
-    common.writeWarning.apply(common, arguments);
+    var args = Array.prototype.slice.call(arguments);
+    if (this.printMode === 'html' && args.length) {
+        args[0] = '<div class="warning">' + args[0] + '</div>';
+    }
+    if (this.logger && typeof this.logger.writeWarning === 'function') {
+        this.logger.writeWarning.apply(this.logger, args);
+    } else {
+        common.writeWarning.apply(common, args);
+    }
 };
 
 /**
@@ -81,7 +103,15 @@ PublisherZenDesk.prototype.writeWarning = function writeWarning(text) {
  * @param {String} text Text to write in the console
  */
 PublisherZenDesk.prototype.writeSuccess = function writeSuccess(text) {
-    common.writeSuccess.apply(common, arguments);
+    var args = Array.prototype.slice.call(arguments);
+    if (this.printMode === 'html' && args.length) {
+        args[0] = '<div class="success">' + args[0] + '</div>';
+    }
+    if (this.logger && typeof this.logger.writeSuccess === 'function') {
+        this.logger.writeSuccess.apply(this.logger, args);
+    } else {
+        common.writeSuccess.apply(common, args);
+    }
 };
 
 /**
@@ -89,7 +119,15 @@ PublisherZenDesk.prototype.writeSuccess = function writeSuccess(text) {
  * @param {String} text Text to write in the console
  */
 PublisherZenDesk.prototype.writeMessage = function writeMessage(text) {
-    common.writeMessage.apply(common, arguments);
+    var args = Array.prototype.slice.call(arguments);
+    if (this.printMode === 'html' && args.length) {
+        args[0] = '<div class="message">' + args[0] + '</div>';
+    }
+    if (this.logger && typeof this.logger.writeMessage === 'function') {
+        this.logger.writeMessage.apply(this.logger, args);
+    } else {
+        common.writeMessage.apply(common, args);
+    }
 };
 
 
