@@ -188,6 +188,7 @@
             zenDeskSectionFound : "The ZenDesk section as successfully found...",
             zenDeskArticleCreated : "The ZenDesk article successfully created...",
             zenDeskAttachmentsUploaded :"The ZenDesk attachments were successfully uploaded...",
+            zenDeskTranslationUpdated :"The ZenDesk translation successfully updated...",
             zenDeskArticleUpdated   : "The ZenDesk article successfully updated..."
         },
         message: {

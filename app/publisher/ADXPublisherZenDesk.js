@@ -311,7 +311,7 @@ function createJSONArticle (self, callback) {
             article : {
                 title               : conf.info.name,
                 body                : common.evalTemplate(data, conf, replacements),
-                promoted            : self.options.promoted,
+                promoted            : !!self.options.promoted,
                 comments_disabled   : !!self.options.disableComments // Make it boolean
             }
         });
@@ -494,7 +494,6 @@ PublisherZenDesk.prototype.publish = function(callback) {
                         self.writeSuccess(successMsg.zenDeskArticleCreated);
                     }
 
-
                     var filesToPush = [];
                     var name = self.configurator.get().info.name;
                     fs.stat(path.resolve(path.join(self.configurator.path, common.ADX_BIN_PATH, name + '.adc')), function(err, stats) {
@@ -542,15 +541,21 @@ PublisherZenDesk.prototype.publish = function(callback) {
                                         pattern         : /\{\{ADXLiveDemo\}\}/gi,
                                         replacement     : (!self.options.demoUrl) ? '' : '<li><a href="' + self.options.demoUrl + '" target="_blank">To access to the live survey, click on the picture above.</a></li>'
                                     });
-
                                     var articleUpdated = common.evalTemplate(article.body, {}, replacements);
                                     self.client.translations.updateForArticle(article.id, 'en-us', {body:articleUpdated}, function (err) {
-                                        if (!err) {
-                                            self.writeSuccess(successMsg.zenDeskArticleUpdated);
-                                        }
-                                        if (typeof callback === 'function') {
+                                        if (err) {
                                             callback(err);
+                                            return;
                                         }
+                                        self.writeSuccess(successMsg.zenDeskTranslationUpdated);
+                                        self.client.articles.update(article.id, article, function(err, req, data){
+                                            if (!err) {
+                                                self.writeSuccess(successMsg.zenDeskArticleUpdated);
+                                            }
+                                            if (typeof callback === 'function') {
+                                                callback(err);
+                                            }
+                                        });
                                     });
                                 });
                             });

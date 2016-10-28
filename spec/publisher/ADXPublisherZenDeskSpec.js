@@ -77,6 +77,11 @@ describe("ADXPublisherZenDesk", function() {
                 listBySection : function (id, cb) {
                     cb(null, null, []);
                 },
+                update : function (id, o, cb) {
+                    if (typeof cb === 'function') {
+                        cb(null);
+                    }
+                },
                 delete : function (id, cb) {
                     cb(null);
                 },
@@ -747,7 +752,6 @@ describe("ADXPublisherZenDesk", function() {
             it("should call updateForArticle with the attachments", function () {
                 var config = new Configurator('.');
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
-                var name = config.get().info.name;
                 spyOn(fakeClient.articles, "create").andCallFake(function (id, jsonArticle, cb) {
                     cb(null, null, {
                         id : 12,
@@ -763,6 +767,39 @@ describe("ADXPublisherZenDesk", function() {
                                     ', <li><a href="http://demo" target="_blank">To access to the live survey, click on the picture above.</a></li>';
                         
                         expect(obj.body).toEqual(str);
+                        done();
+                    });
+                    publisherZenDesk.publish(function() {});
+                    
+                });
+            });
+        });
+        
+        describe("update article with attachments", function() {
+            it("should call update with the correct arguments", function () {
+                var config = new Configurator('.');
+                var publisherZenDesk = new PublisherZenDesk(config, {}, {
+                    url              :'https://uri',
+                    section          : 'a_section',
+                    username	     : 'a_username',
+                    password         : 'mdp',
+                    promoted         : true,
+                    disabledComments : false,
+                    demoUrl          : 'http://demo'
+                });
+                spyOn(fakeClient.articles, "create").andCallFake(function (id, jsonArticle, cb) {
+                    cb(null, null, {
+                        id : 12,
+                        body : '{{ADXQexFileURL}}, {{ADXFileURL}}, {{ADXPreview}}, {{ADXLiveDemo}}',
+                        promoted : jsonArticle.article.promoted,
+                        comments_disabled : jsonArticle.article.comments_disabled
+                    });
+                });
+                
+                runSync(function (done) {
+                    spyOn(fakeClient.articles, "update").andCallFake(function(id, obj, cb) {
+                        expect(obj.promoted).toEqual(true);
+                        expect(obj.comments_disabled).toEqual(false);
                         done();
                     });
                     publisherZenDesk.publish(function() {});

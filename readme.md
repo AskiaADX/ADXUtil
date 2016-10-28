@@ -64,13 +64,14 @@ This application works through Windows PowerShell
     --authorEmail <email>     default email of the author to set in the config
     --authorCompany <name>    default company of the author to set in the config
     --authorWebsite <website> default website of the author to set in the config
-    --promoted                the article will be promoted (appear with a star in ZenDesk Platform)
-    --enableComments          the comments will be enabled on the article corresponding to the ADC on ZenDesk
     --username <name>         the username login to connect to the platform
     --pwd <password>          the password login to connect to the platform
-    --sectionTitle <title>    The name of the section where the adc will be posted (ZenDesk)
-    --remoteUri <uri>         The remote URI of the platform
-	--surveyDemoUrl <url>	The url to start the survey demo
+    --url <uri>        		  the remote URI of the platform
+	--demoUrl <url>			  the url to start the survey demo
+    --section <title>    	  the name of the section where the adc will be posted (ZenDesk)
+    --promoted                the article will be promoted (appear with a star in ZenDesk Platform)
+    --disableComments         the comments will be disabled on the article corresponding to the ADC on ZenDesk
+    
     
 ### Generate
 
@@ -128,24 +129,6 @@ Then enter the following command with a platform argument and then the options y
 
 
 You can use following command line options for the ZenDesk publisher:
-
-* --url 
-URL of the ZenDesk where to push
-
-* --section  
-Name of the section within which the article will be created
-
-* --username           
-Username to connect into ZenDesk
- 
-* --password           
-Password to connect into ZenDesk
-
-* --promoted           
-Create a promoted article
-
-* --disableComments
-Create an article with disabled commentscd 
 
 #### List of possible error messages
 
