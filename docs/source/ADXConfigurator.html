@@ -115,6 +115,7 @@ Configurator.prototype.constructor = Configurator;
  * @param {Error} [callback.err] Error
  */
 Configurator.prototype.load = function load(callback) {
+    
     callback = callback || function () {};
     var self = this;
 
@@ -129,13 +130,13 @@ Configurator.prototype.load = function load(callback) {
         }
 
         var filePath = path.join(self.path, common.CONFIG_FILE_NAME);
+        
 
         fs.readFile(filePath, function (err, data) {
             if (err) {
                 callback(err);
                 return;
             }
-
             self.fromXml(data.toString());
             callback(null);
 
@@ -598,7 +599,7 @@ ADXInfo.prototype.set = function set(data) {
 };
 
 
-([&quot;name&quot;, &quot;guid&quot;, &quot;version&quot;, &quot;date&quot;, &quot;description&quot;, &quot;company&quot;, &quot;author&quot;, &quot;site&quot;, &quot;helpURL&quot;].forEach(function (propName) {
+[&quot;name&quot;, &quot;guid&quot;, &quot;version&quot;, &quot;date&quot;, &quot;description&quot;, &quot;company&quot;, &quot;author&quot;, &quot;site&quot;, &quot;helpURL&quot;].forEach(function (propName) {
 <span id='ADX-Configurator-Info-method-name'>    /**
 </span>     * Get or set the name of the ADX
      *
@@ -717,6 +718,7 @@ ADXInfo.prototype.set = function set(data) {
      * @param {String} [data] URL to set
      * @returns {String} Help URL
      */
+    
     ADXInfo.prototype[propName] = function (data) {
         var xmldoc = this.configurator.xmldoc;
         var elInfo = xmldoc.find(&#39;info&#39;);
@@ -743,7 +745,7 @@ ADXInfo.prototype.set = function set(data) {
         }
         return el.text;
     };
-}));
+});
 
 <span id='ADX-Configurator-Info-method-style'>/**
 </span> * Get or set the style
