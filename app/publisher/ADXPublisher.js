@@ -4,6 +4,7 @@ var successMsg      = common.messages.success;
 var errMsg          = common.messages.error;
 var Configurator	= require('../configurator/ADXConfigurator.js').Configurator;
 var preferences     = require('../preferences/ADXPreferences.js');
+var Builder   		= require('../builder/ADXBuilder.js').Builder;
 
 exports.platforms = {
     'ZenDesk'   :   require('./ADXPublisherZenDesk.js')
@@ -110,6 +111,8 @@ Publisher.prototype.publish = function (platform, options, callback) {
         return;
     }
 
+    this.builder = new Builder(this.adxDirectoryPath);
+    
     var self = this;
     var configurator = new Configurator(this.adxDirectoryPath);
     if (options.logger) {
@@ -119,28 +122,39 @@ Publisher.prototype.publish = function (platform, options, callback) {
         this.printMode = options.printMode || 'default';
     }
     
-    configurator.load(function onLoadConfiguration(err) {
+    this.builder.build({
+        logger 		: this.logger,
+        printMode 	: this.printMode
+    }, function buildValidation(err) {
         if (err) {
-            self.writeError(err.message);
+            self.writeError(errMsg.publishFailed, platform);
             callback(err);
             return;
         }
-        preferences.read( {silent: true}, function onReadPreferences(prefs) {
-            var SubPublisher = exports.platforms[platform]['Publisher' + platform];
-            var subPublisher = new SubPublisher(configurator, prefs, options);
-            subPublisher.publish(function publishCallback(err) {
-                if (!options.silent) {
-                    if (err) {
-                        self.writeError(err.message);
-                        self.writeError(errMsg.publishFailed, platform);
-                     } else {
-                        self.writeSuccess(successMsg.publishSucceed, platform);
-                    }
-                }
+
+        configurator.load(function onLoadConfiguration(err) {
+            if (err) {
+                self.writeError(err.message);
                 callback(err);
+                return;
+            }
+            preferences.read( {silent: true}, function onReadPreferences(prefs) {
+                var SubPublisher = exports.platforms[platform]['Publisher' + platform];
+                var subPublisher = new SubPublisher(configurator, prefs, options);
+                subPublisher.publish(function publishCallback(err) {
+                    if (!options.silent) {
+                        if (err) {
+                            self.writeError(err.message);
+                            self.writeError(errMsg.publishFailed, platform);
+                        } else {
+                            self.writeSuccess(successMsg.publishSucceed, platform);
+                        }
+                    }
+                    callback(err);
+                });
             });
         });
-    });
+    }); 
 };
 
 

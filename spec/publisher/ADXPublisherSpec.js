@@ -9,7 +9,8 @@ describe('ADXPublisher', function(){
         successMsg          = common.messages.success,
         errMsg				= common.messages.error,
         Configurator 		= require('../../app/configurator/ADXConfigurator.js').Configurator,
-        preferences         = require('../../app/preferences/ADXPreferences.js');
+        preferences         = require('../../app/preferences/ADXPreferences.js'),
+        Builder   			= require('../../app//builder/ADXBuilder.js').Builder;
 
 
     function PublisherFake(configurator, preferences, options) {
@@ -42,6 +43,13 @@ describe('ADXPublisher', function(){
             load : spyOn(Configurator.prototype, 'load')
         };
         spies.configurator.load.andCallFake(function (cb) {
+            cb(null);
+        });
+        
+        spies.builder = {
+            build : spyOn(Builder.prototype, 'build')
+        };
+        spies.builder.build.andCallFake(function (opts, cb){
             cb(null);
         });
 
@@ -97,6 +105,32 @@ describe('ADXPublisher', function(){
                 var publisher = new Publisher("/my/path");
                 publisher.publish(undefined, null, function (err) {
                     expect(err.message).toEqual(errMsg.missingPlatformArg);
+                    done();
+                });
+            });
+        });
+
+        it("should build the project before publish it", function () {
+            runSync(function (done) {
+
+                var publisher = new Publisher("/my/path");
+                publisher.publish('Fake', {} , function (err) {
+                    expect(spies.builder.build).toHaveBeenCalled();
+                    done();
+                });
+            });
+        });
+
+        it("should return the builder error when failed to build the project", function () {
+            runSync(function (done) {
+                var error = new Error("an error");
+                spies.builder.build.andCallFake(function (opts, cb) {
+                    cb(error);
+                });
+
+                var publisher = new Publisher("/my/path");
+                publisher.publish("Fake", {}, function (err) {
+                    expect(err).toBe(error);
                     done();
                 });
             });
