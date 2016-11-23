@@ -4,7 +4,7 @@ var pathHelper  = require('path');
 var common      = require('../common/common.js');
 var preferences = require('../preferences/ADXPreferences.js');
 var wrench      = require('wrench');
-var uuid        = require('node-uuid');
+var uuid        = require('uuid');
 var errMsg      = common.messages.error;
 var successMsg  = common.messages.success;
 

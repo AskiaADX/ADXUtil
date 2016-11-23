@@ -9,7 +9,7 @@
         // Zip lib
         Zip = require('jszip'),
         //uuid lib
-        uuid = require('node-uuid'),
+        uuid = require('uuid'),
         //path lib
         path = require('path');
 
