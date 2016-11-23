@@ -1,6 +1,6 @@
 var common = require('../common/common.js');
 var errMsg = common.messages.error;
-var uuid   = require('node-uuid');
+var uuid   = require('uuid');
 var InteractiveADXShell = require('../common/InteractiveADXShell.js').InteractiveADXShell;
 
 /**

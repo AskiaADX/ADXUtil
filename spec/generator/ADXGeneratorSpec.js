@@ -3,7 +3,7 @@ describe('ADXGenerator', function () {
     var fs              = require('fs'),
         wrench          = require('wrench'),
         format          = require('util').format,
-        uuid            = require('node-uuid'),
+        uuid            = require('uuid'),
         pathHelper      = require('path'),
         spies           = {},
         common,
