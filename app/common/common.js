@@ -241,7 +241,7 @@
         console.log(util.format.apply(null, arguments));
     };
 
-    /**
+    /*
      * Return the environment variables for the child process execution
      * It mostly used to target the sys64/, sys32/ folders
      */
@@ -559,7 +559,7 @@
         });
     };
     
-    /**
+    /*
      * Transform the patterns of a string by their real values which are in a config
      * @param {String} input The text to be replaced
      * @param {Object} config The result of a call to method get of a configurator

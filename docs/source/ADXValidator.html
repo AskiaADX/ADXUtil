@@ -1389,7 +1389,7 @@ Validator.prototype.runTests = function runTests(args, message) {
             var execFile =  require(&#39;child_process&#39;).execFile;
             execFile(&#39;.\\&#39; + common.ADX_UNIT_PROCESS_NAME, args, {
                 cwd   : pathHelper.join(self.rootdir, common.ADX_UNIT_DIR_PATH),
-                env   : process.env
+                env   : common.getChildProcessEnv()
             }, execCallback);
         } else {
             var escapedArgs = [];
