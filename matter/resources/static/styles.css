@@ -1,0 +1,405 @@
+/* GLOBAL */
+* {
+    -webkit-tap-highlight-color: rgba(255,255,255,0);
+}
+body, html {
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale;
+    text-shadow: none;
+    text-rendering: optimizeLegibility !important;
+}
+
+body {
+    display: flex;
+    display: -webkit-box;
+    /*display: -moz-box;*/
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    flex-direction: column;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: stretch;
+    align-content: center;
+    min-height: 100vh;
+}
+
+::-webkit-input-placeholder {
+    color: #AAA;
+}
+::-moz-placeholder {
+    color: #AAA;
+}
+:-ms-input-placeholder {
+    color: #AAA;
+}
+:-moz-placeholder {
+    color: #AAA;
+}
+
+/* HEADER & RIBBON */
+
+header.large {
+    width: 100%;
+    order: 1;
+    flex: 0 0 100px;
+    height: 100px;
+    align-self: center;
+    display: flex;
+    display: -webkit-box;
+    /*display: -moz-box;*/
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    flex-direction: row;
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: stretch;
+    align-content: center;
+    transition: height ease-in .3s, box-shadow ease-in .3s;
+}
+
+header.fixed {
+    position: fixed;
+    top: 0;
+    box-shadow: 0 4px 5px 0 rgba(0, 0, 0, .14);
+    z-index: 1;
+    height: 70px;
+}
+
+header .logo-survey {
+    margin: auto 0 auto 0.5em;
+    line-height: 130px;
+    display: inline-block\9;
+    margin: 0 0 0 0.5em\9;
+    transition: line-height ease-in .3s;
+}
+header.fixed .logo-survey {
+    line-height: 100px;
+}
+.logo-survey img {
+    max-width: 200px;
+    max-height: 50px;
+}
+
+header h2 {
+    line-height: 2;
+    order: 1;
+    flex: 0 0 auto;
+    transition: line-height ease-in .3s;
+    display: inline-block\9;
+}
+@media screen and (max-width: 500px) {
+  header h2 {
+    padding: 0 0 0 0.2em;
+  }
+}
+
+header.fixed h2 {
+    line-height: 1.2;
+}
+
+.ribbon {
+    width: 100%;
+    order: 2;
+    flex: 0 0 20vh;
+    align-self: center;
+    -webkit-flex-shrink: 0;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    height: 150px\9;
+}
+
+
+/* PROGRESS BAR */
+
+.progressWrapper {
+    order: 2;
+    flex: 0 0 auto;
+    transition: padding ease-in .3s;
+    float: right\9;
+    display: inline-block\9;
+}
+
+.progress {
+    height: .9em;
+    position: relative;
+    width: 14em;
+}
+.progress-bar {
+    height: 100%;
+    position: absolute;
+}
+.progress-value {
+    position: absolute;
+    text-align: center;
+    width: 100%;
+}
+
+@media screen and (min-width: 501px) and (max-width: 768px) {
+  .progress {
+    width: 11em;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .progress {
+    width: 6em;
+  }
+}
+
+
+/* MAIN QUESTION CONTAINER */
+
+.main {
+    width: 100%;
+    order: 3;
+    flex: 1 1 60vh;
+    align-self: center;
+    overflow: visible;
+    margin-top: -15vh;
+    margin-top: -120px\9;
+}
+@media all and (-ms-high-contrast:none) {
+     .main { margin-top: -15vh; } /* IE10 */
+}
+
+/* QUESTION CAPTION */
+
+.question {
+    box-shadow: 0 4px 5px 0 rgba(0, 0, 0, .14), 0 1px 10px 0 rgba(0, 0, 0, .12), 0 2px 4px -1px rgba(0, 0, 0, .2);
+    width: calc(100% - 30vw);
+}
+@media screen and (min-width: 501px) and (max-width: 768px) {
+  .question {
+    width: calc(100% - 20vw);
+    padding: 25px 20px;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .question {
+    width: calc(100% - 10vw);
+    padding: 15px 10px;
+  }
+}
+
+.instruction {
+    margin-top: 2em;
+}
+
+
+/* RESPONSES */
+
+.askia-response label, .askia-response span {
+    cursor: pointer;
+    margin-left: .8em;
+    vertical-align: middle;
+    transition: color linear .17s;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.askia-control > table {
+    width: 100%;
+}
+.askia-grid-row .askia-response {
+    cursor: pointer;
+    margin-left: 0;
+}
+.askia-errors-summary ul {
+    padding-left: 1em;
+}
+
+input[type=checkbox] {
+    font-size: 2rem;
+    position: relative;
+    cursor: pointer;
+    animation: checkbox-1 .6s;
+    transition: transform .3s cubic-bezier(.2, .3, 0, 1), box-shadow .3s cubic-bezier(.2, .3, 0, 1), border-color 0s linear .17s;
+}
+
+input[type=radio] {
+    font-size: 2rem;
+    position: relative;
+    cursor: pointer;
+    animation: checkbox-1 .6s;
+    transition: transform .3s cubic-bezier(.2, .3, 0, 1), box-shadow .3s cubic-bezier(.2, .3, 0, 1), border-color 0s linear .17s;
+}
+
+input[type=checkbox]:focus, input[type=radio]:focus {
+    outline: none;
+}
+
+input[type=checkbox]:active, input[type=radio]:active {
+    transform: scale(.8);
+}
+
+input[type=checkbox]:checked, input[type=radio]:checked {
+    transition: transform .3s cubic-bezier(.2, .3, 0, 1), box-shadow .3s cubic-bezier(.2, .3, 0, 1), border-color 0s;
+}
+
+@keyframes checkbox-1 {
+    0% {
+        transform: scale(0);
+    }
+    48% {
+        transform: scale(1.2);
+    }
+}
+input[type=number] {
+    min-width: 8em;
+	text-align: right;
+}
+input[type=text] {
+    width: 100%;
+    min-width: 80%;
+	max-width: 90%;
+}
+input[type=text], input[type=number] {
+    outline: none;
+    border-radius: .125em;
+    transition: border cubic-bezier(.2, .3, 0, 1) .17s;
+}
+textarea {
+    outline: none;
+    resize: vertical;
+    width: 94%;
+    border-radius: .125em;
+    transition: border cubic-bezier(.2, .3, 0, 1) .17s;
+}
+@media screen and (min-width: 501px) and (max-width: 768px) {
+  textarea {
+    width: 92%;
+  }
+}
+@media screen and (max-width: 500px) {
+  textarea {
+    width: 88%;
+  }
+}
+
+/* NAVIGATION */
+
+.btn:after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    height: 5em;
+    width: 5em;
+    top: -1.3em;
+    left: 50%;
+    margin-left: -2.5em;
+    box-shadow: inset 0 0 0 5em rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    transform: scale(0.2);
+    transition: all 150ms cubic-bezier(0.25, 0.1, 0.25, 0.1);
+}
+
+.btn:focus:after {
+    transform: scale(2);
+    opacity: 1;
+}
+
+.keyframe:focus:after {
+    animation: ripple 300ms linear forwards;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0.2);
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+.btn {
+    font-family: Arial, helvetica, sans-serif;
+    font-size: 1.3rem;
+    cursor: pointer;
+    position: relative;
+    width: 5.5em;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    -webkit-background-clip: padding-box;
+    -moz-background-clip: padding;
+    background-clip: padding-box;
+    margin: .4em;
+    overflow: hidden;
+    transition: all .3s cubic-bezier(0.25, 0.1, 0.25, 0.1);
+}
+
+.btn:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.secondary.disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.secondary.disabled:hover {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+*:focus {
+    outline: 0;
+}
+
+/* FOOTER */
+
+footer {
+    width: 100%;
+    order: 4;
+    flex: 0 0 50px;
+    align-self: center;
+    display: flex;
+    display: -webkit-box;
+    /*display: -moz-box;*/
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    flex-direction: row;
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+    position: fixed\9;
+    bottom: 0\9;
+    height: 50px\9;
+}
+@media all and (-ms-high-contrast:none) {
+     footer { position: fixed; bottom: 0; height: 50px; } /* IE10 */
+     *::-ms-backdrop, footer { position: fixed; bottom: 0; height: 50px; } /* IE11 */
+}
+
+footer a {
+    color: #FAFAFA;
+    transition: color linear .3s;
+}
+
+.footerLeft {
+    order: 1;
+    flex: 0 1 auto;
+    text-align: left;
+}
+
+.footerRight {
+    order: 2;
+    flex: 0 1 auto;
+    text-align: right;
+}

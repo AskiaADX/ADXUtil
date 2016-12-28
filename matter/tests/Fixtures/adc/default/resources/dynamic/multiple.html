@@ -1,0 +1,40 @@
+﻿{%
+Dim useList    =  (CurrentADC.PropValue("useList") = "1") ' Convert to boolean
+Dim inputName
+Dim inputValue
+Dim caption
+
+Dim i
+If useList Then
+ 
+    inputName = CurrentQuestion.InputName("list") %}
+    <select name="{%= inputName %}" multiple="multiple">
+        {% 
+        Dim attrSelected
+        For i = 1 To CurrentQuestion.AvailableResponses.Count 
+            attrSelected = On(CurrentQuestion.AvailableResponses[i].IsSelected, "selected=\"selected\"", "")
+            inputValue  = CurrentQuestion.AvailableResponses[i].InputValue()
+            caption     = CurrentQuestion.AvailableResponses[i].Caption
+        %}
+        <option value="{%= inputValue %}">{%= caption %}</option>
+        {% Next %}
+    </select>
+{% Else %}
+    <ul>
+        {% 
+        Dim inputId
+        Dim attrChecked
+        For i = 1 To CurrentQuestion.AvailableResponses.Count
+            inputName   = CurrentQuestion.AvailableResponses[i].InputName()
+            inputId     = inputName.Replace(" ", "_")
+            inputValue  = CurrentQuestion.AvailableResponses[i].InputValue()
+            attrChecked = On(CurrentQuestion.AvailableResponses[i].IsSelected, "checked=\"checked\"", "")
+            caption     = CurrentQuestion.AvailableResponses[i].Caption
+        %}
+        <li>
+            <input type="checkbox" name="{%= inputName %}" id="{%= inputId %}" {%:= attrChecked %} />
+            <label for="{%= inputId %}">{%= caption %}</label><br />
+        </li>
+        {% Next %}
+    </ul>
+{% EndIf %}
