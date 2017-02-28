@@ -1,17 +1,19 @@
-var fs      = require('fs');
-var path    = require('path');
-var wrench  = require('wrench');
-var common  = require('./common/common.js');
-var errMsg  = common.messages.error;
-var Validator    = require('./validator/ADXValidator.js').Validator;
-var Builder      = require('./builder/ADXBuilder.js').Builder;
-var Publisher = require('./publisher/ADXPublisher.js').Publisher;
-var Show         = require('./show/ADXShow.js').Show;
-var Generator    = require('./generator/ADXGenerator.js').Generator;
-var Configurator = require('./configurator/ADXConfigurator.js').Configurator;
-var InteractiveADXShell = require('./common/InteractiveADXShell.js').InteractiveADXShell;
-var InterviewsFactory   = require('./interviews/ADXInterviews.js').InterviewsFactory;
-var preferences = require('./preferences/ADXPreferences.js').preferences;
+"use strict";
+
+const fs                    = require('fs');
+const path                  = require('path');
+const ncp                   = require('ncp').ncp; // copy recursive
+const common                = require('./common/common.js');
+const errMsg                = common.messages.error;
+const Validator             = require('./validator/ADXValidator.js').Validator;
+const Builder               = require('./builder/ADXBuilder.js').Builder;
+const Publisher             = require('./publisher/ADXPublisher.js').Publisher;
+const Show                  = require('./show/ADXShow.js').Show;
+const Generator             = require('./generator/ADXGenerator.js').Generator;
+const Configurator          = require('./configurator/ADXConfigurator.js').Configurator;
+const InteractiveADXShell   = require('./common/InteractiveADXShell.js').InteractiveADXShell;
+const InterviewsFactory     = require('./interviews/ADXInterviews.js').InterviewsFactory;
+const preferences           = require('./preferences/ADXPreferences.js').preferences;
 
 
 /**
@@ -120,10 +122,10 @@ ADX.prototype.constructor = ADX;
  * @param {Error} [callback.err] Error
  */
 ADX.prototype.load = function load(callback) {
-    var configurator = new Configurator(this.path),
-        self        = this;
-    callback = callback || function (){};
-    configurator.load(function (err) {
+    const configurator = new Configurator(this.path),
+          self         = this;
+    callback = callback || function () {};
+    configurator.load((err) => {
         if (err) {
             callback(err);
             return;
@@ -160,7 +162,7 @@ ADX.prototype.load = function load(callback) {
  * @param {Object} [callback.report] Validation report
  */
 ADX.prototype.validate = function validate(options, callback) {
-    var validator = new Validator(this.path);
+    const validator = new Validator(this.path);
     options = options || {};
     options.adxShell = this._adxShell;
     validator.validate(options, callback);
@@ -192,7 +194,7 @@ ADX.prototype.validate = function validate(options, callback) {
  * @param {Object} [callback.report] Validation report
  */
 ADX.prototype.build = function build(options, callback){
-    var builder = new Builder(this.path);
+    const builder = new Builder(this.path);
     options = options || {};
     options.adxShell = this._adxShell;
     builder.build(options, callback);
@@ -217,7 +219,7 @@ ADX.prototype.build = function build(options, callback){
  * @param {Error} [callback.err=null]
  */
 ADX.prototype.publish = function publish(platform, options, callback){
-  var publisher = new Publisher(this.path);
+    const publisher = new Publisher(this.path);
     options = options || {};
     options.adxShell = this._adxShell;
     publisher.publish(platform, options, callback);
@@ -244,11 +246,35 @@ ADX.prototype.publish = function publish(platform, options, callback){
  * @param {String} callback.output Output string
  */
 ADX.prototype.show = function show(options, callback) {
-    var show = new Show(this.path);
+    const show = new Show(this.path);
     options = options || {};
     options.adxShell = this._adxShell;
     show.show(options, callback);
 };
+
+/**
+ * Returns the list of xml files within a directory
+ *
+ * @param {String} directory Path of the directory to browse
+ * @param {Function} callback Callback
+ * @param {Error} callback.err Error
+ * @param {String[]} callback.list List of fixtures
+ */
+function getXmlListFiles(directory, callback) {
+    fs.readdir(directory,  (err, files) => {
+        if (err) {
+            callback(err, null);
+            return;
+        }
+        const results = [];
+        for (let i = 0, l  = files.length; i < l; i += 1) {
+            if (/\.xml$/.test(files[i])) {
+                results.push(files[i]);
+            }
+        }
+        callback(null, results);
+    });
+}
 
 /**
  * Returns the list of fixtures
@@ -266,29 +292,59 @@ ADX.prototype.show = function show(options, callback) {
  * @param {String[]} callback.list List of fixtures
  */
 ADX.prototype.getFixtureList = function getFixtureList(callback) {
-    var fixturePath = path.join(this.path, common.FIXTIRES_DIR_PATH);
-    fs.readdir(fixturePath, function (err, files) {
-        if (err) {
-            callback(err, null);
-            return;
-        }
-        var fixtures = [], i, l;
-        for (i = 0, l  = files.length; i < l; i += 1) {
-            if (/\.xml$/.test(files[i])) {
-                fixtures.push(files[i]);
-            }
-        }
-        callback(null, fixtures);
-    });
+    const fixturePath = path.join(this.path, common.FIXTIRES_DIR_PATH);
+    getXmlListFiles(fixturePath, callback);
 };
 
 /**
- * Verify if the fixture exist and create it if it doesn't
+ * Returns the list of emulations
+ *
+ *      var ADX = require('adxutil').ADX;
+ *      var myAdx = new ADX('path/to/adx/dir');
+ *
+ *      // List all emulations on the ADX
+ *      myAdx.getEmulationList(function (err, list) {
+ *          console.log(list[0]); // -> "Javascript_Enable.xml"
+ *      });
+ *
+ * @param {Function} callback Callback
+ * @param {Error} callback.err Error
+ * @param {String[]} callback.list List of emulations
+ */
+ADX.prototype.getEmulationList = function getEmulationList(callback) {
+    const emulationPath = path.join(this.path, common.EMULATIONS_DIR_PATH);
+    getXmlListFiles(emulationPath, callback);
+};
+
+/**
+ * Verify if the fixtures and emulations exist and create it if it doesn't
  * @param {Function} callback Callback when the operation is complete
- * @param {Error} callback.err Error that occured during the operation
+ * @param {Error} callback.err Error that occurred during the operation
  */
 ADX.prototype.checkFixtures = function checkFixtures(callback) {
-    var self = this;
+    const self = this;
+    let projectType = null;
+
+    function checkDirectory(relPath, cb) {
+        const fullPath = path.join(self.path, relPath);
+        common.dirExists(fullPath, (err, isExist) => {
+            if (isExist) {
+                cb();
+                return;
+            }
+            const targetPath =  path.join(fullPath, '../');
+            const sourcePath = path.join(
+                path.resolve(__dirname, "../"),
+                common.TEMPLATES_PATH, projectType,
+                common.DEFAULT_TEMPLATE_NAME,
+                relPath
+            );
+
+            fs.mkdir(targetPath, () => {
+                ncp(sourcePath, fullPath, cb);
+            });
+        });
+    }
 
     function check(loadErr) {
         if (loadErr) {
@@ -297,7 +353,7 @@ ADX.prototype.checkFixtures = function checkFixtures(callback) {
             }
             return;
         }
-        var projectType = self.configurator.projectType;
+        projectType = self.configurator.projectType;
         if (projectType !== 'adc' && projectType !== 'adp') {
             if (typeof callback === 'function') {
                 callback(new Error(errMsg.incorrectADXType));
@@ -305,27 +361,13 @@ ADX.prototype.checkFixtures = function checkFixtures(callback) {
             return;
         }
 
-        var fixturePath = path.join(self.path, common.FIXTIRES_DIR_PATH);
-        common.dirExists(fixturePath, function (err, isExist) {
-            if (isExist) {
+        // Check the fixtures directory
+        checkDirectory(common.FIXTIRES_DIR_PATH, () => {
+            // Check the fixtures/emulations directory
+            checkDirectory(common.EMULATIONS_DIR_PATH, () => {
                 if (typeof callback === 'function') {
-                    callback();
+                    callback(null);
                 }
-                return;
-            }
-            var testPath =  path.join(fixturePath, '../');
-            var sourcePath = path.join(path.resolve(__dirname, "../"), common.TEMPLATES_PATH, projectType, common.DEFAULT_TEMPLATE_NAME, common.FIXTIRES_DIR_PATH);
-
-            fs.mkdir(testPath, function () {
-                wrench.copyDirRecursive(sourcePath, fixturePath, {
-                    forceDelete       : false,
-                    excludeHiddenUnix : true,
-                    preserveFiles     : true
-                }, function () {
-                    if (typeof callback === 'function') {
-                        callback();
-                    }
-                });
             });
         });
     }
@@ -337,6 +379,7 @@ ADX.prototype.checkFixtures = function checkFixtures(callback) {
         check(null);
     }
 };
+
 
 /**
  * Release all resources
@@ -376,7 +419,7 @@ ADX.prototype.destroy = function destroy() {
  * @static
  */
 ADX.generate = function generate(type, name, options, callback) {
-    var generator = new Generator();
+    const generator = new Generator();
     // Swap the options
     if (typeof  options === 'function') {
         callback = options;
@@ -384,7 +427,7 @@ ADX.generate = function generate(type, name, options, callback) {
     }
     callback = callback || function () {};
 
-    generator.generate(type, name, options, function (err, outputPath) {
+    generator.generate(type, name, options, (err, outputPath) => {
         if (err) {
             callback(err, null);
             return;

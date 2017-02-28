@@ -1,12 +1,14 @@
-var fs          = require('fs');
-var format      = require('util').format;
-var pathHelper  = require('path');
-var common      = require('../common/common.js');
-var preferences = require('../preferences/ADXPreferences.js');
-var wrench      = require('wrench');
-var uuid        = require('node-uuid');
-var errMsg      = common.messages.error;
-var successMsg  = common.messages.success;
+"use strict";
+
+const fs          = require('fs');
+const format      = require('util').format;
+const pathHelper  = require('path');
+const common      = require('../common/common.js');
+const preferences = require('../preferences/ADXPreferences.js');
+const ncp         = require('ncp').ncp;
+const uuid        = require('node-uuid');
+const errMsg      = common.messages.error;
+const successMsg  = common.messages.success;
 
 
 /**
@@ -174,9 +176,9 @@ Generator.prototype.generate = function generate(type, name, options, callback) 
         return;
     }
 
-    var self = this;
-    preferences.read({silent : true}, function (prefs) {
-        var prefAuthor = (prefs && prefs.author) || {};
+    const self = this;
+    preferences.read({silent : true}, (prefs) => {
+        const prefAuthor = (prefs && prefs.author) || {};
 
         self.adxName = name;
         self.adxType = type;
@@ -190,7 +192,7 @@ Generator.prototype.generate = function generate(type, name, options, callback) 
         self.template = (options && options.template) || common.DEFAULT_TEMPLATE_NAME;
         self.templateSrc = pathHelper.join(self.rootdir, common.TEMPLATES_PATH, self.template);
 
-        common.getTemplatePath(self.adxType, self.template, function (err, src) {
+        common.getTemplatePath(self.adxType, self.template, (err, src) => {
             if (err) {
                 return self.done(err);
             }
@@ -212,8 +214,8 @@ Generator.prototype.done = function done(err) {
         }
         return;
     }
-    var self = this;
-    common.getDirStructure(self.outputDirectory, function getDirStructure(err, structure) {
+    const self = this;
+    common.getDirStructure(self.outputDirectory, (err, structure) => {
         if (err) {
             self.writeError(err.message);
             if (typeof self.generateCallback === 'function') {
@@ -221,12 +223,12 @@ Generator.prototype.done = function done(err) {
             }
             return;
         }
-        var level = 0,
-            s     = [];
+        let   level = 0;
+        const s     = [];
 
         function indent(text) {
-            var str = '|--';
-            for (var i = 0; i < level; i++) {
+            let str = '|--';
+            for (let i = 0; i < level; i++) {
                 str += '|--';
             }
             str += ' ' + text;
@@ -246,8 +248,8 @@ Generator.prototype.done = function done(err) {
             }
         });
 
-        s = s.join('\r\n');
-        self.writeSuccess(successMsg.adxStructureGenerated, s, self.adxName, self.outputDirectory);
+        const result  = s.join('\r\n');
+        self.writeSuccess(successMsg.adxStructureGenerated, result, self.adxName, self.outputDirectory);
 
         if (typeof self.generateCallback === 'function') {
             self.generateCallback(err, self.outputDirectory);
@@ -261,8 +263,8 @@ Generator.prototype.done = function done(err) {
  */
 Generator.prototype.verifyOutputDirExist = function verifyOutputDirExist() {
     // Validate the existence of the specify the output directory
-    var self = this;
-    common.dirExists(self.outputDirectory, function outputDirExist(err, exists) {
+    const self = this;
+    common.dirExists(self.outputDirectory, (err, exists) => {
         if (!exists || err) {
             return self.sequence.resume(new Error(format(errMsg.noSuchFileOrDirectory, self.outputDirectory)));
         }
@@ -275,8 +277,8 @@ Generator.prototype.verifyOutputDirExist = function verifyOutputDirExist() {
  * Verify that the ADX directory doesn't exist
  */
 Generator.prototype.verifyADXDirNotAlreadyExist = function verifyADXDirNotAlreadyExist() {
-    var self = this;
-    common.dirExists(self.outputDirectory, function adxDirExist(err, exists) {
+    const self = this;
+    common.dirExists(self.outputDirectory, (err, exists) => {
         if (exists && !err) {
             return self.sequence.resume(new Error(format(errMsg.directoryAlreadyExist, self.outputDirectory)));
         }
@@ -288,12 +290,8 @@ Generator.prototype.verifyADXDirNotAlreadyExist = function verifyADXDirNotAlread
  * Copy an ADC structure from the template
  */
 Generator.prototype.copyFromTemplate =  function copyFromTemplate() {
-    var self = this;
-    wrench.copyDirRecursive(self.templateSrc, self.outputDirectory, {
-        forceDelete       : false,
-        excludeHiddenUnix : true,
-        preserveFiles     : true
-    }, function copyDirRecursive(err) {
+    const self = this;
+    ncp(self.templateSrc, self.outputDirectory, (err) => {
         self.sequence.resume(err);
     });
 };
@@ -302,20 +300,21 @@ Generator.prototype.copyFromTemplate =  function copyFromTemplate() {
  * Update the config.xml and the readme files with the name of the ADC, the GUID and the creation date
  */
 Generator.prototype.updateFiles = function updateFiles() {
-    var self  = this,
+    const self  = this,
         files  = [
             pathHelper.join(self.outputDirectory, common.CONFIG_FILE_NAME),
             pathHelper.join(self.outputDirectory, common.README_FILE_NAME)
-        ], treat = 0;
-    files.forEach(function (file) {
-        fs.readFile(file, 'utf8', function readFile(err, data) {
+        ];
+    let treat = 0;
+    files.forEach((file) => {
+        fs.readFile(file, 'utf8', (err, data) => {
             if (err) {
                 treat++;
                 self.sequence.resume(err);
                 return;
             }
 
-            var result = common.evalTemplate(data, {
+            const result = common.evalTemplate(data, {
                 info : {
                     name : self.adxName ,
                     type :	 self.adxType, 
@@ -348,6 +347,6 @@ exports.Generator = Generator;
  * @param {String} name Name of the ADC to generate
  */
 exports.generate = function generate(program, type, name) {
-    var generator = new Generator();
+    const generator = new Generator();
     generator.generate(type, name, program);
 };

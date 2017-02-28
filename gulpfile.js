@@ -5,15 +5,15 @@
  */
 
 
-var gulp        = require('gulp'),
-    del         = require('del'),
-    shell       = require('gulp-shell');
+const gulp      = require('gulp');
+const del       = require('del');
+const shell     = require('gulp-shell');
 
 // Destination files
-var DEST_DOCS            = 'docs/';
+const DEST_DOCS   = 'docs/';
 
 // Source files
-var SRC                 = 'app/';
+const SRC         = 'app/';
 
 // Default task
 gulp.task('default', ['clean', 'document']);
@@ -22,13 +22,13 @@ gulp.task('default', ['clean', 'document']);
 gulp.task('clean', ['clean:docs']);
 
 // Cleanup the documentation folder
-gulp.task('clean:docs', function (cb) {
+gulp.task('clean:docs',  (cb) => {
     del([DEST_DOCS + '**/*'], cb);
 });
 
 // Document
-gulp.task('document', ['clean:docs'], function (cb) {
-    var args = [
+gulp.task('document', ['clean:docs'], (cb) => {
+    const args = [
         '--title=ADXUtil',
         '--output=' + DEST_DOCS,
         SRC + 'common/common.js',
@@ -43,11 +43,11 @@ gulp.task('document', ['clean:docs'], function (cb) {
         SRC + 'ADXUtilAPI.js'
     ];
 
-    var execFile = require('child_process').execFile;
+    const execFile = require('child_process').execFile;
     execFile('jsduck', args, {
         cwd   : process.cwd,
         env   : process.env
-    }, function callback(err, stdout, stderr) {
+    }, (err, stdout, stderr) => {
 
         if (stderr) {
             console.warn(stderr);

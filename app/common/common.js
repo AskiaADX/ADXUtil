@@ -28,8 +28,10 @@
     exports.README_FILE_NAME = 'readme.md';
     // Path of the unit tests directory
     exports.UNIT_TEST_DIR_PATH = "tests/units";
-    // Path of the fixtures directory
+    // Path of the `fixtures` directory
     exports.FIXTIRES_DIR_PATH = "tests/fixtures";
+    // Path of the `emulations` directory
+    exports.EMULATIONS_DIR_PATH = exports.FIXTIRES_DIR_PATH + '/emulations';
 
     // Validator
     //  Path to the XML Lint program

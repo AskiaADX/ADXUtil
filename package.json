@@ -1,6 +1,6 @@
 {
   "name": "adxutil",
-  "version": "2.0.0-beta.6",
+  "version": "2.0.0-beta.7",
   "description": "Utilities tools for Askia Design eXtension",
   "main": "./app/ADXUtilAPI.js",
   "dependencies": {
@@ -8,10 +8,10 @@
     "commander": "^1.1.1",
     "elementtree": "^0.1.6",
     "jszip": "^2.2.2",
+    "ncp": "^2.0.0",
     "node-uuid": "^1.4.0",
     "node-zendesk": "^1.1.10",
-    "request": "^2.74.0",
-    "wrench": "^1.5.1"
+    "request": "^2.74.0"
   },
   "bin": {
     "ADXUtil": "./app/ADXUtil.js"

@@ -1,9 +1,11 @@
+"use strict";
+
 describe('ADXUtilAPI', function () {
-    var fs = require('fs');
-    var pathHelper = require('path');
-    var InteractiveADXShell = require('../app/common/InteractiveADXShell.js').InteractiveADXShell;
-    var wrench = require('wrench');
-    var ADX,
+    const fs = require('fs');
+    const pathHelper = require('path');
+    const InteractiveADXShell = require('../app/common/InteractiveADXShell.js').InteractiveADXShell;
+    const ncpLib = require('ncp');
+    let ADX,
         adxUtilApi,
         errMsg,
         adxValidator,
@@ -26,18 +28,22 @@ describe('ADXUtilAPI', function () {
         common;
 
     function runSync(fn) {
-        var wasCalled = false;
-        runs( function () {
-            fn(function () {
+        let wasCalled = false;
+        runs(() => {
+            fn(() => {
                 wasCalled = true;
             });
         });
-        waitsFor(function () {
+        waitsFor(() => {
             return wasCalled;
         });
     }
 
-    beforeEach(function () {
+    beforeEach(() => {
+        // !! Make sure to court-circuit   !!
+        // !! it before to load the module !!
+        spies.ncp = spyOn(ncpLib, 'ncp');
+
         adxUtilApi = require.resolve('../app/ADXUtilAPI.js');
         if (adxUtilApi) {
             delete require.cache[adxUtilApi];
@@ -89,12 +95,6 @@ describe('ADXUtilAPI', function () {
 
         adxPreferences = require('../app/preferences/ADXPreferences.js');
         preferences = adxPreferences.preferences;
-
-        // Court-circuit wrench
-        spies.wrench = {
-            copyDirRecursive : spyOn(wrench, 'copyDirRecursive'),
-            readdirRecursive : spyOn(wrench, 'readdirRecursive')
-        };
 
         spies.getTemplatePath = spyOn(common, 'getTemplatePath');
         spies.getTemplatePath.andCallFake(function (type, name, cb) {
@@ -401,7 +401,7 @@ describe('ADXUtilAPI', function () {
                 });
 
                 runSync(function (done) {
-                    spies.wrench.copyDirRecursive.andCallFake(function (source, dest) {
+                    spies.ncp.andCallFake(function (source, dest) {
                         expect(source).toEqual(pathHelper.join(pathHelper.resolve(__dirname, "../"), common.TEMPLATES_PATH, 'adc', common.DEFAULT_TEMPLATE_NAME, common.FIXTIRES_DIR_PATH));
                         expect(dest).toEqual(pathHelper.join('adc/path', common.FIXTIRES_DIR_PATH));
                         done();
@@ -423,9 +423,67 @@ describe('ADXUtilAPI', function () {
                 });
 
                 runSync(function (done) {
-                    spies.wrench.copyDirRecursive.andCallFake(function (source, dest) {
+                    spies.ncp.andCallFake(function (source, dest) {
                         expect(source).toEqual(pathHelper.join(pathHelper.resolve(__dirname, "../"), common.TEMPLATES_PATH, 'adp', common.DEFAULT_TEMPLATE_NAME, common.FIXTIRES_DIR_PATH));
                         expect(dest).toEqual(pathHelper.join('adp/path', common.FIXTIRES_DIR_PATH));
+                        done();
+                    });
+
+                    var adp = new ADX('adp/path');
+                    adp.configurator = new Configurator('adp/path');
+                    adp.configurator.projectType = 'adp';
+                    adp.checkFixtures();
+                });
+            });
+
+            it("should copy `tests/fixtures/emulations` directory of the `blank` ADC template if it  doesn't exist", function () {
+                spyOn(common, 'dirExists').andCallFake(function (p, cb) {
+                    if (p === pathHelper.join('adc/path', common.FIXTIRES_DIR_PATH)) {
+                        cb(null, true);
+                    } else if (p === pathHelper.join('adc/path', common.EMULATIONS_DIR_PATH)) {
+                        cb(null, false);
+                    }
+                    else {
+                        cb(new Error("something weird"), false);
+                    }
+                });
+                spies.fs.mkdir.andCallFake(function (p, cb) {
+                    cb();
+                });
+
+                runSync(function (done) {
+                    spies.ncp.andCallFake(function (source, dest) {
+                        expect(source).toEqual(pathHelper.join(pathHelper.resolve(__dirname, "../"), common.TEMPLATES_PATH, 'adc', common.DEFAULT_TEMPLATE_NAME, common.EMULATIONS_DIR_PATH));
+                        expect(dest).toEqual(pathHelper.join('adc/path', common.EMULATIONS_DIR_PATH));
+                        done();
+                    });
+
+                    var adc = new ADX('adc/path');
+                    adc.configurator = new Configurator('adc/path');
+                    adc.configurator.projectType = 'adc';
+                    adc.checkFixtures();
+                });
+            });
+
+            it("should copy `tests/fixtures/emulations` directory of the `blank` ADP template if it  doesn't exist", function () {
+                spyOn(common, 'dirExists').andCallFake(function (p, cb) {
+                    if (p === pathHelper.join('adp/path', common.FIXTIRES_DIR_PATH)) {
+                        cb(null, true);
+                    } else if (p === pathHelper.join('adp/path', common.EMULATIONS_DIR_PATH)) {
+                        cb(null, false);
+                    }
+                    else {
+                        cb(new Error("something weird"), false);
+                    }
+                });
+                spies.fs.mkdir.andCallFake(function (p, cb) {
+                    cb();
+                });
+
+                runSync(function (done) {
+                    spies.ncp.andCallFake(function (source, dest) {
+                        expect(source).toEqual(pathHelper.join(pathHelper.resolve(__dirname, "../"), common.TEMPLATES_PATH, 'adp', common.DEFAULT_TEMPLATE_NAME, common.EMULATIONS_DIR_PATH));
+                        expect(dest).toEqual(pathHelper.join('adp/path', common.EMULATIONS_DIR_PATH));
                         done();
                     });
 
@@ -443,7 +501,7 @@ describe('ADXUtilAPI', function () {
                 spies.fs.mkdir.andCallFake(function (p, cb) {
                     cb();
                 });
-                spies.wrench.copyDirRecursive.andCallFake(function (source, dest, options, cb) {
+                spies.ncp.andCallFake(function (source, dest, cb) {
                     cb();
                 });
 
@@ -457,6 +515,25 @@ describe('ADXUtilAPI', function () {
                         done();
                     });
                 });
+            });
+        });
+
+        describe('#getEmulationList', function () {
+            it('should return the names of xml file under the `tests/fixtures/emulation` path', function () {
+                spies.fs.readdir.andCallFake(function (path, cb) {
+                    if (path === pathHelper.join('some/path', common.EMULATIONS_DIR_PATH)) {
+                        cb(null, ['no-emulation.doc', 'emulation1.xml', 'emulation2.xml', 'emulation3.xml', 'no-emulation', 'no-emulation.txt', 'emulation4.xml']);
+                    } else {
+                        cb(new Error('No such file or directory'));
+                    }
+                });
+                var adx = new ADX('some/path');
+                var wasCalled = false;
+                adx.getEmulationList(function (err, list) {
+                    wasCalled = true;
+                    expect(list).toEqual(['emulation1.xml', 'emulation2.xml', 'emulation3.xml','emulation4.xml'])
+                });
+                expect(wasCalled).toBe(true);
             });
         });
 

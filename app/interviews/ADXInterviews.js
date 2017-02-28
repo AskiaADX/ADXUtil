@@ -43,7 +43,7 @@ Interview.prototype.constructor = Interview;
  * @param {String|"show"|"update"|"restart"} command Command to execute
  * @param {Object} [options] Options of the command
  * @param {String} [options.fixture] Name of the fixture file to use
- * @param {String} [options.output] Output of ADX to use
+ * @param {String} [options.emulation] Name of the fixture file to use as emulation
  * @param {String} [options.properties] Properties of the ADX
  * @param {String} [options.parameters] Parameters to update the interview
  * @param {String} [options.themes] Themes variables to set
@@ -63,8 +63,8 @@ Interview.prototype.execCommand = function execCommand(command, options, callbac
     if ('fixture' in options) {
         args.push('"-fixture:' + options.fixture + '"');
     }
-    if ('output' in options) {
-        args.push('"-output:' + options.output + '"');
+    if ('emulation' in options) {
+        args.push('"-emulation:' + options.emulation + '"');
     }
     if ('properties' in options) {
         args.push('"-properties:' + options.properties + '"');

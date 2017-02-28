@@ -1,12 +1,15 @@
+"use strict";
+
 describe('ADXGenerator', function () {
 
-    var fs              = require('fs'),
-        wrench          = require('wrench'),
+    const fs            = require('fs'),
+        ncpLib          = require('ncp'),
         format          = require('util').format,
         uuid            = require('node-uuid'),
         pathHelper      = require('path'),
-        spies           = {},
-        common,
+        spies           = {};
+
+    let common,
         adxGenerator,
         Generator,
         generatorInstance,
@@ -14,10 +17,14 @@ describe('ADXGenerator', function () {
         errMsg,
         successMsg;
 
-    beforeEach(function () {
+    beforeEach(() => {
+        // !! Make sure to court-circuit   !!
+        // !! it before to load the module !!
+        spies.ncp = spyOn(ncpLib, 'ncp');
+
         // Clean the cache, obtain a fresh instance of the adxGenerator each time
-        var adxGeneratorKey = require.resolve('../../app/generator/ADXGenerator.js'),
-            commonKey       = require.resolve('../../app/common/common.js');
+        const adxGeneratorKey = require.resolve('../../app/generator/ADXGenerator.js'),
+             commonKey       = require.resolve('../../app/common/common.js');
 
         delete require.cache[commonKey];
         common = require('../../app/common/common.js');
@@ -26,7 +33,7 @@ describe('ADXGenerator', function () {
         adxGenerator = require('../../app/generator/ADXGenerator.js');
 
         Generator = adxGenerator.Generator;
-        var oldGenerate = Generator.prototype.generate;
+        const oldGenerate = Generator.prototype.generate;
 
         Generator.prototype.generate = function () {
             generatorInstance = this;
@@ -57,11 +64,6 @@ describe('ADXGenerator', function () {
             writeFile   : spyOn(fs, 'writeFile')
         };
 
-        // Court-circuit wrench
-        spies.wrench = {
-            copyDirRecursive : spyOn(wrench, 'copyDirRecursive'),
-            readdirRecursive : spyOn(wrench, 'readdirRecursive')
-        };
 
         // Court-circuit the uuid generator
         spyOn(uuid, 'v4').andReturn('guid');
@@ -71,7 +73,7 @@ describe('ADXGenerator', function () {
         adxPreferences  = require('../../app/preferences/ADXPreferences.js');
 
         spies.readPreferences = spyOn(adxPreferences, 'read');
-        spies.readPreferences.andCallFake(function (opt, cb) {
+        spies.readPreferences.andCallFake((opt, cb) => {
             cb({
                 author : {
                     name : 'MyPrefName',
@@ -250,7 +252,7 @@ describe('ADXGenerator', function () {
             function forEachADXType(type) {
                 it("should copy the `default` " + type.toUpperCase() + " template directory in the ADX output directory", function () {
                     var source, destination;
-                    spies.wrench.copyDirRecursive.andCallFake(function (src, dest) {
+                    spies.ncp.andCallFake(function (src, dest) {
                         source = src;
                         destination = dest;
                     });
@@ -258,7 +260,7 @@ describe('ADXGenerator', function () {
                     adxGenerator.generate({
                         output : 'adx/path/dir'
                     }, type, 'adxname');
-                    expect(wrench.copyDirRecursive).toHaveBeenCalled();
+                    expect(spies.ncp).toHaveBeenCalled();
                     expect(source).toBe('\\templates\\'+ type + '\\' + common.DEFAULT_TEMPLATE_NAME);
                     expect(destination).toBe('adx\\path\\dir\\adxname');
                 });
@@ -269,7 +271,7 @@ describe('ADXGenerator', function () {
                         expect(templateType).toEqual(type);
                         cb(null, 'template/path/test');
                     });
-                    spies.wrench.copyDirRecursive.andCallFake(function (src, dest) {
+                    spies.ncp.andCallFake(function (src, dest) {
                         source = src;
                     });
                     adxGenerator.generate({
@@ -285,7 +287,7 @@ describe('ADXGenerator', function () {
 
 
             it("should output an error when the copy failed", function () {
-                spies.wrench.copyDirRecursive.andCallFake(function (src, dest, option, callback) {
+                spies.ncp.andCallFake(function (src, dest, callback) {
                     callback(new Error('Fake error'));
                 });
                 adxGenerator.generate({
@@ -295,7 +297,7 @@ describe('ADXGenerator', function () {
             });
 
             it("should not output an error when the copy doesn't failed", function () {
-                spies.wrench.copyDirRecursive.andCallFake(function (src, dest, option, callback) {
+                spies.ncp.andCallFake(function (src, dest, callback) {
                     callback(null);
                 });
                 adxGenerator.generate({
@@ -314,7 +316,7 @@ describe('ADXGenerator', function () {
                         callback(null, true);
                     }
                 });
-                spies.wrench.copyDirRecursive.andCallFake(function (src, dest, option, callback) {
+                spies.ncp.andCallFake(function (src, dest, callback) {
                     callback(null);
                 });
             });
@@ -441,7 +443,7 @@ describe('ADXGenerator', function () {
                        callback(null, true);
                    }
                });
-               spies.wrench.copyDirRecursive.andCallFake(function (src, dest, option, callback) {
+               spies.ncp.andCallFake(function (src, dest, callback) {
                    callback(null);
                });
                spies.fs.readFile.andCallFake(function (path, option, callback) {
@@ -512,7 +514,7 @@ describe('ADXGenerator', function () {
                         callback(null, true);
                     }
                 });
-                spies.wrench.copyDirRecursive.andCallFake(function (src, dest, option, callback) {
+                spies.ncp.andCallFake(function (src, dest, option, callback) {
                     callback(null);
                 });
                 spies.fs.readFile.andCallFake(function (path, option, callback) {
