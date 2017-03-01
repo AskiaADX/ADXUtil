@@ -23,6 +23,7 @@
   <outputs defaultOutput="default">
     <output id="default" masterPage="default.html">
       <description><![CDATA[Default output]]></description>
+	  <content fileName="askia.ajax.min.js" type="javascript" mode="static" position="foot" />
     </output>
   </outputs>
   <properties>
