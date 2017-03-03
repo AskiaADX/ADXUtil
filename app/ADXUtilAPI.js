@@ -378,7 +378,7 @@ ADX.prototype.checkTestsDirectory = function checkTestsDirectory(callback) {
 
         // Check the controls or pages directory
         checkDirectory(projectType === 'adp' ?
-            common.PAGES_DIR_PATH : common.CONTROLS_DIR_PATH, onCheckDirectory);
+            common.CONTROLS_DIR_PATH : common.PAGES_DIR_PATH, onCheckDirectory);
     }
 
     // If the adx was not loaded, load it now
