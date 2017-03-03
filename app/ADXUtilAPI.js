@@ -317,11 +317,11 @@ ADX.prototype.getEmulationList = function getEmulationList(callback) {
 };
 
 /**
- * Verify if the fixtures and emulations exist and create it if it doesn't
+ * Verify if the `fixtures`, `emulations`, `controls` or `pages` exist and create it if it doesn't
  * @param {Function} callback Callback when the operation is complete
  * @param {Error} callback.err Error that occurred during the operation
  */
-ADX.prototype.checkFixtures = function checkFixtures(callback) {
+ADX.prototype.checkTestsDirectory = function checkTestsDirectory(callback) {
     const self = this;
     let projectType = null;
 
@@ -361,15 +361,24 @@ ADX.prototype.checkFixtures = function checkFixtures(callback) {
             return;
         }
 
+        let callEnd = 3; // 3 calls
+        function onCheckDirectory(){
+            callEnd--;
+            if (callEnd) return;
+            if (typeof callback === 'function') {
+                callback(null);
+            }
+        }
+
         // Check the fixtures directory
-        checkDirectory(common.FIXTIRES_DIR_PATH, () => {
-            // Check the fixtures/emulations directory
-            checkDirectory(common.EMULATIONS_DIR_PATH, () => {
-                if (typeof callback === 'function') {
-                    callback(null);
-                }
-            });
-        });
+        checkDirectory(common.FIXTIRES_DIR_PATH, onCheckDirectory);
+
+        // Check the emulations directory
+        checkDirectory(common.EMULATIONS_DIR_PATH, onCheckDirectory);
+
+        // Check the controls or pages directory
+        checkDirectory(projectType === 'adp' ?
+            common.PAGES_DIR_PATH : common.CONTROLS_DIR_PATH, onCheckDirectory);
     }
 
     // If the adx was not loaded, load it now
