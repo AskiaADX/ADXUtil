@@ -31,7 +31,7 @@
     // Path of the `fixtures` directory
     exports.FIXTIRES_DIR_PATH = "tests/fixtures";
     // Path of the `emulations` directory
-    exports.EMULATIONS_DIR_PATH = exports.FIXTIRES_DIR_PATH + '/emulations';
+    exports.EMULATIONS_DIR_PATH = "tests/emulations";
 
     // Validator
     //  Path to the XML Lint program

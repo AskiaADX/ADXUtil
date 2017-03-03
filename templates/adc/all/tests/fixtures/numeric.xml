@@ -3,7 +3,7 @@
 		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		 xsi:schemaLocation="http://www.askia.com/2.1.0/ADXUnitTestSchema https://raw.githubusercontent.com/AskiaADX/ADXSchema/2.1.0/ADXUnitTests.xsd">
   <arrange>
-    <Survey Name="NumericSurvey" CurrentQuestion="numeric" Version="1.0" Full="1" MaxQuestionID="2" MaxResponseID="52">
+    <Survey Name="NumericSurvey" CurrentQuestion="numeric" ADPName="default" Version="1.0" Full="1" MaxQuestionID="2" MaxResponseID="52">
       <Languages>
       <Language ID="2057" Abbr="ENG" Name="English (United Kingdom)" Default="1"/>
       </Languages>

@@ -356,7 +356,7 @@
   <xsd:complexType name="fakeContext">
     <xsd:annotation>
       <xsd:documentation>
-        Create a fake context for the ADC to run it under a knowing situation.
+        Create a fake context for the ADX to run it under a knowing situation.
         It allows the emulation of the Browser object and a Survey.
       </xsd:documentation>
     </xsd:annotation>
@@ -399,6 +399,13 @@
             <xsd:annotation>
               <xsd:documentation>
                 Indicates the shortcut of the current question associated with the ADC.
+              </xsd:documentation>
+            </xsd:annotation>
+          </xsd:attribute>
+          <xsd:attribute name="ADPName" type="xsd:string">
+            <xsd:annotation>
+              <xsd:documentation>
+                Indicates the name of the ADP to use to render the ADC.
               </xsd:documentation>
             </xsd:annotation>
           </xsd:attribute>
