@@ -214,7 +214,7 @@ header.fixed h2 {
     padding-left: 1em;
 }
 
-input[type=checkbox], input[type=radio] {
+input[type=checkbox][id^=askia-input], input[type=radio][id^=askia-input] {
     vertical-align: middle;
     display: none;
 }
