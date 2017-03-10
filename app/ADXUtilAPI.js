@@ -15,36 +15,57 @@ const InteractiveADXShell   = require('./common/InteractiveADXShell.js').Interac
 const InterviewsFactory     = require('./interviews/ADXInterviews.js').InterviewsFactory;
 const preferences           = require('./preferences/ADXPreferences.js').preferences;
 
-
 /**
  * Object used to generate, validate, show and build an ADX
  *
  *
  * Example of usage of existing ADX
  *
- *      var ADX = require('adxutil').ADX;
- *      var myAdx = new ADX('path/to/adx/dir');
+ *      const ADX = require('adxutil').ADX;
+ *      const myAdx = new ADX('path/to/adx/dir');
  *
  *      // Validate an ADX
- *      myAdx.validate({test : false, autoTest : false}, function (err, report) {
+ *      const validationConfig = {
+ *          test : false,
+ *          autoTest : false
+ *      };
+ *
+ *      myAdx.validate(validationConfig, (err, report) => {
  *          // Callback when the ADX structure has been validated
  *      });
  *
+ *
  *      // Show the output of an ADX
- *      myAdx.show({ output : 'fallback', fixture : 'single.xml'  },  function (err, output) {
+ *      const showConfig = {
+ *          output : 'fallback',
+ *          fixture : 'single.xml'
+ *      };
+ *
+ *      myAdx.show(showConfig, (err, output) => {
  *          // Callback with the output of the ADX
  *      });
  *
  *      // Build the ADX (package it)
- *      myAdx.build({test : false, autoTest : false}, function (err, path, report) {
+ *      const buildConfig = {
+ *          test : false,
+ *          autoTest : false
+ *      };
+ *
+ *      myAdx.build(buildConfig, (err, path, report) => {
  *          // Callback when the ADX has been built
  *      });
  *
  * Generate and use the new ADX instance
  *
- *      ADX.generate('adc', 'myNewADC', {output : '/path/of/parent/dir', template : 'blank'}, function (err, adc) {
+ *
+ *      const config = {
+ *          output : '/path/of/parent/dir',
+ *          template : 'blank'
+ *      };
+ *
+ *      ADX.generate('adc', 'myNewADC', config, (err, adc) => {
  *          console.log(adc.path);
- *          adc.load(function (err) {
+ *          adc.load((err) =>{
  *              if (err) {
  *                  console.log(err);
  *                  return;
@@ -55,6 +76,7 @@ const preferences           = require('./preferences/ADXPreferences.js').prefere
  *
  *
  * @class ADX
+ * @param {String} adxDirPath Path of the ADX directory
  */
 function ADX(adxDirPath) {
     if (!adxDirPath) {
@@ -66,6 +88,8 @@ function ADX(adxDirPath) {
 
     /**
      * Path to the ADX directory
+     *
+     * @name ADX#path
      * @type {string}
      */
     this.path = path.normalize(adxDirPath);
@@ -74,13 +98,15 @@ function ADX(adxDirPath) {
      * Configurator of the ADX
      * Expose the object to manipulate the config.xml
      *
-     * @type {ADX.Configurator}
+     * @name ADX#configurator
+     * @type {Configurator}
      */
     this.configurator = null;
 
     /**
      * Interactive ADX Shell
      *
+     * @name ADX#_adxShell
      * @type {InteractiveADXShell}
      * @private
      */
@@ -89,20 +115,15 @@ function ADX(adxDirPath) {
     /**
      * Factory of interviews
      *
-     * @type {ADX.InterviewsFactory}
+     * @name ADX#interviews
+     * @type {InterviewsFactory}
      */
     this.interviews = new InterviewsFactory(this.path);
 }
 
 /**
  * Create a new instance of ADX object
- *
- *
- *      var ADX = require('adxutil').ADX;
- *      var myAdx = new ADX('path/to/adx/dir');
- *
- * @constructor
- * @param {String} adxDirPath Path of the ADX directory
+ * @ignore
  */
 ADX.prototype.constructor = ADX;
 
@@ -110,11 +131,11 @@ ADX.prototype.constructor = ADX;
  * Load the config of the current ADX instance
  *
  *
- *      var ADX = require('adxutil').ADX;
- *      var myAdx = new ADX('path/to/adx/dir');
+ *      const ADX = require('adxutil').ADX;
+ *      const myAdx = new ADX('path/to/adx/dir');
  *
  *      // Load an ADX
- *      myAdx.load(function (err) {
+ *      myAdx.load((err) => {
  *          // Callback when the ADX has been loaded
  *      });
  *
@@ -139,11 +160,16 @@ ADX.prototype.load = function load(callback) {
  * Validate the current ADX instance
  *
  *
- *      var ADX = require('adxutil').ADX;
- *      var myAdx = new ADX('path/to/adx/dir');
+ *      const ADX = require('adxutil').ADX;
+ *      const myAdx = new ADX('path/to/adx/dir');
  *
  *      // Validate an ADX
- *      myAdx.validate({test : false, autoTest : false}, function (err, report) {
+ *      const config = {
+ *          test : false,
+ *          autoTest : false
+ *      };
+ *
+ *      myAdx.validate(config, (err, report) => {
  *          // Callback when the ADX structure has been validated
  *      });
  *
@@ -171,11 +197,16 @@ ADX.prototype.validate = function validate(options, callback) {
 /**
  * Build the ADX
  *
- *      var ADX = require('adxutil').ADX;
- *      var myAdx = new ADX('path/to/adx/dir');
+ *      const ADX = require('adxutil').ADX;
+ *      const myAdx = new ADX('path/to/adx/dir');
  *
  *      // Build the ADX (package it)
- *      myAdx.build({test : false, autoTest : false}, function (err, path, report) {
+ *      const config = {
+ *          test : false,
+ *          autoTest : false
+ *      };
+ *
+ *      myAdx.build(config, (err, path, report) => {
  *          // Callback when the ADX has been built
  *      });
  *
@@ -204,11 +235,18 @@ ADX.prototype.build = function build(options, callback){
 /**
  * Publish to publisher
  *
- *		var ADX = require('adxutil').ADX;
- *      var myAdx = new ADX('path/to/adx/dir');
+ *		const ADX = require('adxutil').ADX;
+ *      const myAdx = new ADX('path/to/adx/dir');
  *
  *      // Publish the ADC
- *      myAdx.publish(platform,{username : "", password : "",  --url : "https://...", --demoUrl : "https://..."} ,function (err) {
+ *      const config = {
+ *          username : "MyUserName",
+ *          password : "secret",
+ *          url : "https://...",
+ *          demoUrl : "https://..."
+ *      };
+ *
+ *      myAdx.publish(platform, config, (err) => {
  *          // Callback when the ADC has been published
  *      });
  *
@@ -228,11 +266,16 @@ ADX.prototype.publish = function publish(platform, options, callback){
 /**
  * Show the ADX output
  *
- *      var ADX = require('adxutil').ADX;
- *      var myAdx = new ADX('path/to/adx/dir');
+ *      const ADX = require('adxutil').ADX;
+ *      const myAdx = new ADX('path/to/adx/dir');
  *
  *      // Show the output of an ADX
- *      myAdx.show({ output : 'fallback', fixture : 'single.xml'  },  function (err, output) {
+ *      const config = {
+ *          output : 'fallback',
+ *          fixture : 'single.xml'
+ *      };
+ *
+ *      myAdx.show(config, (err, output) => {
  *          // Callback with the output of the ADX
  *      });
  *
@@ -259,6 +302,7 @@ ADX.prototype.show = function show(options, callback) {
  * @param {Function} callback Callback
  * @param {Error} callback.err Error
  * @param {String[]} callback.list List of fixtures
+ * @ignore
  */
 function getXmlListFiles(directory, callback) {
     fs.readdir(directory,  (err, files) => {
@@ -279,11 +323,11 @@ function getXmlListFiles(directory, callback) {
 /**
  * Returns the list of fixtures
  *
- *      var ADX = require('adxutil').ADX;
- *      var myAdx = new ADX('path/to/adx/dir');
+ *      const ADX = require('adxutil').ADX;
+ *      const myAdx = new ADX('path/to/adx/dir');
  *
  *      // List all fixtures on the ADX
- *      myAdx.getFixtureList(function (err, list) {
+ *      myAdx.getFixtureList((err, list) => {
  *          console.log(list[0]); // -> "Single.xml"
  *      });
  *
@@ -299,11 +343,11 @@ ADX.prototype.getFixtureList = function getFixtureList(callback) {
 /**
  * Returns the list of emulations
  *
- *      var ADX = require('adxutil').ADX;
- *      var myAdx = new ADX('path/to/adx/dir');
+ *      const ADX = require('adxutil').ADX;
+ *      const myAdx = new ADX('path/to/adx/dir');
  *
  *      // List all emulations on the ADX
- *      myAdx.getEmulationList(function (err, list) {
+ *      myAdx.getEmulationList((err, list) => {
  *          console.log(list[0]); // -> "Javascript_Enable.xml"
  *      });
  *
@@ -317,7 +361,18 @@ ADX.prototype.getEmulationList = function getEmulationList(callback) {
 };
 
 /**
- * Verify if the `fixtures`, `emulations`, `controls` or `pages` exist and create it if it doesn't
+ * Verify if the `fixtures`, `emulations`, `controls` or `pages` exist and create it if it doesn't.
+ *
+ *      const ADX = require('adxutil').ADX;
+ *      const myAdx = new ADX('path/to/adx/dir');
+ *
+ *      // Check the `tests` directory
+ *      myAdx.checkTestsDirectory((err) => {
+ *          if (err) {
+ *              console.warn(err);
+ *          }
+ *      });
+ *
  * @param {Function} callback Callback when the operation is complete
  * @param {Error} callback.err Error that occurred during the operation
  */
@@ -401,13 +456,23 @@ ADX.prototype.destroy = function destroy() {
 /**
  * Generate a new ADX structure
  *
+ *      const ADX = require('adxutil').ADX;
+ *
  *      // Generate the ADC structure in '/path/of/parent/dir/myNewADC'
- *      ADX.generate('adc', 'myNewADC', {output : '/path/of/parent/dir', template : 'blank'}, function (err, adc) {
+ *      const config = {
+ *          output : '/path/of/parent/dir',
+ *          template : 'blank'
+ *      };
+ *      ADX.generate('adc', 'myNewADC', config, (err, adc) => {
  *          console.log(adc.path);
  *      });
  *
  *      // Generate the ADP structure in '/path/of/parent/dir/myMewADP'
- *      ADX.generate('adp', 'myNewADP', {output : '/path/of/parent/dir', template : 'blank', function (err, adp) {
+ *      const config = {
+ *          output : '/path/of/parent/dir',
+ *          template : 'blank'
+ *      };
+ *      ADX.generate('adp', 'myNewADP', config, (err, adp) => {
  *          console.log(adp.path);
  *      });
  *
@@ -448,6 +513,19 @@ ADX.generate = function generate(type, name, options, callback) {
 /**
  * Returns the list of templates directory
  *
+ *      const ADX = require('adxutil').ADX;
+ *
+ *      // Get the list of the ADC templates
+ *      ADX.getTemplateList('adc', (err, dirs) => {
+ *          console.log(dirs[0].name); // -> "blank"
+ *      });
+ *
+ *
+ *      // Get the list of the ADP templates
+ *      ADX.getTemplateList('adp', (err, dirs) => {
+ *          console.log(dirs[0].name); // -> "blank"
+ *      });
+ *
  * @param {"adc"|"adp"} type Type of the template list to obtain (`adc` or `adp`)
  * @param {Function} callback Callback
  * @param {Error} callback.err Error
@@ -464,6 +542,7 @@ ADX.getTemplateList = function getTemplateList(type, callback) {
  * Instance of the object to manage the preferences
  *
  * @type {ADX.Preferences}
+ * @static
  */
 ADX.preferences = preferences;
 

@@ -27,7 +27,13 @@ gulp.task('clean:docs',  (cb) => {
 });
 
 // Document
+const jsdoc = require('gulp-jsdoc3');
+
 gulp.task('document', ['clean:docs'], (cb) => {
+    gulp.src(['readme.md', './app/**/*.js'], {read: false})
+        .pipe(jsdoc(cb));
+});
+/*gulp.task('document', ['clean:docs'], (cb) => {
     const args = [
         '--title=ADXUtil',
         '--output=' + DEST_DOCS,
@@ -56,10 +62,10 @@ gulp.task('document', ['clean:docs'], (cb) => {
         }
         cb(err);
     });
-
+*/
     /*shell.task([
         'jsduck --title "ADXUtil" --output "' + DEST_DOCS + '" ' + files.join(' ')
     ]);*/
     // cb();
-});
+// });
 

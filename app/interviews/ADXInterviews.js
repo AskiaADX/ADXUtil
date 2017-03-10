@@ -1,39 +1,46 @@
-var common = require('../common/common.js');
-var errMsg = common.messages.error;
-var uuid   = require('node-uuid');
-var InteractiveADXShell = require('../common/InteractiveADXShell.js').InteractiveADXShell;
+"use strict";
+
+const common = require('../common/common.js');
+const errMsg = common.messages.error;
+const uuid   = require('node-uuid');
+const InteractiveADXShell = require('../common/InteractiveADXShell.js').InteractiveADXShell;
 
 /**
- * Manipulate an interview
+ * Create a new instance of object to manipulate an interview
  *
- * @class ADX.Interview
+ * @param {String} id Id of the interview
+ * @param {String} adxDirPath Path of the ADX directory
+ * @class Interview
  */
 function Interview(id, adxDirPath) {
     /**
      * Id of the interview
+     *
+     * @name Interview#id
      * @type {String}
      */
     this.id     = id;
 
     /**
      * Path of the ADX directory
+     *
+     * @name Interview#path
      * @type {String}
      */
     this.path   = adxDirPath;
 
     /**
      * Interactive shell that is used to manipulate the interview
+     *
+     * @name Interview#shell
      * @type {InteractiveADXShell}
      */
     this.shell  = new InteractiveADXShell(this.path, { mode : 'interview' });
 }
 
 /**
- * Create a new instance of interview
- *
- * @constructor
- * @param {String} id Id of the interview
- * @param {String} adxDirPath Path of the ADX directory
+ * Create a new instance of interview object
+ * @ignore
  */
 Interview.prototype.constructor = Interview;
 
@@ -50,7 +57,7 @@ Interview.prototype.constructor = Interview;
  * @param {Function} [callback] Callback function
  */
 Interview.prototype.execCommand = function execCommand(command, options, callback) {
-    var args = [];
+    const args = [];
 
     args.push(command);
 
@@ -87,24 +94,25 @@ Interview.prototype.destroy = function destroy() {
 };
 
 /**
- * Factory of the interviews
+ * Create a new instance of interviews factory
  *
- *      var ADX = require('adxutil').ADX;
+ *      const ADX = require('adxutil').ADX;
  *
- *      var myAdx = new ADX('path/to/adx/');
- *      myAdx.load(function (err) {
+ *      const myAdx = new ADX('path/to/adx/');
+ *      myAdx.load((err) => {
  *          if (err) {
  *              throw err;
  *          }
  *
  *          // Get the instance of the interviews
- *          var inter = myAdx.interviews.create();
+ *          const inter = myAdx.interviews.create();
  *
  *          console.log(inter.id);
  *
  *      });
  *
- * @class ADX.InterviewsFactory
+ * @class InterviewsFactory
+ * @param {String} adxDirPath Path of the ADX directory
  */
 function InterviewsFactory(adxDirPath) {
     if (!adxDirPath) {
@@ -113,6 +121,8 @@ function InterviewsFactory(adxDirPath) {
 
     /**
      * Path of the ADX directory
+     *
+     * @name InterviewsFactory#path
      * @type {String}
      */
     this.path   = adxDirPath;
@@ -120,6 +130,7 @@ function InterviewsFactory(adxDirPath) {
     /**
      * Interviews cache
      *
+     * @name InterviewsFactory#_cache
      * @type {Object}
      * @private
      */
@@ -128,19 +139,17 @@ function InterviewsFactory(adxDirPath) {
 
 /**
  * Create a new instance of interviews factory
-*
- * @constructor
- * @param {String} adxDirPath Path of the ADX directory
+ * @ignore
  */
 InterviewsFactory.prototype.constructor = InterviewsFactory;
 
 /**
  * Create a new instance of interview
  *
- * @return {ADX.Interview} Returns a new instance of interview
+ * @return {Interview} Returns a new instance of interview
  */
 InterviewsFactory.prototype.create = function createInterview() {
-    var id = uuid.v4();
+    let id = uuid.v4();
     while (this._cache[id]) {
         id = uuid.v4();
     }
@@ -152,7 +161,7 @@ InterviewsFactory.prototype.create = function createInterview() {
  * Get the instance of interview using his id
  *
  * @param {String} id Id of the interview to retrieve
- * @return {undefined|ADX.Interview}
+ * @return {undefined|Interview}
  */
 InterviewsFactory.prototype.getById = function getById(id) {
     return this._cache[id];
@@ -164,7 +173,7 @@ InterviewsFactory.prototype.getById = function getById(id) {
  * @param {String} id Id of the interview to remove
  */
 InterviewsFactory.prototype.remove = function remove(id) {
-    var interview = this._cache[id];
+    const interview = this._cache[id];
     if (!interview) {
         return;
     }
@@ -176,8 +185,7 @@ InterviewsFactory.prototype.remove = function remove(id) {
  * Remove all instance of interviews
  */
 InterviewsFactory.prototype.clear = function clear() {
-    var id;
-    for (id in this._cache) {
+    for (let id in this._cache) {
         if (this._cache.hasOwnProperty(id)) {
             this.remove(id);
         }
