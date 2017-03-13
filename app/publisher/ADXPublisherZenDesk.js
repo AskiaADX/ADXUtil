@@ -1,15 +1,17 @@
-var zenDesk         = require('node-zendesk');
-var fs              = require('fs');
-var common          = require('../common/common.js');
-var path            = require('path');
-var errMsg          = common.messages.error;
-var successMsg      = common.messages.success;
-var Configurator    = require('../configurator/ADXConfigurator.js').Configurator;
-var request         = require('request');
+const zenDesk         = require('node-zendesk');
+const fs              = require('fs');
+const common          = require('../common/common.js');
+const path            = require('path');
+const errMsg          = common.messages.error;
+const successMsg      = common.messages.success;
+const Configurator    = require('../configurator/ADXConfigurator.js').Configurator;
+const request         = require('request');
 
 /**
- * Instantiate a PublisherZendesk
+ * Instantiate a Zendesk publisher
  *
+ * @class PublisherZenDesk
+ * @private
  * @param {Configurator} configurator the configuration of the article
  * @param {Object} preferences User preferences
  * @param {Object} options Options of the platform, if the options are not specified the user preferences will be loaded.
@@ -30,8 +32,22 @@ function PublisherZenDesk(configurator, preferences, options) {
         throw new Error(errMsg.invalidConfiguratorArg);
     }
 
+    /**
+     * Options of the publisher
+     *
+     * @name PublisherZenDesk#options
+     * @type {Object}
+     */
     this.options = options || {};
+
+    /**
+     * Configurator of the ADX
+     *
+     * @name PublisherZenDesk#configurator
+     * @type {Configurator}
+     */
     this.configurator = configurator;
+
     if (options.logger) {
         this.logger = options.logger;
     }
@@ -50,9 +66,9 @@ function PublisherZenDesk(configurator, preferences, options) {
     }
 
     // All of these options must be present either in the command line either in the preference file of the user
-    var neededOptions = ['username', 'password', 'url', 'section'];
-    for (var i = 0, l = neededOptions.length; i < l; i++) {
-        var neededOption = neededOptions[i];
+    const neededOptions = ['username', 'password', 'url', 'section'];
+    for (let i = 0, l = neededOptions.length; i < l; i++) {
+        let neededOption = neededOptions[i];
         if (!this.options.hasOwnProperty(neededOption)) {
             throw new Error(errMsg.missingPublishArgs + '\n missing argument : ' + neededOption);
         }
@@ -68,10 +84,11 @@ function PublisherZenDesk(configurator, preferences, options) {
 
 /**
  * Write an error output in the console
+ *
  * @param {String} text Text to write in the console
  */
 PublisherZenDesk.prototype.writeError = function writeError(text) {
-    var args = Array.prototype.slice.call(arguments);
+    const args = Array.prototype.slice.call(arguments);
     if (this.printMode === 'html' && args.length) {
         args[0] = '<div class="error">' + args[0] + '</div>';
     }
@@ -84,10 +101,11 @@ PublisherZenDesk.prototype.writeError = function writeError(text) {
 
 /**
  * Write a warning output in the console
+ *
  * @param {String} text Text to write in the console
  */
 PublisherZenDesk.prototype.writeWarning = function writeWarning(text) {
-    var args = Array.prototype.slice.call(arguments);
+    const args = Array.prototype.slice.call(arguments);
     if (this.printMode === 'html' && args.length) {
         args[0] = '<div class="warning">' + args[0] + '</div>';
     }
@@ -100,10 +118,11 @@ PublisherZenDesk.prototype.writeWarning = function writeWarning(text) {
 
 /**
  * Write a success output in the console
+ *
  * @param {String} text Text to write in the console
  */
 PublisherZenDesk.prototype.writeSuccess = function writeSuccess(text) {
-    var args = Array.prototype.slice.call(arguments);
+    const args = Array.prototype.slice.call(arguments);
     if (this.printMode === 'html' && args.length) {
         args[0] = '<div class="success">' + args[0] + '</div>';
     }
@@ -116,10 +135,11 @@ PublisherZenDesk.prototype.writeSuccess = function writeSuccess(text) {
 
 /**
  * Write an arbitrary message in the console without specific prefix
+ *
  * @param {String} text Text to write in the console
  */
 PublisherZenDesk.prototype.writeMessage = function writeMessage(text) {
-    var args = Array.prototype.slice.call(arguments);
+    const args = Array.prototype.slice.call(arguments);
     if (this.printMode === 'html' && args.length) {
         args[0] = '<div class="message">' + args[0] + '</div>';
     }
@@ -133,12 +153,14 @@ PublisherZenDesk.prototype.writeMessage = function writeMessage(text) {
 
 /**
  * Find the section id of a section with the Title
+ *
  * @param {PublisherZenDesk} self
  * @param {Function} callback
  * @param {Error} [callback.err=null]
+ * @ignore
  */
 function findSectionIdByTitle(self, callback) {
-    var title = self.options.section;
+    let title = self.options.section;
     if (typeof title !== 'string') {
         callback(errMsg.invalidSectionArg);
         return;
@@ -146,7 +168,7 @@ function findSectionIdByTitle(self, callback) {
 
     title = title.toLowerCase();
 
-    self.client.sections.list(function (err, req, result) {
+    self.client.sections.list((err, req, result) => {
         if (err) {
             if (typeof callback === "function") {
                 callback(err);
@@ -154,7 +176,7 @@ function findSectionIdByTitle(self, callback) {
             return;
         }
 
-        for (var section in result) {
+        for (let section in result) {
             if (result.hasOwnProperty(section)) {
                 if (result[section].name.toLowerCase() === title) {
                     if (typeof callback === "function") {
@@ -173,6 +195,7 @@ function findSectionIdByTitle(self, callback) {
  * Generate an HTML string which is a line of a 3 columns array with the name of the property category.
  *
  * @param {Object} category object which represents a category of properties.
+ * @ignore
  */
 function generateHtmlCodeForCategory(category) {
     return '<tr>\n' +
@@ -185,10 +208,11 @@ function generateHtmlCodeForCategory(category) {
 /**
  * Generate a string which is the concatenation of all the options separated by ' '.
  * @param {Object} opt object containing the options of a property.
+ * @ignore
  */
 function generateHtmlCodeForOptions(opt) {
-    var values = [];
-    for (var i = 0 , l = opt.length ; i < l ; i++) {
+    const values = [];
+    for (let i = 0 , l = opt.length ; i < l ; i++) {
         values.push(opt[i].text);
     }
     return values.join(", ");    
@@ -196,10 +220,12 @@ function generateHtmlCodeForOptions(opt) {
 
 /**
  * Generate an HTML string which is a line of a 3 columns array with the standard description of a property.
+ *
  * @param {Object} property object which represents a property.
+ * @ignore
  */
 function generateHtmlCodeForProperty(property) {
-    var value = property.value;
+    let value = property.value;
     if (value === undefined) {
         value = "";
     }
@@ -216,19 +242,22 @@ function generateHtmlCodeForProperty(property) {
 
 /**
  * Transform the constraints of an adc (from the config) to a sentence
+ *
  * @param {Object} constraints The constraints.
+ * @ignore
  */
 function constraintsToSentence(constraints) {
-    var questions = [], controls = [], key;
+    const questions = [];
+    const controls = [];
     if (constraints.questions) {
-        for (key in constraints.questions) {
+        for (let key in constraints.questions) {
             if (constraints.questions.hasOwnProperty(key) && constraints.questions[key]) {
                 questions.push(key);
             }
         }
     }
     if (constraints.controls) {
-        for (key in constraints.controls) {
+        for (let key in constraints.controls) {
             if (constraints.controls.hasOwnProperty(key) && constraints.controls[key]) {
                 controls.push(key);
             }
@@ -236,7 +265,7 @@ function constraintsToSentence(constraints) {
     }
 
     // TODO::PLEASE PUT ALL OF THE FOLLOWING HARD-CODED STRING IN THE common.js
-    var numberOfResponses = '';
+    let numberOfResponses = '';
     if (constraints.responses) {
         if ("min" in constraints.responses) {
             numberOfResponses = "Number minimum of responses : " + constraints.responses.min + ".\n";
@@ -256,22 +285,24 @@ function constraintsToSentence(constraints) {
 
 /**
  * Create a String which contains an html dynamic array with the properties
+ *
  * @param {Object} prop The properties. Should give configurator.get().properties
+ * @ignore
  */
 function propertiesToHtml(prop) {
     if (!prop) {
         throw new Error(errMsg.missingPropertiesArg);
     }
-    var result = ['<table class="askiatable" dir="ltr" cellspacing="0" cellpadding="0">',
+    const result = ['<table class="askiatable" dir="ltr" cellspacing="0" cellpadding="0">',
                   '<colgroup><col width="281" /><col width="192" /><col width="867" /></colgroup>',
                   '<tbody><tr><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Parameters&quot;]">Parameters</td>',
                   '<td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Type&quot;]">Type</td>',
                   '<td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Comments and/or possible value&quot;]">Comments and/or possible value</td>',
                   '</tr><tr><td> </td><td> </td><td> </td></tr>'];
 
-    for (var i = 0, l = prop.categories.length; i < l; i++) {
+    for (let i = 0, l = prop.categories.length; i < l; i++) {
         result.push(generateHtmlCodeForCategory(prop.categories[i]));
-        for (var j = 0, k = prop.categories[i].properties.length; j < k; j++) {
+        for (let j = 0, k = prop.categories[i].properties.length; j < k; j++) {
             result.push(generateHtmlCodeForProperty(prop.categories[i].properties[j]));
         }
     }
@@ -281,19 +312,21 @@ function propertiesToHtml(prop) {
 
 /**
  * Create the JSON formatted article
+ *
  * @param {PublisherZenDesk} self
  * @param {Function} callback
  * @param {Error} [callback.err=null]
+ * @ignore
  */
 function createJSONArticle (self, callback) {
-    fs.readFile(path.join(__dirname,"../../", common.ZENDESK_ARTICLE_TEMPLATE_PATH), 'utf-8', function(err, data) {
+    fs.readFile(path.join(__dirname,"../../", common.ZENDESK_ARTICLE_TEMPLATE_PATH), 'utf-8', (err, data) => {
         if (err) {
             callback(err);
             return;
         }
 
-        var conf = self.configurator.get();
-        var replacements = [
+        const conf = self.configurator.get();
+        const replacements = [
             {
                 pattern : /\{\{ADXProperties:HTML\}\}/gi,
                 replacement : propertiesToHtml(conf.properties)
@@ -321,13 +354,15 @@ function createJSONArticle (self, callback) {
 /**
  * Delete article's attachments (if the article already exist) in the specified section
  * pre-condition : there is the possibility to have two articles with the same name but not in the same section
+ *
  * @param {PublisherZenDesk} self
  * @param {String} title The title of the article to check
  * @param {Function} callback
  * @param {Error} [callback.err=null]
+ * @ignore
  */
 function deleteAttachmentsIfArticle(self, title, section_id, callback) {
-    self.client.articles.listBySection(section_id, function(err, req, result) {
+    self.client.articles.listBySection(section_id, (err, req, result) => {
         if (err) {
             if (typeof callback === "function") {
                 callback(err);
@@ -336,8 +371,8 @@ function deleteAttachmentsIfArticle(self, title, section_id, callback) {
         }
 
         //the part below is needed to check if some people added articles directly from the web
-        var idToDelete = 0;
-        for (var i = 0, l = result.length; i < l; i += 1) {
+        let idToDelete = 0;
+        for (let i = 0, l = result.length; i < l; i += 1) {
             if (result[i].name === title) {
                 if (idToDelete) { // Already exist
                     callback(errMsg.tooManyArticlesExisting);
@@ -354,48 +389,60 @@ function deleteAttachmentsIfArticle(self, title, section_id, callback) {
         }
 
         //Find all attachments of an article
-        self.client.articleattachments.list(idToDelete, function(err, status, attachments) {
+        self.client.articleattachments.list(idToDelete, (err, status, attachments) => {
             if (err) {
                 callback(err);
                 return;
             }
 
             attachments = attachments.article_attachments;
-            for (var i = 0, l = attachments.length; i < l; i++) {
-                self.client.articleattachments.delete(attachments[i].id, function(err) {
+            const length = attachments.length;
+
+            function doDeletion(index) {
+                if (index >= length) {
+                    callback(null, idToDelete);
+                    return;
+                }
+                self.client.articleattachments.delete(attachments[index].id, (err) => {
                     if (err) {
                         callback(err);
                         return;
                     }
+                    index++;
+                    doDeletion(index);
                 });
             }
-            callback(null, idToDelete);
+
+            doDeletion(0);
         });
     });
 }
 
 /**
  * Upload all the files that are available (.adc, .qex, .png)
+ *
  * @param {PublisherZenDesk} self
  * @param {Array} files An array containing Strings which are the absolute paths of the files
  * @param {Number} articleId The Id of the article
  * @param {Function} callback
+ * @ignore
  */
 function uploadAvailableFiles(self, files, articleId, callback) {
-    var attachments = {};
+    const attachments = {};
 
     function uploadAvailableFilesRecursive(index) {
-        var formData = {
+        const formData = {
             'file' : fs.createReadStream(files[index])
         };
-
-        request.post({
+        const data = {
             url		: self.options.url + "/api/v2/help_center/articles/" + articleId + "/attachments.json",
             formData: formData,
             headers : {
                 'Authorization' : "Basic " + new Buffer(self.options.username + ":" + self.options.password).toString('base64')
             }
-        }, function(err, resp, body) {
+        };
+
+        request.post(data, (err, resp, body) => {
             if (err) {
                 callback(err);
                 return;
@@ -403,7 +450,7 @@ function uploadAvailableFiles(self, files, articleId, callback) {
 
             body = JSON.parse(body);
 
-            var prefix = files[index].match(/\.([a-z]+)$/i)[1];
+            const prefix = files[index].match(/\.([a-z]+)$/i)[1];
             attachments[prefix] = {
                 id   : body.article_attachment.id,
                 name : body.article_attachment.file_name
@@ -424,16 +471,18 @@ function uploadAvailableFiles(self, files, articleId, callback) {
 
 /**
  * Check if we already have an article or if we need to create one
- * @param {PublisherZenDesk} self
- * @param {Int} articleToUpdateId The id of the article to update
- * @param {Int} id The id of the article to create if the article does not exist
- * @param {JSON} json of the article to create if the article does not exist
- * @param {Function} callback
- * @param {Error} [callback.err=null]
+ *
+ * @param {PublisherZenDesk} publisher
+ * @param {Number} articleToUpdateId The id of the article to update
+ * @param {Number} id The id of the article to create if the article does not exist
+ * @param {JSON} jsonArticle of the article to create if the article does not exist
+ * @param {Function} cb
+ * @param {Error} [cb.err=null]
+ * @ignore
  */
 function createArticle(publisher, articleToUpdateId, id, jsonArticle, cb) {
     if (articleToUpdateId) {
-        publisher.client.articles.show(articleToUpdateId, function (err, req, article) {
+        publisher.client.articles.show(articleToUpdateId, (err, req, article) => {
             if (err) {
                 cb(err);
                 return;
@@ -451,13 +500,14 @@ function createArticle(publisher, articleToUpdateId, id, jsonArticle, cb) {
 
 /**
  * Publish the article on the ZenDesk platform
+ *
  * @param {Function} callback
  * @param {Error} [callback.err=null]
 */
 PublisherZenDesk.prototype.publish = function(callback) {
-    var self = this;
+    const self = this;
 
-    findSectionIdByTitle(self, function(err, id) {
+    findSectionIdByTitle(self, (err, id) => {
         if (err) {
             if (typeof callback === "function") {
                 callback(err);
@@ -467,21 +517,21 @@ PublisherZenDesk.prototype.publish = function(callback) {
 
         self.writeSuccess(successMsg.zenDeskSectionFound);
 
-        createJSONArticle(self, function(err, jsonArticle) {
+        createJSONArticle(self, (err, jsonArticle) => {
             if (err) {
                 if (typeof callback === "function") {
                     callback(err);
                 }
                 return;
             }
-            deleteAttachmentsIfArticle(self, jsonArticle.article.title, id, function(err, articleToUpdateId) {
+            deleteAttachmentsIfArticle(self, jsonArticle.article.title, id, (err, articleToUpdateId) => {
                 if (err) {
                     if (typeof callback === "function") {
                         callback(err);
                     }
                     return;
                 }
-                createArticle(self, articleToUpdateId, id, jsonArticle, function(err, req, article) {
+                createArticle(self, articleToUpdateId, id, jsonArticle, (err, req, article) => {
                     if (err) {
                         if (typeof callback === "function") {
                             callback(err);
@@ -494,24 +544,27 @@ PublisherZenDesk.prototype.publish = function(callback) {
                         self.writeSuccess(successMsg.zenDeskArticleCreated);
                     }
 
-                    var filesToPush = [];
-                    var name = self.configurator.get().info.name;
-                    fs.stat(path.resolve(path.join(self.configurator.path, common.ADX_BIN_PATH, name + '.adc')), function(err, stats) {
+                    const filesToPush = [];
+                    const name = self.configurator.get().info.name;
+                    const binPath = path.resolve(path.join(self.configurator.path, common.ADX_BIN_PATH, name + '.adc'));
+                    fs.stat(binPath, (err, stats) => {
                         if (stats && stats.isFile()) {
-                            filesToPush.push(path.resolve(path.join(self.configurator.path, common.ADX_BIN_PATH, name + '.adc')));
+                            filesToPush.push(binPath);
                         } else {
                             callback(errMsg.badNumberOfADXFiles);
                             return;
                         }
-                        fs.stat(path.resolve(path.join(self.configurator.path, common.QEX_PATH, name + '.qex')), function(err, stats) {
+                        const qexPath = path.resolve(path.join(self.configurator.path, common.QEX_PATH, name + '.qex'));
+                        fs.stat(qexPath, (err, stats) => {
                             if (stats && stats.isFile()) {
-                                filesToPush.push(path.resolve(path.join(self.configurator.path, common.QEX_PATH, name + '.qex')));
+                                filesToPush.push(qexPath);
                             }
-                            fs.stat(path.resolve(path.join(self.configurator.path, 'preview.png')), function(err, stats) {
+                            const previewPath = path.resolve(path.join(self.configurator.path, 'preview.png'));
+                            fs.stat(previewPath, (err, stats) => {
                                 if (stats && stats.isFile()) {
-                                    filesToPush.push(path.resolve(path.join(self.configurator.path, 'preview.png')));
+                                    filesToPush.push(previewPath);
                                 }
-                                uploadAvailableFiles(self, filesToPush, article.id, function(err, attachments) {
+                                uploadAvailableFiles(self, filesToPush, article.id, (err, attachments) => {
                                     if (err) {
                                         callback(err);
                                         return;
@@ -519,7 +572,7 @@ PublisherZenDesk.prototype.publish = function(callback) {
 
                                     self.writeSuccess(successMsg.zenDeskAttachmentsUploaded);
 
-                                    var replacements = [
+                                    const replacements = [
                                         {
                                             pattern : /\{\{ADXQexFileURL\}\}/gi,
                                             replacement : (attachments.qex && attachments.qex.id) ?  ('<li>To download the qex file, <a href="/hc/en-us/article_attachments/' + attachments.qex.id + '/' + attachments.qex.name + '">click here</a></li>') : ""
@@ -532,7 +585,7 @@ PublisherZenDesk.prototype.publish = function(callback) {
 
                                     // TODO::We should upload the file to the demo server from this app
                                     //'/hc/en-us/article_attachments/' + attachmentsIDs.png.id + '/' + attachmentsIDs.png.name 
-                                    var urlToPointAt = self.options.demoUrl || '';
+                                    const urlToPointAt = self.options.demoUrl || '';
                                     replacements.push({
                                         pattern         : /\{\{ADXPreview\}\}/gi,
                                         replacement     : (attachments.png && attachments.png.id)? '<p><a href="' + urlToPointAt + '" target="_blank"> <img style="max-width: 100%;" src="/hc/en-us/article_attachments/' + attachments.png.id + '/' + attachments.png.name + '" alt="" /> </a></p>' : "ad"
@@ -541,14 +594,14 @@ PublisherZenDesk.prototype.publish = function(callback) {
                                         pattern         : /\{\{ADXLiveDemo\}\}/gi,
                                         replacement     : (!self.options.demoUrl) ? '' : '<li><a href="' + self.options.demoUrl + '" target="_blank">To access to the live survey, click on the picture above.</a></li>'
                                     });
-                                    var articleUpdated = common.evalTemplate(article.body, {}, replacements);
-                                    self.client.translations.updateForArticle(article.id, 'en-us', {body:articleUpdated}, function (err) {
+                                    const articleUpdated = common.evalTemplate(article.body, {}, replacements);
+                                    self.client.translations.updateForArticle(article.id, 'en-us', {body:articleUpdated}, (err) => {
                                         if (err) {
                                             callback(err);
                                             return;
                                         }
                                         self.writeSuccess(successMsg.zenDeskTranslationUpdated);
-                                        self.client.articles.update(article.id, article, function(err, req, data){
+                                        self.client.articles.update(article.id, article, (err) => {
                                             if (!err) {
                                                 self.writeSuccess(successMsg.zenDeskArticleUpdated);
                                             }
@@ -569,16 +622,17 @@ PublisherZenDesk.prototype.publish = function(callback) {
 
 /**
  * List all the sections. This method has been implemented for the integration in ADXStudio
+ *
  * @param {Function} callback
  */
 PublisherZenDesk.prototype.listSections = function(callback) {
-    var self = this ;
-    self.client.sections.list(function(err, req, res) {
+    const self = this;
+    self.client.sections.list((err, req, res) => {
         if (err) {
             callback(err);
             return;
         } 
-        callback(res);
+        callback(null, res);
     });
 };
 

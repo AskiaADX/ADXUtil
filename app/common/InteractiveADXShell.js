@@ -57,7 +57,7 @@ InteractiveADXShell.prototype.constructor = InteractiveADXShell;
 /**
  * Send the specified command in the ADXShell process
  *
- * @param {String} command Command to execute
+ * @param {String} command ADXShell command to execute
  * @param {Function} callback Callback
  * @param {Error} callback.err Error
  * @param {String} callback.result Result message of the ADXShell process

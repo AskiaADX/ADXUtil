@@ -1,23 +1,31 @@
-var common          = require('../common/common.js');
-var InteractiveADXShell = require('../common/InteractiveADXShell.js').InteractiveADXShell;
-var pathHelper      = require('path');
-var errMsg          = common.messages.error;
+"use strict";
+
+const common          = require('../common/common.js');
+const InteractiveADXShell = require('../common/InteractiveADXShell.js').InteractiveADXShell;
+const pathHelper      = require('path');
+const errMsg          = common.messages.error;
 
 
 /**
  * Compile, execute and display the output of an ADX
  *
- * @class ADX.Show
+ * @class Show
+ * @param {String} adxDirPath Path of the ADX directory
  * @private
  */
 function Show(adxDirPath) {
     /**
      * Root dir of the current ADXUtil
+     *
+     * @name Show#rootdir
+     * @type {String}
      */
     this.rootdir    = pathHelper.resolve(__dirname, "../../");
 
     /**
      * Path to the ADX directory
+     *
+     * @name Show#adxDirectoryPath
      * @type {string}
      */
     this.adxDirectoryPath = adxDirPath ? pathHelper.normalize(adxDirPath) : process.cwd();
@@ -26,14 +34,14 @@ function Show(adxDirPath) {
 /**
  * Create a new instance of ADX Show
  *
- * @constructor
- * @param {String} adxDirPath Path of the ADX directory
+ * @ignore
  */
 Show.prototype.constructor = Show;
 
 /**
  * Write an error output in the console
  * @param {String} text Text to write in the console
+ * @private
  */
 Show.prototype.writeError = function writeError(text) {
     common.writeError.apply(common, arguments);
@@ -42,6 +50,7 @@ Show.prototype.writeError = function writeError(text) {
 /**
  * Write a warning output in the console
  * @param {String} text Text to write in the console
+ * @private
  */
 Show.prototype.writeWarning = function writeWarning(text) {
     common.writeWarning.apply(common, arguments);
@@ -50,6 +59,7 @@ Show.prototype.writeWarning = function writeWarning(text) {
 /**
  * Write a success output in the console
  * @param {String} text Text to write in the console
+ * @private
  */
 Show.prototype.writeSuccess = function writeSuccess(text) {
     common.writeSuccess.apply(common, arguments);
@@ -58,6 +68,7 @@ Show.prototype.writeSuccess = function writeSuccess(text) {
 /**
  * Write an arbitrary message in the console without specific prefix
  * @param {String} text Text to write in the console
+ * @private
  */
 Show.prototype.writeMessage = function writeMessage(text) {
     common.writeMessage.apply(common, arguments);
@@ -98,12 +109,12 @@ Show.prototype.show = function show(options, callback) {
         return;
     }
 
-    var execFile = require('child_process').execFile,
-        args     = [
-            'show',
-            '"-output:' + options.output + '"',
-            '"-fixture:' + options.fixture + '"'
-        ];
+    const execFile = require('child_process').execFile;
+    const args     = [
+        'show',
+        '"-output:' + options.output + '"',
+        '"-fixture:' + options.fixture + '"'
+    ];
 
     if (options.masterPage) {
         args.push('"-masterPage:' + pathHelper.resolve(options.masterPage) + '"');
@@ -113,7 +124,7 @@ Show.prototype.show = function show(options, callback) {
     }
     args.push('"' + this.adxDirectoryPath + '"');
 
-    var self = this;
+    const self = this;
     function execCallback(err, stdout, stderr) {
         if (err && typeof callback === 'function') {
             callback(err, null);
@@ -152,13 +163,14 @@ Show.prototype.show = function show(options, callback) {
 // Make it public
 exports.Show = Show;
 
-/*
+/**
  * Show an ADX output
  *
  * @param {Command} program Commander object which hold the arguments pass to the program
  * @param {String} path Path of the ADX to directory
+ * @ignore
  */
 exports.show = function show(program, path) {
-    var showInstance = new Show(path);
+    const showInstance = new Show(path);
     showInstance.show(program);
 };

@@ -1,3 +1,5 @@
+"use strict";
+
 /*
 
 ASP Classic
@@ -178,22 +180,22 @@ zip|rar|sql|ini|dmg|iso|vcd|class|java|htaccess
 */
 
 
-var fs           = require('fs');
-var pathHelper   = require('path');
-var util         = require('util');
-var common       = require('../common/common.js');
-var Configurator = require('../configurator/ADXConfigurator.js').Configurator;
-var errMsg       = common.messages.error;
-var warnMsg      = common.messages.warning;
-var successMsg   = common.messages.success;
-var msg          = common.messages.message;
+const fs           = require('fs');
+const pathHelper   = require('path');
+const util         = require('util');
+const common       = require('../common/common.js');
+const Configurator = require('../configurator/ADXConfigurator.js').Configurator;
+const errMsg       = common.messages.error;
+const warnMsg      = common.messages.warning;
+const successMsg   = common.messages.success;
+const msg          = common.messages.message;
 //  Test the file extension
-var fileExt      = {
+const fileExt      = {
     blacklist : /\.(cgi|dll|erb|rjs|rhtml|rb|py|phtml|php3|php4|php|pl|action|do|wss|jspx|jsp|jhtml|yaws|cfm|aspx|axd|asx|asmx|ashx|axd|ascx|asp|config|action|apk|app|bat|bin|cmd|com|command|cpl|csh|exe|gadget|inf1|ins|inx|ipa|isu|job|jse|ksh|lnk|msc|msi|msp|mst|ocx|osx|out|paf|pif|prg|ps1|reg|rgs|run|sct|shb|shs|u3p|vb|vbe|vbs|vbscript|workflow|ws|wsf|cs|cpp|zip|rar|sql|ini|dmg|iso|vcd|class|java|htaccess)$/gi,
     whitelist : /\.(xml|rss|atom|svg|js|xhtml|htm|html|swf|css|hss|sass|less|ccss|pcss|txt|csv|json|gif|jpeg|jpg|tif|tiff|png|bmp|pdf|ico|cur|aif|iff|m4a|mid|mp3|mpa|ra|wav|wma|ogg|oga|webma|3g2|3gp|avi|flv|mov|mp4|mpg|rm|wmv|ogv|webm|md)$/gi
 };
 // Hash with all content type
-var contentType  = {
+const contentType  = {
     'text'      : 'text',
     'html'      : 'text',
     'javascript': 'text',
@@ -210,7 +212,7 @@ var contentType  = {
  * Indicates if the attribute is overridable or not
  * true for not-overridable
  */
-var contentSealAttr = {
+const contentSealAttr = {
     'javascript' : {
         'src'  : true,
         'type' : false
@@ -232,16 +234,17 @@ var contentSealAttr = {
 };
 
 // Hash with the rule of the constraint attribute node.
-var constraintAttributeRules = {
+const constraintAttributeRules = {
     questions : ['chapter', 'single', 'multiple', 'open', 'numeric', 'date', 'requireParentLoop'],
     responses : ['min', 'max'],
     controls  : ['label', 'textbox', 'checkbox', 'listbox', 'radiobutton', 'responseblock']
 };
 
-/*
+/**
  * Build a new error message
  * @param {String} message Error message
  * @return {Error} New error
+ * @ignore
  */
 function newError(message) {
     return new Error(util.format.apply(null, arguments));
@@ -250,23 +253,31 @@ function newError(message) {
 /**
  * Validate the ADX files structure, configuration and logical
  *
- * @class ADX.Validator
+ * @class Validator
+ * @param {String} adxDirPath Path of the ADX directory
  * @private
  */
 function Validator(adxDirPath) {
     /**
      * Root dir of the current ADXUtil
+     *
+     * @name Validator#rootdir
+     * @type {String}
      */
     this.rootdir    = pathHelper.resolve(__dirname, "../../");
 
     /**
      * Name of the ADX
+     *
+     * @name Validator#adxName
      * @type {string}
      */
     this.adxName    = '';
 
     /**
      * Path to the ADX directory
+     *
+     * @name Validator#adxDirectoryPath
      * @type {string}
      */
     this.adxDirectoryPath = adxDirPath ? pathHelper.normalize(adxDirPath) : process.cwd();
@@ -274,6 +285,7 @@ function Validator(adxDirPath) {
     /**
      * Validators
      *
+     * @name Validator#valiaators
      * @type {{current: number, sequence: string[]}}
      */
     this.validators =  {
@@ -297,6 +309,7 @@ function Validator(adxDirPath) {
     /**
      * Report of the validation
      *
+     * @name Validator#report
      * @type {{startTime: number, endTime: number, runs: number, total: number, success: number, warnings: number, errors: number}}
      */
     this.report     = {
@@ -312,6 +325,7 @@ function Validator(adxDirPath) {
     /**
      * Map all files in the resources directory
      *
+     * @name Validator#dirResources
      * @type {{isExist: boolean, dynamic: {isExist: boolean}, statics: {isExist: boolean}, share: {isExist: boolean}}}
      */
     this.dirResources  = {
@@ -329,19 +343,25 @@ function Validator(adxDirPath) {
 
     /**
      * Instance of configurator
-     * @type {ADX.Configurator}
+     *
+     * @name Validator#adxConfigurator
+     * @type {Configurator}
      */
     this.adxConfigurator = null;
 
     /**
      * Logger to override with an object
+     *
+     * @name Validator#logger
      * @type {{writeMessage : Function, writeSuccess : Function, writeWarning: Function, writeError : Function}}
      */
     this.logger = null;
 
     /**
      * Print mode
-     * @type {String}
+     *
+     * @name Validator#printMode
+     * @type {String|"default"|"html"}
      */
     this.printMode = 'default';
 }
@@ -349,8 +369,7 @@ function Validator(adxDirPath) {
 /**
  * Create a new instance of ADX validator
  *
- * @constructor
- * @param {String} adxDirPath Path of the ADX directory
+ * @ignore
  */
 Validator.prototype.constructor = Validator;
 
@@ -446,11 +465,10 @@ Validator.prototype.validate = function validate(options, callback) {
  * @param {Array} validators Validators to remove
  */
 Validator.prototype.removeOnSequence = function removeOnSequence(validators) {
-    var sequence = this.validators.sequence,
-        index;
+    const sequence = this.validators.sequence;
 
-    validators.forEach(function (value) {
-        index = sequence.indexOf(value);
+    validators.forEach((value) => {
+        const index = sequence.indexOf(value);
         if (index !== -1) {
             sequence.splice(index, 1);
         }
@@ -464,9 +482,9 @@ Validator.prototype.removeOnSequence = function removeOnSequence(validators) {
  */
 Validator.prototype.done  = function done(err) {
     this.report.endTime = new Date().getTime();
-    var executionTime = this.report.endTime - this.report.startTime,
-        report        = this.report,
-        message;
+    const executionTime = this.report.endTime - this.report.startTime;
+    const report        = this.report;
+    let message;
 
     if (err) {
         this.writeError(err.message);
@@ -508,7 +526,7 @@ Validator.prototype.resume = function resume(err) {
         return;
     }
 
-    var validators = this.validators;
+    const validators = this.validators;
 
 
     // Mark the success
@@ -523,7 +541,7 @@ Validator.prototype.resume = function resume(err) {
     }
 
     // Search the next validators (recursive call)
-    var validatorName = validators.sequence[validators.current];
+    const validatorName = validators.sequence[validators.current];
     if (!this[validatorName]) {
         this.resume(null);
         return;
@@ -540,7 +558,7 @@ Validator.prototype.resume = function resume(err) {
  * @param {String} text Text to write in the console
  */
 Validator.prototype.writeError = function writeError(text) {
-    var args = Array.prototype.slice.call(arguments);
+    const args = Array.prototype.slice.call(arguments);
     if (this.printMode === 'html' && args.length) {
         args[0] = '<div class="error">' + args[0] + '</div>';
     }
@@ -556,7 +574,7 @@ Validator.prototype.writeError = function writeError(text) {
  * @param {String} text Text to write in the console
  */
 Validator.prototype.writeWarning = function writeWarning(text) {
-    var args = Array.prototype.slice.call(arguments);
+    const args = Array.prototype.slice.call(arguments);
     if (this.printMode === 'html' && args.length) {
         args[0] = '<div class="warning">' + args[0] + '</div>';
     }
@@ -572,7 +590,7 @@ Validator.prototype.writeWarning = function writeWarning(text) {
  * @param {String} text Text to write in the console
  */
 Validator.prototype.writeSuccess = function writeSuccess(text) {
-    var args = Array.prototype.slice.call(arguments);
+    const args = Array.prototype.slice.call(arguments);
     if (this.printMode === 'html' && args.length) {
         args[0] = '<div class="success">' + args[0] + '</div>';
     }
@@ -588,7 +606,7 @@ Validator.prototype.writeSuccess = function writeSuccess(text) {
  * @param {String} text Text to write in the console
  */
 Validator.prototype.writeMessage = function writeMessage(text) {
-    var args = Array.prototype.slice.call(arguments);
+    const args = Array.prototype.slice.call(arguments);
     if (this.printMode === 'html' && args.length) {
         args[0] = '<div class="message">' + args[0] + '</div>';
     }
@@ -610,9 +628,9 @@ Validator.prototype.validatePathArg = function validatePathArg() {
     }
 
     // Validate the existence of the specify ADX directory
-    var self = this;
-    common.dirExists(self.adxDirectoryPath, function verifyADXDirectory(err, exists) {
-        var er;
+    const self = this;
+    common.dirExists(self.adxDirectoryPath, (err, exists) => {
+        let er;
         if (!exists) {
             er = newError(errMsg.noSuchFileOrDirectory, pathHelper.normalize(self.adxDirectoryPath));
         } else {
@@ -628,14 +646,14 @@ Validator.prototype.validatePathArg = function validatePathArg() {
  */
 Validator.prototype.validateADXDirectoryStructure = function validateADXDirectoryStructure() {
     // Verify if the config.xml exists
-    var self = this;
+    const self = this;
     fs.exists(pathHelper.join(self.adxDirectoryPath, common.CONFIG_FILE_NAME), function verifyConfigFileExist(exists) {
-        var resourcesPath = pathHelper.join(self.adxDirectoryPath, common.RESOURCES_DIR_NAME),
-            dirResources  = self.dirResources;
+        const resourcesPath = pathHelper.join(self.adxDirectoryPath, common.RESOURCES_DIR_NAME);
+        const dirResources  = self.dirResources;
 
         // Check  the resources directory
         function loadResources() {
-            common.dirExists(resourcesPath, function initResourcesFileMap(er, find) {
+            common.dirExists(resourcesPath, (er, find) => {
                 if (!find) {
                     self.resume(null);
                     return;
@@ -647,13 +665,13 @@ Validator.prototype.validateADXDirectoryStructure = function validateADXDirector
 
         // Check the dynamic directory
         function loadDynamic() {
-            common.dirExists(pathHelper.join(resourcesPath, common.DYNAMIC_DIR_NAME), function initDynamicFileMap(er, find) {
-                var dirDynamic = dirResources.dynamic;
+            common.dirExists(pathHelper.join(resourcesPath, common.DYNAMIC_DIR_NAME), (er, find) => {
+                const dirDynamic = dirResources.dynamic;
                 dirDynamic.isExist = find;
                 if (find) {
                     try {
-                        var files = fs.readdirSync(pathHelper.join(resourcesPath, common.DYNAMIC_DIR_NAME));
-                        files.forEach(function (file) {
+                        const files = fs.readdirSync(pathHelper.join(resourcesPath, common.DYNAMIC_DIR_NAME));
+                        files.forEach((file) => {
                             if (common.isIgnoreFile(file)) {
                                 return;
                             }
@@ -669,13 +687,13 @@ Validator.prototype.validateADXDirectoryStructure = function validateADXDirector
 
         // Check the static directory
         function loadStatic(){
-            common.dirExists(pathHelper.join(resourcesPath, common.STATIC_DIR_NAME), function initStaticFileMap(er, find) {
-                var dirStatic = dirResources.statics;
+            common.dirExists(pathHelper.join(resourcesPath, common.STATIC_DIR_NAME), (er, find) => {
+                const dirStatic = dirResources.statics;
                 dirStatic.isExist = find;
                 if (find) {
                     try {
-                        var files = fs.readdirSync(pathHelper.join(resourcesPath, common.STATIC_DIR_NAME));
-                        files.forEach(function (file) {
+                        const files = fs.readdirSync(pathHelper.join(resourcesPath, common.STATIC_DIR_NAME));
+                        files.forEach((file) => {
                             if (common.isIgnoreFile(file)) {
                                 return;
                             }
@@ -692,13 +710,13 @@ Validator.prototype.validateADXDirectoryStructure = function validateADXDirector
 
         // Check the share directory and resume the validation
         function loadShare() {
-            common.dirExists(pathHelper.join(resourcesPath, common.SHARE_DIR_NAME), function initShareFileMap(er, find) {
-                var dirShare = dirResources.share;
+            common.dirExists(pathHelper.join(resourcesPath, common.SHARE_DIR_NAME), (er, find) => {
+                const dirShare = dirResources.share;
                 dirShare.isExist = find;
                 if (find) {
                     try {
-                        var files = fs.readdirSync(pathHelper.join(resourcesPath, common.SHARE_DIR_NAME));
-                        files.forEach(function (file) {
+                        const files = fs.readdirSync(pathHelper.join(resourcesPath, common.SHARE_DIR_NAME));
+                        files.forEach((file) => {
                             if (common.isIgnoreFile(file)) {
                                 return;
                             }
@@ -728,21 +746,20 @@ Validator.prototype.validateADXDirectoryStructure = function validateADXDirector
  * Validate all file extension against the white list and the black list
  */
 Validator.prototype.validateFileExtensions = function validateFileExtensions() {
-    var dirResources = this.dirResources,
-        dir   = [dirResources.dynamic, dirResources.statics, dirResources.share],
-        current, i, l, key, match;
+    const dirResources = this.dirResources;
+    const dir   = [dirResources.dynamic, dirResources.statics, dirResources.share];
 
     if (!dirResources.isExist) {
         this.resume(null);
     }
 
-    for (i = 0, l = dir.length; i < l; i++) {
-        current = dir[i];
+    for (let i = 0, l = dir.length; i < l; i++) {
+        let current = dir[i];
         if (current.isExist) {
-            for (key in current) {
+            for (let key in current) {
                 if (current.hasOwnProperty(key) && key !== 'isExist') {
                     // Test against the black list
-                    match = key.toString().match(fileExt.blacklist);
+                    let match = key.toString().match(fileExt.blacklist);
                     if (match) {
                         this.resume(newError(errMsg.fileExtensionForbidden, match[0]));
                         return;
@@ -768,10 +785,10 @@ Validator.prototype.validateFileExtensions = function validateFileExtensions() {
  * Initialize the XMLDoc using the config.xml
  */
 Validator.prototype.initConfigXMLDoc = function initConfigXMLDoc() {
-    var self = this;
+    const self = this;
 
     self.adxConfigurator = new Configurator(self.adxDirectoryPath);
-    self.adxConfigurator.load(function (err) {
+    self.adxConfigurator.load((err) => {
         if (err) {
             self.resume(err);
             return;
@@ -793,22 +810,20 @@ Validator.prototype.initConfigXMLDoc = function initConfigXMLDoc() {
  * Validate the config.xml file of the ADX against the XSD schema
  */
 Validator.prototype.validateXMLAgainstXSD = function validateXMLAgainstXSD() {
-    var projectType     = this.adxConfigurator.projectType,
-        rootEl          = this.adxConfigurator.xmldoc.getroot(),
-        xmlns           = rootEl.get('xmlns'),
-        isOldConfig     = xmlns === "http://www.askia.com/ADCSchema",
-        schemaName      = projectType === 'adp' ? common.SCHEMA_ADP : (isOldConfig ? 'Config.xsd' : common.SCHEMA_ADC),
-        projectVersion  = this.adxConfigurator.projectVersion + (isOldConfig ? 'alpha' : ''),
-        exec            = require('child_process').exec,
-        xmlLintPath     = pathHelper.join(this.rootdir, common.XML_LINT_PATH),
-        xmlSchemaPath   = pathHelper.join(this.rootdir, common.SCHEMA_PATH, projectVersion, schemaName),
-        xmlPath         = pathHelper.join(this.adxDirectoryPath, common.CONFIG_FILE_NAME),
+    const projectType     = this.adxConfigurator.projectType;
+    const rootEl          = this.adxConfigurator.xmldoc.getroot();
+    const xmlns           = rootEl.get('xmlns');
+    const isOldConfig     = xmlns === "http://www.askia.com/ADCSchema";
+    const schemaName      = projectType === 'adp' ? common.SCHEMA_ADP : (isOldConfig ? 'Config.xsd' : common.SCHEMA_ADC);
+    const projectVersion  = this.adxConfigurator.projectVersion + (isOldConfig ? 'alpha' : '');
+    const exec            = require('child_process').exec;
+    const xmlLintPath     = pathHelper.join(this.rootdir, common.XML_LINT_PATH);
+    const xmlSchemaPath   = pathHelper.join(this.rootdir, common.SCHEMA_PATH, projectVersion, schemaName);
+    const xmlPath         = pathHelper.join(this.adxDirectoryPath, common.CONFIG_FILE_NAME);
+    const self = this;
+    const commandLine = '"' + xmlLintPath + '" --noout --schema "' + xmlSchemaPath + '" "' + xmlPath + '"';
 
-        self = this,
-
-        commandLine = '"' + xmlLintPath + '" --noout --schema "' + xmlSchemaPath + '" "' + xmlPath + '"';
-
-    exec(commandLine, function callback(err) {
+    exec(commandLine, (err) => {
         if (!err) {
             self.writeSuccess(successMsg.xsdValidate);
         }
@@ -821,9 +836,9 @@ Validator.prototype.validateXMLAgainstXSD = function validateXMLAgainstXSD() {
  * Validate the info of the ADX config file
  */
 Validator.prototype.validateADXInfo = function validateADXInfo() {
-    var xmldoc = this.adxConfigurator.xmldoc;
-    var elInfo = xmldoc.find("info");
-    var elName = elInfo && elInfo.find("name");
+    const xmldoc = this.adxConfigurator.xmldoc;
+    const elInfo = xmldoc.find("info");
+    const elName = elInfo && elInfo.find("name");
 
     if (!elInfo) {
         this.resume(newError(errMsg.missingInfoNode));
@@ -837,13 +852,13 @@ Validator.prototype.validateADXInfo = function validateADXInfo() {
 
     // The `style` and `categories` tags is mark as deprecated since the version 2.1.0
     if (this.adxConfigurator.projectVersion !== "2.0.0") {
-        var elStyle = elInfo && elInfo.find("style");
+        const elStyle = elInfo && elInfo.find("style");
         if (elStyle) {
             this.report.warnings++;
             this.writeWarning(warnMsg.deprecatedInfoStyleTag);
         }
 
-        var elCategories = elInfo && elInfo.find("categories");
+        const elCategories = elInfo && elInfo.find("categories");
         if (elCategories) {
             this.report.warnings++;
             this.writeWarning(warnMsg.deprecatedInfoCategoriesTag);
@@ -860,23 +875,23 @@ Validator.prototype.validateADXInfo = function validateADXInfo() {
  * Validate the info/constraints of the ADX config file
  */
 Validator.prototype.validateADXInfoConstraints = function validateADXInfoConstraints() {
-    var xmldoc = this.adxConfigurator.xmldoc;
-    var elInfo = xmldoc.find("info");
-    var elConstraints = elInfo && elInfo.find("constraints");
-    var constraintsOn  = {
+    const xmldoc = this.adxConfigurator.xmldoc;
+    const elInfo = xmldoc.find("info");
+    const elConstraints = elInfo && elInfo.find("constraints");
+    const constraintsOn  = {
         questions : 0,
         responses : 0,
         controls  : 0
     };
-    var self = this;
-    var exitIter = false;
+    const self = this;
+    let exitIter = false;
 
-    elConstraints.iter('constraint', function (constraint) {
+    elConstraints.iter('constraint', (constraint) => {
         if (exitIter) {
             return;
         }
-        var hasRule = false;
-        var attrOn  = constraint.get("on");
+        let hasRule = false;
+        const attrOn  = constraint.get("on");
         if (!attrOn) {
             return;
         }
@@ -891,8 +906,8 @@ Validator.prototype.validateADXInfoConstraints = function validateADXInfoConstra
 
 
         // Validate the attribute logic
-        var attr = constraint.attrib;
-        for (var key in attr) {
+        const attr = constraint.attrib;
+        for (let key in attr) {
             if (attr.hasOwnProperty(key) && key !== 'on') {
                 if (constraintAttributeRules[attrOn].indexOf(key) === -1) {
                     self.resume(newError(errMsg.invalidConstraintAttribute, attrOn, key));
@@ -939,30 +954,30 @@ Validator.prototype.validateADXInfoConstraints = function validateADXInfoConstra
  * Validate the outputs of the ADX config file
  */
 Validator.prototype.validateADXOutputs = function validateADXOutputs() {
-    var xmldoc = this.adxConfigurator.xmldoc;
-    var elOutputs = xmldoc.find("outputs");
-    var exitIter = false;
-    var conditions              = {};
-    var outputsEmptyCondition   = [];
-    var htmlFallBackCount       = 0;
-    var self = this;
-    var err;
-    var projectType    = this.adxConfigurator.projectType;
-    var projectVersion = this.adxConfigurator.projectVersion;
-    var dirResources   = this.dirResources;
+    const projectType    = this.adxConfigurator.projectType;
+    const projectVersion = this.adxConfigurator.projectVersion;
+    const dirResources   = this.dirResources;
+    const xmldoc = this.adxConfigurator.xmldoc;
+    const elOutputs = xmldoc.find("outputs");
+    const conditions              = {};
+    const outputsEmptyCondition   = [];
+    const self = this;
+    let htmlFallBackCount = 0;
+    let exitIter = false;
+    let err;
 
-    elOutputs.iter("output", function (output) {
+    elOutputs.iter("output", (output) => {
         if (exitIter) {
             return;
         }
-        var id          = output.get("id");
-        var elCondition = output.find("condition");
-        var condition   = elCondition && elCondition.text;
-        var defaultGeneration = output.get("defaultGeneration") || false;
+        const id          = output.get("id");
+        const elCondition = output.find("condition");
+        const condition   = elCondition && elCondition.text;
+        const defaultGeneration = output.get("defaultGeneration") || false;
 
         // Require a `masterPage` attribute that represent an existing dynamic file for ADP
         if (projectType === 'adp') {
-            var masterPage = output.get('masterPage');
+            const masterPage = output.get('masterPage');
 
             // Verify the presence of a non-empty masterPage attribute
             if (!masterPage) {
@@ -1001,7 +1016,7 @@ Validator.prototype.validateADXOutputs = function validateADXOutputs() {
 
         conditions[condition] = id;
 
-        var lastOutput = {
+        const lastOutput = {
             id                : id,
             defaultGeneration : defaultGeneration,
             contents          : output.findall("content") || [],
@@ -1050,17 +1065,16 @@ Validator.prototype.validateADXOutputs = function validateADXOutputs() {
  * @return {Error|void} Return the error or null when no error.
  */
 Validator.prototype.validateADXContents = function validateADXContents(output) {
-    var projectType = this.adxConfigurator.projectType,
-        contents = output.contents,
-        i, l,
-        err = null,
-        condition = output.condition || "";
+    const projectType = this.adxConfigurator.projectType;
+    const contents = output.contents;
+    const condition = output.condition || "";
+    let err = null;
 
     if (contents.length && !this.dirResources.isExist) {
         return newError(errMsg.noResourcesDirectory);
     }
 
-    for (i = 0, l = contents.length; i < l; i++) {
+    for (let i = 0, l = contents.length; i < l; i++) {
         err = this.validateADXContent(output, contents[i]);
         if (err) {
             return err;
@@ -1096,14 +1110,14 @@ Validator.prototype.validateADXContents = function validateADXContents(output) {
  * @return {Error|void} Return the error or null when no error.
  */
 Validator.prototype.validateADXContent = function validateADXContent(output, content) {
-    var atts        = content.attrib,
-        type        = atts.type,
-        position    = atts.position,
-        mode        = atts.mode,
-        key         = (mode !== 'static') ? mode : 'statics',
-        fileName    = atts.fileName,
-        yieldNode   = content.find('yield'),
-        dirResources = this.dirResources;
+    const atts        = content.attrib;
+    const type        = atts.type;
+    const position    = atts.position;
+    const mode        = atts.mode;
+    const key         = (mode !== 'static') ? mode : 'statics';
+    const fileName    = atts.fileName;
+    const yieldNode   = content.find('yield');
+    const dirResources = this.dirResources;
 
     // Missing directory
     if (!dirResources[key].isExist) {
@@ -1153,20 +1167,16 @@ Validator.prototype.validateADXContent = function validateADXContent(output, con
  * @return {Error|void} Return error or null when no error
  */
 Validator.prototype.validateADXContentAttribute = function validateADXContentAttribute(output, content) {
-    var attributes = content.findall('attribute');
+    const attributes = content.findall('attribute');
     if (!attributes || !attributes.length) {
         return null;
     }
 
-    var atts        = content.attrib,
-        type        = atts.type,
-        mode        = atts.mode,
-        fileName    = atts.fileName,
-        yieldNode   = content.find("yield"),
-        attribute,
-        attName,
-        attMap      = {},
-        i, l;
+    const atts        = content.attrib;
+    const type        = atts.type;
+    const mode        = atts.mode;
+    const fileName    = atts.fileName;
+    const yieldNode   = content.find("yield");
 
     // Attribute nodes are ignored for the following type
     if (/(text|binary|html|flash)/.test(type)) {
@@ -1186,9 +1196,10 @@ Validator.prototype.validateADXContentAttribute = function validateADXContentAtt
         this.writeWarning(warnMsg.attributeNodeAndYieldNode, output.id, fileName);
     }
 
-    for (i = 0, l = attributes.length; i < l; i++) {
-        attribute = attributes[i];
-        attName     = (attribute.attrib && attribute.attrib.name && attribute.attrib.name.toLocaleLowerCase()) || '';
+    const attMap      = {};
+    for (let i = 0, l = attributes.length; i < l; i++) {
+        let attribute = attributes[i];
+        let attName     = (attribute.attrib && attribute.attrib.name && attribute.attrib.name.toLocaleLowerCase()) || '';
 
         if (contentSealAttr[type] && contentSealAttr[type][attName]) {
             return newError(errMsg.attributeNotOverridable, output.id, attName, fileName);
@@ -1208,10 +1219,10 @@ Validator.prototype.validateADXContentAttribute = function validateADXContentAtt
  * Validate the ADX properties node
  */
 Validator.prototype.validateADXProperties = function validateADXProperties() {
-    var xmldoc = this.adxConfigurator.xmldoc;
-    var elProperties = xmldoc.find("properties");
-    var categories = elProperties.findall('category');
-    var properties = elProperties.findall('property');
+    const xmldoc = this.adxConfigurator.xmldoc;
+    const elProperties = xmldoc.find("properties");
+    const categories = elProperties.findall('category');
+    const properties = elProperties.findall('property');
 
     if ((!properties || !properties.length) && (!categories || !categories.length)) {
         this.report.warnings++;
@@ -1225,16 +1236,18 @@ Validator.prototype.validateADXProperties = function validateADXProperties() {
  * Validate the content of the master page of ADP
  */
 Validator.prototype.validateMasterPage = function validateMasterPage() {
-    var xmldoc = this.adxConfigurator.xmldoc;
-    var elOutputs = xmldoc.findall("./outputs/output");
-    var outputIndex = 0, len = elOutputs.length;
-    var self = this;
-    var treats = {};
+    const self = this;
+    const xmldoc = this.adxConfigurator.xmldoc;
+    const elOutputs = xmldoc.findall("./outputs/output");
+    const treats = {};
+    const len = elOutputs.length;
+    let outputIndex = 0;
+
 
     // Recursive calls to validate each master page one by one
     function validateNextMasterPage() {
-        var elOutput = elOutputs[outputIndex];
-        var masterPage = elOutput.get("masterPage");
+        const elOutput = elOutputs[outputIndex];
+        const masterPage = elOutput.get("masterPage");
 
         // Don't validate the master page several time
         if (treats[masterPage]) {
@@ -1246,9 +1259,9 @@ Validator.prototype.validateMasterPage = function validateMasterPage() {
         }
 
         treats[masterPage] = true;
-        var masterPagePath = pathHelper.join(self.adxDirectoryPath, 'resources/dynamic', masterPage);
+        const masterPagePath = pathHelper.join(self.adxDirectoryPath, 'resources/dynamic', masterPage);
 
-        fs.readFile(masterPagePath, function (err, data) {
+        fs.readFile(masterPagePath, (err, data) => {
             if (err) {
                 self.resume(err);
                 return;
@@ -1256,7 +1269,7 @@ Validator.prototype.validateMasterPage = function validateMasterPage() {
 
             data = data.toString();
 
-            var askiaHeadCount = (data.match(/<askia\-head\s*\/?>/gi) || []).length;
+            const askiaHeadCount = (data.match(/<askia\-head\s*\/?>/gi) || []).length;
             // <askia-head /> required
             if (!askiaHeadCount) {
                 self.resume(newError(errMsg.masterPageRequireAskiaHeadTag, masterPage));
@@ -1268,7 +1281,7 @@ Validator.prototype.validateMasterPage = function validateMasterPage() {
             }
 
             // <askia-form> required
-            var askiaFormCount = (data.match(/<askia\-form\s*>/gi) || []).length;
+            const askiaFormCount = (data.match(/<askia\-form\s*>/gi) || []).length;
             if (!askiaFormCount) {
                 self.resume(newError(errMsg.masterPageRequireAskiaFormTag, masterPage));
                 return;
@@ -1279,7 +1292,7 @@ Validator.prototype.validateMasterPage = function validateMasterPage() {
             }
 
             // </askia-form> required
-            var askiaFormCloseCount = (data.match(/<\/askia\-form\s*>/gi) || []).length;
+            const askiaFormCloseCount = (data.match(/<\/askia\-form\s*>/gi) || []).length;
             if (!askiaFormCloseCount) {
                 self.resume(newError(errMsg.masterPageRequireAskiaFormCloseTag, masterPage));
                 return;
@@ -1290,7 +1303,7 @@ Validator.prototype.validateMasterPage = function validateMasterPage() {
             }
 
             // <askia-questions/> required
-            var askiaQuestionsCount = (data.match(/<askia\-questions\s*\/?>/gi) || []).length;
+            const askiaQuestionsCount = (data.match(/<askia\-questions\s*\/?>/gi) || []).length;
             if (!askiaQuestionsCount) {
                 self.resume(newError(errMsg.masterPageRequireAskiaQuestionsTag, masterPage));
                 return;
@@ -1301,7 +1314,7 @@ Validator.prototype.validateMasterPage = function validateMasterPage() {
             }
 
             // <askia-foot/> required
-            var askiaFootCount = (data.match(/<askia\-foot\s*\/?>/gi) || []).length;
+            const askiaFootCount = (data.match(/<askia\-foot\s*\/?>/gi) || []).length;
             if (!askiaFootCount) {
                 self.resume(newError(errMsg.masterPageRequireAskiaFootTag, masterPage));
                 return;
@@ -1313,7 +1326,7 @@ Validator.prototype.validateMasterPage = function validateMasterPage() {
 
             // Validate that the <askia-questions/> is between <askia-form> and </askia-form>
             // This ultimate validation also ensure that </askia-form> appear after <askia-form>
-            var isCorrectForm = /<askia\-form\s*>(.|\r|\n)*<askia\-questions\s*\/?>(.|\r|\n)*<\/askia\-form\s*>/mgi.test(data);
+            const isCorrectForm = /<askia\-form\s*>(.|\r|\n)*<askia\-questions\s*\/?>(.|\r|\n)*<\/askia\-form\s*>/mgi.test(data);
             if (!isCorrectForm) {
                 self.resume(newError(errMsg.masterPageRequireAskiaQuestionsTagInsideAskiaFormTag, masterPage));
                 return;
@@ -1339,9 +1352,9 @@ Validator.prototype.validateMasterPage = function validateMasterPage() {
  * @param {String} message
  */
 Validator.prototype.runTests = function runTests(args, message) {
-    var self = this;
+    const self = this;
     // Validate the existence of the specify unit test directory
-    common.dirExists(pathHelper.join(self.adxDirectoryPath, common.UNIT_TEST_DIR_PATH), function verifyUnitTestDirectory(err, exists) {
+    common.dirExists(pathHelper.join(self.adxDirectoryPath, common.UNIT_TEST_DIR_PATH), (err, exists) => {
         if (!exists) {
             self.resume(null);
             return ;
@@ -1369,13 +1382,13 @@ Validator.prototype.runTests = function runTests(args, message) {
         }
 
         if (!self._adxShell) {
-            var execFile =  require('child_process').execFile;
+            const execFile =  require('child_process').execFile;
             execFile('.\\' + common.ADX_UNIT_PROCESS_NAME, args, {
                 cwd   : pathHelper.join(self.rootdir, common.ADX_UNIT_DIR_PATH),
                 env   : common.getChildProcessEnv()
             }, execCallback);
         } else {
-            var escapedArgs = [];
+            const escapedArgs = [];
             for (var i = 0,  l = args.length; i < l; i += 1) {
                 escapedArgs.push('"' + args[i] + '"');
             }
@@ -1407,8 +1420,9 @@ exports.Validator = Validator;
  * @param {Command} program Commander object which hold the arguments pass to the program
  * @param {String} path Path to the ADX directory
  * @param {Function} callback Callback function to run at the end it take a single Error argument
+ * @ignore
  */
 exports.validate = function validate(program, path, callback) {
-    var validator = new Validator(path);
+    const validator = new Validator(path);
     validator.validate(program, callback);
 };

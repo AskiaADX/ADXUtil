@@ -14,66 +14,109 @@ const successMsg  = common.messages.success;
 /**
  * Generate the file structure of an ADX using a template
  *
- * @class ADX.Generator
+ * @class Generator
  * @private
  */
 function Generator() {
     /**
      * Root dir of the current ADXUtil
+     *
+     * @name Generator#rootdir
+     * @type {String}
      */
     this.rootdir = pathHelper.resolve(__dirname, "../../");
 
     /**
      * Type of the ADX
-     * @type {"adc"|"adp"}
+     *
+     * @name Generator#adxType
+     * @type {String|"adc"|"adp"}
      */
     this.adxType = '';
 
     /**
      * Name of the ADX
+     *
+     * @name Generator#adxName
      * @type {string}
      */
     this.adxName = '';
 
     /**
      * Description of the ADX
+     *
+     * @name Generator#adxDescription
      * @type {string}
      */
     this.adxDescription = '';
 
     /**
      * Author
+     *
+     * @name Generator#adxAuthor
      * @type {Object}
      */
     this.adxAuthor = {
+        /**
+         * Name of the author
+         *
+         * @name Generator#adxAuthor.name
+         * @type {String}
+         */
         name : '',
+        /**
+         * Email address of the author
+         *
+         * @name Generator#adxAuthor.email
+         * @type {String}
+         */
         email : '',
+        /**
+         * Company name of the author
+         *
+         * @name Generator#adxAuthor.company
+         * @type {String}
+         */
         company : '',
+        /**
+         * Web site of the author
+         *
+         * @name Generator#adxAuthor.website
+         * @type {String}
+         */
         website : ''
     };
 
 
     /**
      * Path of the template directory
+     *
+     * @name Generator#templateSrc
      * @type {string}
      */
     this.templateSrc = '';
 
     /**
      * Output directory
+     *
+     * @name Generator#outputDirectory
      * @type {string}
      */
     this.outputDirectory = '';
 
     /**
      * Name of the template to use
+     *
+     * @name Generator#template
      * @type {string}
      */
     this.template = common.DEFAULT_TEMPLATE_NAME;
 
     /**
      * Sequence of calls
-     * @type {*|Sequence}
+     *
+     * @name Generator#sequence
+     * @type {Sequence}
      */
     this.sequence = new common.Sequence([
         this.verifyOutputDirExist,
@@ -87,7 +130,7 @@ function Generator() {
 /**
  * Create a new instance of ADX Generator
  *
- * @constructor
+ * @ignore
  */
 Generator.prototype.constructor = Generator;
 
@@ -339,12 +382,13 @@ Generator.prototype.updateFiles = function updateFiles() {
 // Make it public
 exports.Generator = Generator;
 
-/*
+/**
  * Generate a new ADC structure
  *
  * @param {Command} program Commander object which hold the arguments pass to the program
  * @param {"adc"|"adp"} type Type of the ADX project
  * @param {String} name Name of the ADC to generate
+ * @ignore
  */
 exports.generate = function generate(program, type, name) {
     const generator = new Generator();

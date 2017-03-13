@@ -1,27 +1,28 @@
-var fs      = require('fs');
-var path    = require('path');
-var common  = require('../common/common.js');
-var msg     = common.messages.message;
+"use strict";
+
+const fs      = require('fs');
+const path    = require('path');
+const common  = require('../common/common.js');
+const msg     = common.messages.message;
 
 /**
  * Manage the user preferences
  *
- * @class ADX.Preferences
- * @singleton
+ * @class Preferences
  */
 function Preferences(){}
-
 
 /**
  * Create a new instance of ADX Preferences
  *
- * @constructor
+ * @ignore
  */
 Preferences.prototype.constructor = Preferences;
 
 /**
  * Write an error output in the console
  * @param {String} text Text to write in the console
+ * @private
  */
 Preferences.prototype.writeError = function writeError(text) {
     common.writeError.apply(common, arguments);
@@ -30,6 +31,7 @@ Preferences.prototype.writeError = function writeError(text) {
 /**
  * Write a warning output in the console
  * @param {String} text Text to write in the console
+ * @private
  */
 Preferences.prototype.writeWarning = function writeWarning(text) {
     common.writeWarning.apply(common, arguments);
@@ -38,6 +40,7 @@ Preferences.prototype.writeWarning = function writeWarning(text) {
 /**
  * Write a success output in the console
  * @param {String} text Text to write in the console
+ * @private
  */
 Preferences.prototype.writeSuccess = function writeSuccess(text) {
     common.writeSuccess.apply(common, arguments);
@@ -46,6 +49,7 @@ Preferences.prototype.writeSuccess = function writeSuccess(text) {
 /**
  * Write an arbitrary message in the console without specific prefix
  * @param {String} text Text to write in the console
+ * @private
  */
 Preferences.prototype.writeMessage = function writeMessage(text) {
     common.writeMessage.apply(common, arguments);
@@ -78,9 +82,9 @@ Preferences.prototype.read = function read(options, callback) {
         options = null;
     }
 
-    var filePath = path.join(process.env.APPDATA, common.APP_NAME, common.PREFERENCES_FILE_NAME);
-    var self = this;
-    fs.readFile(filePath, 'utf-8', function (err, data) {
+    const filePath = path.join(process.env.APPDATA, common.APP_NAME, common.PREFERENCES_FILE_NAME);
+    const self = this;
+    fs.readFile(filePath, 'utf-8', (err, data) => {
         if (err || !data) {
             if (!options || !options.silent) {
                 self.writeMessage(msg.noPreferences);
@@ -91,7 +95,7 @@ Preferences.prototype.read = function read(options, callback) {
             return;
         }
 
-        var json = JSON.parse(data.toString());
+        const json = JSON.parse(data.toString());
         if (!options || !options.silent) {
             self.writeMessage(JSON.stringify(json, null, 2));
         }
@@ -134,8 +138,8 @@ Preferences.prototype.write = function write(preferences, callback) {
         return;
     }
 
-    var self = this;
-    this.read({silent : true}, function (currentPrefs) {
+    const self = this;
+    this.read({silent : true}, (currentPrefs) => {
         currentPrefs = currentPrefs || {};
         currentPrefs.author = currentPrefs.author || {};
         if ("name" in preferences.author) {
@@ -193,10 +197,10 @@ Preferences.prototype.write = function write(preferences, callback) {
          }
          }*/
 
-        var filePath = path.join(process.env.APPDATA, common.APP_NAME, common.PREFERENCES_FILE_NAME);
+        const filePath = path.join(process.env.APPDATA, common.APP_NAME, common.PREFERENCES_FILE_NAME);
         // Make sure the directory exist
-        fs.mkdir(path.join(filePath, '../'), function () {
-            fs.writeFile(filePath, JSON.stringify(currentPrefs), {encoding : 'utf8'}, function () {
+        fs.mkdir(path.join(filePath, '../'), () => {
+            fs.writeFile(filePath, JSON.stringify(currentPrefs), {encoding : 'utf8'}, () => {
                 self.read(callback);
             });
         })
@@ -205,6 +209,8 @@ Preferences.prototype.write = function write(preferences, callback) {
 
 /**
  * Singleton instance of the preferences
+ *
+ * @static
  */
 Preferences.getInstance = function getInstance() {
     if (!Preferences._instance) {
@@ -215,11 +221,12 @@ Preferences.getInstance = function getInstance() {
 
 /**
  * Single instance of the preferences object
- * @type {ADX.Preferences}
+ * @type {Preferences}
+ * @ignore
  */
 exports.preferences = Preferences.getInstance();
 
-/*
+/**
  * Read the user preferences and display it
  *
  * @param {Object} [options]
@@ -236,13 +243,14 @@ exports.preferences = Preferences.getInstance();
  * @param {String} [callback.preferences.zendesk.remoteUri] Default zendesk uri
  * @param {String} [callback.preferences.zendesk.promoted] Default zendesk promoted
  * @param {String} [callback.preferences.zendesk.comments_disabled] Default zendesk comments_disabled
+ * @ignore
  */
 exports.read = function read(options, callback) {
     exports.preferences.read(options, callback);
 };
 
 
-/*
+/**
  * Write the preferences
  *
  * @param {Object} preferences
@@ -265,6 +273,7 @@ exports.read = function read(options, callback) {
  * @param {String} [callback.preferences.ZenDesk.password] Default ZenDesk password
  * @param {String} [callback.preferences.ZenDesk.promoted] ZenDesk: create promoted article on article by default
  * @param {String} [callback.preferences.ZenDesk.disabledComments] ZenDesk: disabled article comments by default
+ * @ignore
  */
 exports.write = function write(preferences, callback) {
     exports.preferences.write(preferences, callback);

@@ -1,54 +1,72 @@
-var fs          = require('fs');
-var pathHelper  = require('path');
-var common      = require('../common/common.js');
-var errMsg      = common.messages.error;
-var successMsg  = common.messages.success;
-var Validator   = require('../validator/ADXValidator.js').Validator;
+"use strict";
+
+const fs          = require('fs');
+const pathHelper  = require('path');
+const common      = require('../common/common.js');
+const errMsg      = common.messages.error;
+const successMsg  = common.messages.success;
+const Validator   = require('../validator/ADXValidator.js').Validator;
 
 /**
  * Validate and compress the ADX directory to an `.adc` or `.adp` file
  *
- * @class ADX.Builder
+ * @class Builder
+ * @param {String} adxDirPath Path of the ADX directory
  * @private
  */
 function Builder(adxDirPath) {
     /**
      * Root dir of the current ADXUtil
+     *
+     * @name Builder#rootdir
+     * @type {String}
      */
     this.rootdir = pathHelper.resolve(__dirname, "../../");
 
     /**
      * Name of the ADX
+     *
+     * @name Builder#adxName
      * @type {string}
      */
     this.adxName = '';
 
     /**
      * Path to the ADX directory
+     *
+     * @name Builder#adxDirectoryPath
      * @type {string}
      */
     this.adxDirectoryPath = adxDirPath ? pathHelper.normalize(adxDirPath) : process.cwd();
 
     /**
      * Configurator of the ADX
+     *
+     * @name Builder#adxConfigurator
      * @type {ADX.Configurator}
      */
     this.adxConfigurator = null;
 
     /**
      * Bin path of the ADX
+     *
+     * @name Builder#binPath
      * @type {string}
      */
     this.binPath = '';
 
     /**
      * Path of the output file
+     *
+     * @name Builder#outputPath
      * @type {string}
      */
     this.outputPath = '';
 
     /**
      * Sequence of calls
+     *
+     * @name Builder#sequence
      * @type {Sequence}
      */
     this.sequence = new common.Sequence([
@@ -59,28 +77,31 @@ function Builder(adxDirPath) {
     /**
      * Report of the validation
      *
+     * @name Builder#validationReport
      * @type {{startTime: null, endTime: null, runs: number, total: number, success: number, warnings: number, errors: number}}
      */
     this.validationReport = null;
 
     /**
      * Logger to override with an object
+     *
+     * @name Builder#logger
      * @type {{writeMessage : Function, writeSuccess : Function, writeWarning: Function, writeError : Function}}
      */
     this.logger = null;
 
     /**
      * Print mode
-     * @type {String}
+     *
+     * @name Builder#printMode
+     * @type {String|"default"|"html"}
      */
     this.printMode = 'default';
 }
 
 /**
  * Create a new instance of ADX Builder
- *
- * @constructor
- * @param {String} adxDirPath Path of the ADX directory
+ * @ignore
  */
 Builder.prototype.constructor = Builder;
 
@@ -118,7 +139,7 @@ Builder.prototype.build = function build(options, callback) {
 
     this.validator = new Validator(this.adxDirectoryPath);
 
-    var self = this;
+    const self = this;
     options = options || {};
     options.xml = true;
     options.autoTest = true;
@@ -129,7 +150,7 @@ Builder.prototype.build = function build(options, callback) {
         this.printMode = options.printMode || 'default';
     }
 
-    this.validator.validate(options, function validateCallback(err, report) {
+    this.validator.validate(options, (err, report) => {
         if (err) {
             return self.sequence.resume(new Error(errMsg.validationFailed));
         }
@@ -148,7 +169,7 @@ Builder.prototype.build = function build(options, callback) {
  * @param {String} text Text to write in the console
  */
 Builder.prototype.writeError = function writeError(text) {
-    var args = Array.prototype.slice.call(arguments);
+    const args = Array.prototype.slice.call(arguments);
     if (this.printMode === 'html' && args.length) {
         args[0] = '<div class="error">' + args[0] + '</div>';
     }
@@ -164,7 +185,7 @@ Builder.prototype.writeError = function writeError(text) {
  * @param {String} text Text to write in the console
  */
 Builder.prototype.writeWarning = function writeWarning(text) {
-    var args = Array.prototype.slice.call(arguments);
+    const args = Array.prototype.slice.call(arguments);
     if (this.printMode === 'html' && args.length) {
         args[0] = '<div class="warning">' + args[0] + '</div>';
     }
@@ -180,7 +201,7 @@ Builder.prototype.writeWarning = function writeWarning(text) {
  * @param {String} text Text to write in the console
  */
 Builder.prototype.writeSuccess = function writeSuccess(text) {
-    var args = Array.prototype.slice.call(arguments);
+    const args = Array.prototype.slice.call(arguments);
     if (this.printMode === 'html' && args.length) {
         args[0] = '<div class="success">' + args[0] + '</div>';
     }
@@ -196,7 +217,7 @@ Builder.prototype.writeSuccess = function writeSuccess(text) {
  * @param {String} text Text to write in the console
  */
 Builder.prototype.writeMessage = function writeMessage(text) {
-    var args = Array.prototype.slice.call(arguments);
+    const args = Array.prototype.slice.call(arguments);
     if (this.printMode === 'html' && args.length) {
         args[0] = '<div class="message">' + args[0] + '</div>';
     }
@@ -221,8 +242,8 @@ Builder.prototype.done = function done(err) {
         return;
     }
 
-    var fileExt = '.' + this.adxConfigurator.projectType.toLowerCase();
-    var output = pathHelper.join(this.binPath, this.adxName + fileExt);
+    const fileExt = '.' + this.adxConfigurator.projectType.toLowerCase();
+    const output = pathHelper.join(this.binPath, this.adxName + fileExt);
 
     if (!this.validationReport.warnings) {
         this.writeSuccess(successMsg.buildSucceed, output);
@@ -239,10 +260,10 @@ Builder.prototype.done = function done(err) {
  * Create a bin directory
  */
 Builder.prototype.createBinDir =  function createBinDir() {
-    var self = this;
-    common.dirExists(this.binPath, function binPathExist(err, exist) {
+    const self = this;
+    common.dirExists(this.binPath, (err, exist) => {
         if (!exist || err) {
-            var er = fs.mkdirSync(self.binPath);
+            const er = fs.mkdirSync(self.binPath);
             if (er) {
                 return self.sequence.resume(er);
             }
@@ -255,17 +276,17 @@ Builder.prototype.createBinDir =  function createBinDir() {
  * Compress the ADX directory
  */
 Builder.prototype.compressADX =  function compressADX() {
-    var self = this;
-    common.getDirStructure(self.adxDirectoryPath, function callbackGetStructure(err, structure) {
+    const self = this;
+    common.getDirStructure(self.adxDirectoryPath, (err, structure) => {
         if (err) {
             return self.sequence.resume(err);
         }
 
-        var zip     = common.getNewZip(),
-            zipDir = '';
+        const zip   = common.getNewZip();
+        let zipDir  = '';
 
         structure.forEach(function appendInZip(file) {
-            var prevDir,
+            let prevDir,
                 folderLower,
                 zipDirLower = zipDir.toLowerCase();
 
@@ -273,7 +294,10 @@ Builder.prototype.compressADX =  function compressADX() {
                 if (zipDirLower === 'resources\\') return; // Exclude extra files
                 if (zipDirLower === '' && !/^(config\.xml|readme|changelog)/i.test(file)) return; // Exclude extra files
                 if (common.isIgnoreFile(file)) return; // Ignore files
-                zip.file(pathHelper.join(zipDir, file), fs.readFileSync(pathHelper.join(self.adxDirectoryPath, zipDir, file)));
+                zip.file(
+                    pathHelper.join(zipDir, file),
+                    fs.readFileSync(pathHelper.join(self.adxDirectoryPath, zipDir, file))
+                );
             } else { // Directory
                 if (!file.sub || !file.sub.length) return;        // Exclude empty folder
 
@@ -292,11 +316,11 @@ Builder.prototype.compressADX =  function compressADX() {
             }
         });
 
-        var buffer = zip.generate({type:"nodebuffer"});
-        var fileExt = '.' + self.adxConfigurator.projectType.toLowerCase();
+        const buffer = zip.generate({type:"nodebuffer"});
+        const fileExt = '.' + self.adxConfigurator.projectType.toLowerCase();
 
         self.outputPath = pathHelper.join(self.binPath, self.adxName + fileExt);
-        fs.writeFile(self.outputPath, buffer, function writeZipFile(err) {
+        fs.writeFile(self.outputPath, buffer, (err) => {
             if (err) {
                 throw err;
             }
@@ -316,9 +340,10 @@ exports.Builder = Builder;
  *
  * @param {Command} program Commander object which hold the arguments pass to the program
  * @param {String} path Path of the ADX to directory
+ * @ignore
  */
 exports.build = function build(program, path) {
-    var builder = new Builder(path);
+    const builder = new Builder(path);
     builder.build(program);
 };
 

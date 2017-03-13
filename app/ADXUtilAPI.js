@@ -541,7 +541,7 @@ ADX.getTemplateList = function getTemplateList(type, callback) {
 /**
  * Instance of the object to manage the preferences
  *
- * @type {ADX.Preferences}
+ * @type {Preferences}
  * @static
  */
 ADX.preferences = preferences;

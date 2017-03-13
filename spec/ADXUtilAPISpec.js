@@ -1,6 +1,6 @@
 "use strict";
 
-describe('ADXUtilAPI', function () {
+describe('ADXUtilAPI', () => {
     const fs = require('fs');
     const pathHelper = require('path');
     const InteractiveADXShell = require('../app/common/InteractiveADXShell.js').InteractiveADXShell;
@@ -348,7 +348,7 @@ describe('ADXUtilAPI', function () {
             });
         });
 
-        describe('#checkFixtures', function () {
+        describe('#checkTestsDirectory', function () {
             beforeEach(function () {
                 spies.load.andCallFake(function (cb) {
                     cb();
@@ -357,7 +357,7 @@ describe('ADXUtilAPI', function () {
 
             it("should init the #configurator using the #load method when the #configurator is not defined", function () {
                 var adx = new ADX('adx/path');
-                adx.checkFixtures();
+                adx.checkTestsDirectory();
                 expect(spies.load).toHaveBeenCalled();
             });
 
@@ -367,7 +367,7 @@ describe('ADXUtilAPI', function () {
                     cb(new Error('Fake error'));
                 });
                 runSync(function (done) {
-                    adx.checkFixtures(function (err) {
+                    adx.checkTestsDirectory(function (err) {
                         expect(err).toEqual(new Error('Fake error'));
                         done();
                     });
@@ -377,7 +377,7 @@ describe('ADXUtilAPI', function () {
             it("should not init the #configurator using the #load method when the #configurator is not defined", function () {
                 var adx = new ADX('adx/path');
                 adx.configurator = new Configurator('adx/path');
-                adx.checkFixtures();
+                adx.checkTestsDirectory();
                 expect(spies.load).not.toHaveBeenCalled();
             });
 
@@ -385,7 +385,7 @@ describe('ADXUtilAPI', function () {
                 var adx = new ADX('adx/path');
                 adx.configurator = new Configurator('adx/path');
                 runSync(function (done) {
-                    adx.checkFixtures(function (err) {
+                    adx.checkTestsDirectory(function (err) {
                         expect(err).toEqual(new Error(errMsg.incorrectADXType));
                         done();
                     });
@@ -394,7 +394,11 @@ describe('ADXUtilAPI', function () {
 
             it("should copy `tests/fixtures` directory of the `blank` ADC template if it  doesn't exist", function () {
                 spyOn(common, 'dirExists').andCallFake(function (p, cb) {
-                    cb(null, false);
+                    if (p === pathHelper.join('adc/path', common.FIXTIRES_DIR_PATH)) {
+                        cb(null, false);
+                    } else {
+                        cb(null, true);
+                    }
                 });
                 spies.fs.mkdir.andCallFake(function (p, cb) {
                     cb();
@@ -410,13 +414,17 @@ describe('ADXUtilAPI', function () {
                     var adc = new ADX('adc/path');
                     adc.configurator = new Configurator('adc/path');
                     adc.configurator.projectType = 'adc';
-                    adc.checkFixtures();
+                    adc.checkTestsDirectory();
                 });
             });
 
             it("should copy `tests/fixtures` directory of the `blank` ADP template if it  doesn't exist", function () {
                 spyOn(common, 'dirExists').andCallFake(function (p, cb) {
-                    cb(null, false);
+                    if (p === pathHelper.join('adp/path', common.FIXTIRES_DIR_PATH)) {
+                        cb(null, false);
+                    } else {
+                        cb(null, true);
+                    }
                 });
                 spies.fs.mkdir.andCallFake(function (p, cb) {
                     cb();
@@ -432,19 +440,17 @@ describe('ADXUtilAPI', function () {
                     var adp = new ADX('adp/path');
                     adp.configurator = new Configurator('adp/path');
                     adp.configurator.projectType = 'adp';
-                    adp.checkFixtures();
+                    adp.checkTestsDirectory();
                 });
             });
 
-            it("should copy `tests/fixtures/emulations` directory of the `blank` ADC template if it  doesn't exist", function () {
+            it("should copy `tests/emulations` directory of the `blank` ADC template if it  doesn't exist", function () {
                 spyOn(common, 'dirExists').andCallFake(function (p, cb) {
-                    if (p === pathHelper.join('adc/path', common.FIXTIRES_DIR_PATH)) {
-                        cb(null, true);
-                    } else if (p === pathHelper.join('adc/path', common.EMULATIONS_DIR_PATH)) {
+                    if (p === pathHelper.join('adc/path', common.EMULATIONS_DIR_PATH)) {
                         cb(null, false);
                     }
                     else {
-                        cb(new Error("something weird"), false);
+                        cb(null, true);
                     }
                 });
                 spies.fs.mkdir.andCallFake(function (p, cb) {
@@ -461,19 +467,17 @@ describe('ADXUtilAPI', function () {
                     var adc = new ADX('adc/path');
                     adc.configurator = new Configurator('adc/path');
                     adc.configurator.projectType = 'adc';
-                    adc.checkFixtures();
+                    adc.checkTestsDirectory();
                 });
             });
 
-            it("should copy `tests/fixtures/emulations` directory of the `blank` ADP template if it  doesn't exist", function () {
+            it("should copy `tests/emulations` directory of the `blank` ADP template if it  doesn't exist", function () {
                 spyOn(common, 'dirExists').andCallFake(function (p, cb) {
-                    if (p === pathHelper.join('adp/path', common.FIXTIRES_DIR_PATH)) {
-                        cb(null, true);
-                    } else if (p === pathHelper.join('adp/path', common.EMULATIONS_DIR_PATH)) {
+                    if (p === pathHelper.join('adp/path', common.EMULATIONS_DIR_PATH)) {
                         cb(null, false);
                     }
                     else {
-                        cb(new Error("something weird"), false);
+                        cb(null, true);
                     }
                 });
                 spies.fs.mkdir.andCallFake(function (p, cb) {
@@ -490,7 +494,61 @@ describe('ADXUtilAPI', function () {
                     var adp = new ADX('adp/path');
                     adp.configurator = new Configurator('adp/path');
                     adp.configurator.projectType = 'adp';
-                    adp.checkFixtures();
+                    adp.checkTestsDirectory();
+                });
+            });
+
+            it("should copy `tests/pages` directory of the `blank` ADC template if it  doesn't exist", function () {
+                spyOn(common, 'dirExists').andCallFake(function (p, cb) {
+                    if (p === pathHelper.join('adc/path', common.PAGES_DIR_PATH)) {
+                        cb(null, false);
+                    }
+                    else {
+                        cb(null, true);
+                    }
+                });
+                spies.fs.mkdir.andCallFake(function (p, cb) {
+                    cb();
+                });
+
+                runSync(function (done) {
+                    spies.ncp.andCallFake(function (source, dest) {
+                        expect(source).toEqual(pathHelper.join(pathHelper.resolve(__dirname, "../"), common.TEMPLATES_PATH, 'adc', common.DEFAULT_TEMPLATE_NAME, common.PAGES_DIR_PATH));
+                        expect(dest).toEqual(pathHelper.join('adc/path', common.PAGES_DIR_PATH));
+                        done();
+                    });
+
+                    var adc = new ADX('adc/path');
+                    adc.configurator = new Configurator('adc/path');
+                    adc.configurator.projectType = 'adc';
+                    adc.checkTestsDirectory();
+                });
+            });
+
+            it("should copy `tests/controls` directory of the `blank` ADP template if it  doesn't exist", function () {
+                spyOn(common, 'dirExists').andCallFake(function (p, cb) {
+                    if (p === pathHelper.join('adp/path', common.CONTROLS_DIR_PATH)) {
+                        cb(null, false);
+                    }
+                    else {
+                        cb(null, true);
+                    }
+                });
+                spies.fs.mkdir.andCallFake(function (p, cb) {
+                    cb();
+                });
+
+                runSync(function (done) {
+                    spies.ncp.andCallFake(function (source, dest) {
+                        expect(source).toEqual(pathHelper.join(pathHelper.resolve(__dirname, "../"), common.TEMPLATES_PATH, 'adp', common.DEFAULT_TEMPLATE_NAME, common.CONTROLS_DIR_PATH));
+                        expect(dest).toEqual(pathHelper.join('adp/path', common.CONTROLS_DIR_PATH));
+                        done();
+                    });
+
+                    var adp = new ADX('adp/path');
+                    adp.configurator = new Configurator('adp/path');
+                    adp.configurator.projectType = 'adp';
+                    adp.checkTestsDirectory();
                 });
             });
 
@@ -510,7 +568,7 @@ describe('ADXUtilAPI', function () {
                     var adx = new ADX('adx/path');
                     adx.configurator = new Configurator('adx/path');
                     adx.configurator.projectType = 'adc';
-                    adx.checkFixtures(function () {
+                    adx.checkTestsDirectory(function () {
                         expect(true).toBe(true);
                         done();
                     });
