@@ -2,7 +2,7 @@
 
 const common = require('../common/common.js');
 const errMsg = common.messages.error;
-const uuid   = require('node-uuid');
+const uuid   = require('uuid');
 const InteractiveADXShell = require('../common/InteractiveADXShell.js').InteractiveADXShell;
 
 /**

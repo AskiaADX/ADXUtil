@@ -6,7 +6,7 @@ const pathHelper  = require('path');
 const common      = require('../common/common.js');
 const preferences = require('../preferences/ADXPreferences.js');
 const ncp         = require('ncp').ncp;
-const uuid        = require('node-uuid');
+const uuid        = require('uuid');
 const errMsg      = common.messages.error;
 const successMsg  = common.messages.success;
 

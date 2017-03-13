@@ -8,7 +8,7 @@ describe('ADXInterviews', function () {
         spies = {},
         errMsg,
         successMsg,
-        uuid            = require('node-uuid');
+        uuid            = require('uuid');
 
     beforeEach(function () {
         // Clean the cache, obtain a fresh instance of the adxInterviews each time

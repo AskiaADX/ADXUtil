@@ -5,7 +5,7 @@ const pathHelper  = require('path');
 const util        = require('util');
 const clc         = require('cli-color');
 const Zip         = require('jszip');
-const uuid        = require('node-uuid');
+const uuid        = require('uuid');
 
 // Application name
 exports.APP_NAME = 'ADXUtil';

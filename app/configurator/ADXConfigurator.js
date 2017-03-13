@@ -629,7 +629,7 @@ ADXInfo.prototype.set = function set(data) {
      *       adxInfo.guid();
      *
      *       // Set the guid of the ADC
-     *       var uuid = require('node-uuid'');
+     *       const uuid = require('uuid'');
      *       adxInfo.guid(uuid.v4());
      *
      * @name Configurator.Info#guid

@@ -5,7 +5,7 @@ describe('ADXGenerator', function () {
     const fs            = require('fs'),
         ncpLib          = require('ncp'),
         format          = require('util').format,
-        uuid            = require('node-uuid'),
+        uuid            = require('uuid'),
         pathHelper      = require('path'),
         spies           = {};
 
