@@ -1,7 +1,5 @@
 # ADXUtil
 
-*WIP (WORK IN PROGRESS)*
-
 This utilities is use to facilitate the creation and the packaging of ADX project (ADP and ADC).
 
 It contains validators and allow to display outputs of the ADX using the ADXEngine. 
@@ -282,31 +280,48 @@ Please find the [full API documentation here](http://www.askia.com/Downloads/dev
 
 Example of usage of existing ADX
 
-    var ADX = require('adxutil').ADX;
+    const ADX = require('adxutil').ADX;
     
-    var myAdx = new ADX('path/to/adx/dir');
+    const myAdx = new ADX('path/to/adx/dir');
         
     // Validate an ADX
-    myAdx.validate({test : false, autoTest : false}, function (err, report) {
+    const configTest = {
+        test : false, 
+        autoTest : false
+    }; 
+    myAdx.validate(configTest, (err, report) => {
         // Callback when the ADX structure has been validated
     });
     
     // Show the output of an ADX
-    myAdx.show({ output : 'fallback', fixture : 'single.xml'  },  function (err, output) {
+    const configShow = { 
+        output : 'fallback', 
+        fixture : 'single.xml'  
+    };
+    myAdx.show(configShow,  (err, output) => {
         // Callback with the output of the ADX
     });
     
     // Build the ADX (package it)
-    myAdx.build({test : false, autoTest : false}, function (err, path, report) {
+    const configBuild = {
+        test : false, 
+        autoTest : false
+    };
+    myAdx.build(configBuild, (err, path, report) => {
         // Callback when the ADX has been built 
     });
     
 
 Generate and use the new ADX instance
     
-    ADX.generate('myNewADC', {type : 'adc', output : '/path/of/parent/dir', template : 'blank'}, function (err, adc) {
+    const configGeneration = {
+        type : 'adc', 
+        output : '/path/of/parent/dir', 
+        template : 'blank'
+    };
+    ADX.generate('myNewADC', configGeneration , (err, adc) => {
         console.log(adc.path);
-        adc.load(function (err) {
+        adc.load((err) => {
             if (err) {
                 console.log(err);
                 return;
@@ -318,9 +333,14 @@ Generate and use the new ADX instance
     
 OR
 
-    ADX.generate('myNewADP', {type : 'adp', output : '/path/of/parent/dir', template : 'default'}, function (err, adp) {
+    const configGeneration = {
+        type : 'adp', 
+        output : '/path/of/parent/dir', 
+        template : 'default'
+    };
+    ADX.generate('myNewADP', configGeneration, (err, adp) => {
         console.log(adp.path);
-        adp.load(function (err) {
+        adp.load((err) => {
             if (err) {
                 console.log(err);
                 return;
