@@ -147,11 +147,11 @@ let successMsg;
         });
 
         describe("create `bin` directory", () => {
-            beforeEach(function () {
-                spies.validateHook.andCallFake((options, callback) => {
+            beforeEach(() => {
+                spies.validateHook = function (options, callback) {
                     this.adxDirectoryPath = 'adx/path/dir/';
                     callback(null);
-                });
+                };
             });
 
             it("should create a `bin` directory, if it doesn't exist", () => {
@@ -183,14 +183,14 @@ let successMsg;
 
         describe("compress the ADX directory", () => {
             let struct, newZip, files;
-            beforeEach(() =>{
-                spies.validateHook.andCallFake((options, callback) => {
+            beforeEach(() => {
+                spies.validateHook = function (options, callback) {
                     this.adxName = 'myadx';
                     this.adxDirectoryPath = 'adx/path/dir/';
                     this.adxConfigurator = new Configurator('/adx/path/dir');
                     this.adxConfigurator.fromXml('<control></control>');
                     callback(null, {});
-                });
+                };
 
                 spies.dirExists.andCallFake((path, callback) => {
                     callback(null, true);
@@ -355,13 +355,13 @@ let successMsg;
             });
 
             it("should write the .adc file in the `bin` directory while using an ADC", () => {
-                spies.validateHook.andCallFake((options, callback) => {
+                spies.validateHook = function (options, callback) {
                     this.adxName = 'myadx';
                     this.adxDirectoryPath = 'adx/path/dir/';
                     this.adxConfigurator = new Configurator('/adx/path/dir');
                     this.adxConfigurator.fromXml('<control></control>');
                     callback(null, {});
-                });
+                };
                 let outputPath;
                 spies.fs.writeFile.andCallFake((path) => {
                     outputPath = path;
@@ -371,13 +371,13 @@ let successMsg;
             });
 
             it("should write the .adp file in the `bin` directory while using an ADP", () => {
-                spies.validateHook.andCallFake((options, callback) => {
+                spies.validateHook = function (options, callback) {
                     this.adxName = 'myadx';
                     this.adxDirectoryPath = 'adx/path/dir/';
                     this.adxConfigurator = new Configurator('/adx/path/dir');
                     this.adxConfigurator.fromXml('<page></page>');
                     callback(null, {});
-                });
+                };
                 let outputPath;
                 spies.fs.writeFile.andCallFake((path) => {
                     outputPath = path;
@@ -435,7 +435,7 @@ let successMsg;
             });
 
             it("should output a success when the build succeed for ADC", () => {
-                spies.validateHook.andCallFake(function (options, callback) {
+                spies.validateHook = function (options, callback) {
                     this.adxName = 'myadx';
                     this.adxDirectoryPath = 'adx/path/dir/';
                     this.adxConfigurator = new Configurator('/adx/path/dir');
@@ -445,14 +445,14 @@ let successMsg;
                         errors : 0
                     };
                     callback(null, this.report);
-                });
+                };
                 const spy = spyOn(Builder.prototype, 'writeSuccess');
                 adxBuilder.build(null, 'adx/path/dir');
                 expect(spy).toHaveBeenCalledWith(successMsg.buildSucceed, 'adx\\path\\dir\\bin\\myadx.adc');
             });
 
             it("should output a with warning when the build succeed with warning for ADC", () => {
-                spies.validateHook.andCallFake((options, callback) => {
+                spies.validateHook = function (options, callback) {
                     this.adxName = 'myadx';
                     this.adxDirectoryPath = 'adx/path/dir/';
                     this.adxConfigurator = new Configurator('/adx/path/dir');
@@ -461,14 +461,14 @@ let successMsg;
                         warnings : 1
                     };
                     callback(null, this.report);
-                });
+                };
                 const spy = spyOn(Builder.prototype, 'writeSuccess');
                 adxBuilder.build(null, 'adx/path/dir');
                 expect(spy).toHaveBeenCalledWith(successMsg.buildSucceedWithWarning, 1, 'adx\\path\\dir\\bin\\myadx.adc');
             });
 
             it("should output a success when the build succeed for ADP", () => {
-                spies.validateHook.andCallFake((options, callback) => {
+                spies.validateHook = function (options, callback) {
                     this.adxName = 'myadx';
                     this.adxDirectoryPath = 'adx/path/dir/';
                     this.adxConfigurator = new Configurator('/adx/path/dir');
@@ -478,14 +478,14 @@ let successMsg;
                         errors : 0
                     };
                     callback(null, this.report);
-                });
+                };
                 const spy = spyOn(Builder.prototype, 'writeSuccess');
                 adxBuilder.build(null, 'adx/path/dir');
                 expect(spy).toHaveBeenCalledWith(successMsg.buildSucceed, 'adx\\path\\dir\\bin\\myadx.adp');
             });
 
             it("should output a with warning when the build succeed with warning for ADP", () => {
-                spies.validateHook.andCallFake((options, callback) => {
+                spies.validateHook = function (options, callback) {
                     this.adxName = 'myadx';
                     this.adxDirectoryPath = 'adx/path/dir/';
                     this.adxConfigurator = new Configurator('/adx/path/dir');
@@ -494,7 +494,7 @@ let successMsg;
                         warnings : 1
                     };
                     callback(null, this.report);
-                });
+                };
                 const spy = spyOn(Builder.prototype, 'writeSuccess');
                 adxBuilder.build(null, 'adx/path/dir');
                 expect(spy).toHaveBeenCalledWith(successMsg.buildSucceedWithWarning, 1, 'adx\\path\\dir\\bin\\myadx.adp');
@@ -503,7 +503,7 @@ let successMsg;
 
         describe("API `callback`", () => {
             beforeEach(() => {
-                spies.validateHook.andCallFake((options, callback) => {
+                spies.validateHook = function (options, callback) {
                     this.adxName = 'myadx';
                     this.adxDirectoryPath = 'adx/path/dir/';
                     this.adxConfigurator = new Configurator('/adx/path/dir');
@@ -511,7 +511,7 @@ let successMsg;
                     callback(null, {
                         fakeReport : true
                     });
-                });
+                };
 
                 spies.dirExists.andCallFake((path, callback) => {
                     callback(null, true);
@@ -578,9 +578,9 @@ let successMsg;
             });
 
             it("should be call with an err argument as an Error", () => {
-                spies.validateHook.andCallFake((options, callback) => {
+                spies.validateHook = function (options, callback) {
                     callback(new Error("Fake error"));
-                });
+                };
                 const builder = new Builder('some/path');
                 let callbackErr;
                 builder.build((err) => {
@@ -600,7 +600,7 @@ let successMsg;
             });
 
             it("should be call with the `outputPath` (ADP) in arg", () => {
-                spies.validateHook.andCallFake((options, callback) => {
+                spies.validateHook = function (options, callback) {
                     this.adxName = 'myadx';
                     this.adxDirectoryPath = 'adx/path/dir/';
                     this.adxConfigurator = new Configurator('/adx/path/dir');
@@ -608,7 +608,7 @@ let successMsg;
                     callback(null, {
                         fakeReport : true
                     });
-                });
+                };
                 const builder = new Builder('adx/path/dir/');
                 let callbackPath;
                 builder.build((err, outputPath) => {
