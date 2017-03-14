@@ -316,7 +316,13 @@ Builder.prototype.compressADX =  function compressADX() {
             }
         });
 
-        const buffer = zip.generate({type:"nodebuffer"});
+        const buffer = zip.generate({
+            type: "nodebuffer",
+            compression: 'DEFLATE',
+            compressionOptions: {
+                level: 6
+            }
+        });
         const fileExt = '.' + self.adxConfigurator.projectType.toLowerCase();
 
         self.outputPath = pathHelper.join(self.binPath, self.adxName + fileExt);
