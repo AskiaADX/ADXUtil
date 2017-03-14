@@ -352,7 +352,7 @@ let successMsg;
                     'config.xml',
                     'readme.txt'
                 ]);
-            });
+            }); 
 
             it("should write the .adc file in the `bin` directory while using an ADC", () => {
                 spies.validateHook = function (options, callback) {
