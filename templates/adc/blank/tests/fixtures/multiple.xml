@@ -26,19 +26,19 @@
       <LongCaption>multiple</LongCaption>
       <Modalities>
       <Modality ID="1">
-      <ShortCaption>A</ShortCaption>
+      <ShortCaption>Product A</ShortCaption>
       </Modality>
       <Modality ID="2">
-      <ShortCaption>B</ShortCaption>
+      <ShortCaption>Product B</ShortCaption>
       </Modality>
       <Modality ID="3">
-      <ShortCaption>C</ShortCaption>
+      <ShortCaption>Product C</ShortCaption>
       </Modality>
       <Modality ID="4">
-      <ShortCaption>D</ShortCaption>
+      <ShortCaption>Product D</ShortCaption>
       </Modality>
-      <Modality ID="5">
-      <ShortCaption>E</ShortCaption>
+      <Modality ID="5" Exclusive="1">
+      <ShortCaption>None of them</ShortCaption>
       </Modality>
       </Modalities>
 	</Question>

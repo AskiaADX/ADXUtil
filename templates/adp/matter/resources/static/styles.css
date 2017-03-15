@@ -168,19 +168,19 @@ header.fixed h2 {
 
 /* QUESTION CAPTION */
 
-.question {
+.askiaquestions {
     box-shadow: 0 4px 5px 0 rgba(0, 0, 0, .14), 0 1px 10px 0 rgba(0, 0, 0, .12), 0 2px 4px -1px rgba(0, 0, 0, .2);
     width: calc(100% - 30vw);
 }
 @media screen and (min-width: 501px) and (max-width: 768px) {
-  .question {
+  .askiaquestions {
     width: calc(100% - 20vw);
     padding: 25px 20px;
   }
 }
 
 @media screen and (max-width: 500px) {
-  .question {
+  .askiaquestions {
     width: calc(100% - 10vw);
     padding: 15px 10px;
   }
