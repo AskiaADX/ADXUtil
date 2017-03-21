@@ -83,7 +83,7 @@ describe('ADXShow', function () {
             expect(childProc.execFile).toHaveBeenCalled();
         });
 
-        it("should call the program `ADCShell.exe` with the `-masterPage` parameter when it's defined", function() {
+        it("should call the program `ADXShell.exe` with the `-masterPage` parameter when it's defined", function() {
             var childProc = require('child_process'),
                 spyExec   = spyOn(childProc, 'execFile');
 
@@ -102,7 +102,7 @@ describe('ADXShow', function () {
             expect(childProc.execFile).toHaveBeenCalled();
         });
 
-        it("should call the program `ADCShell.exe` with the `-properties` parameter when it's defined", function() {
+        it("should call the program `ADXShell.exe` with the `-properties` parameter when it's defined", function() {
             var childProc = require('child_process'),
                 spyExec   = spyOn(childProc, 'execFile');
 
@@ -122,6 +122,26 @@ describe('ADXShow', function () {
             expect(childProc.execFile).toHaveBeenCalled();
         });
 
+        it("should call the program `ADXShell.exe` with the `-themes` parameter when it's defined", function() {
+            var childProc = require('child_process'),
+                spyExec   = spyOn(childProc, 'execFile');
+
+            spyOn(process, 'cwd').andReturn('');
+
+            spyExec.andCallFake(function (file, args) {
+                expect(file).toBe('.\\ADXShell.exe');
+                expect(args).toEqual(['show', '"-output:something"', '"-fixture:single.xml"', '"-masterPage:mp.html"', '"-themes:prop1=value1&prop2=value2&prop%203=value%2C%223"', '"\\adx\\path\\dir"']);
+            });
+            adxShow.show({
+                output : 'something',
+                fixture : 'single.xml',
+                masterPage : 'mp.html',
+                themes : 'prop1=value1&prop2=value2&prop%203=value%2C%223'
+            }, '/adx/path/dir');
+
+            expect(childProc.execFile).toHaveBeenCalled();
+        });
+
         it("should run the `ADXShell` process using the InteractiveADXShell when it's defined in the options", function () {
             spyOn(process, 'cwd').andReturn('');
 
@@ -134,9 +154,10 @@ describe('ADXShow', function () {
                 fixture : 'single.xml',
                 masterPage : 'mp.html',
                 properties : 'prop1=value1&prop2=value2&prop%203=value%2C%223',
+                themes     : 'prop1=value1&prop2=value2&prop%203=value%2C%223',
                 adxShell : new InteractiveADXShell()
             }, '/adx/path/dir');
-            expect(mockCommand).toBe('show "-output:something" "-fixture:single.xml" "-masterPage:mp.html" "-properties:prop1=value1&prop2=value2&prop%203=value%2C%223" "\\adx\\path\\dir"');
+            expect(mockCommand).toBe('show "-output:something" "-fixture:single.xml" "-masterPage:mp.html" "-properties:prop1=value1&prop2=value2&prop%203=value%2C%223" "-themes:prop1=value1&prop2=value2&prop%203=value%2C%223" "\\adx\\path\\dir"');
         });
 
         describe("API `callback`", function () {

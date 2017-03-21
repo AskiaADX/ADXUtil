@@ -283,6 +283,8 @@ ADX.prototype.publish = function publish(platform, options, callback){
  * @param {String} options.output Name of the ADX Output to use
  * @param {String} options.fixture FileName of the ADX fixture to use
  * @param {String} [options.masterPage] Path of the master page to use (ADC Only)
+ * @param {String} [options.properties] ADX properties (in url query string format: 'param1=value1&param2-value2')
+ * @param {String} [options.themes] ADX theme properties (in url query string format: 'param1=value1&param2-value2')
  * @param {Boolean} [options.silent=false] Silent mode: Don't message in the console but only through the callback
  * @param {Function} callback Callback function
  * @param {Error} callback.err Error

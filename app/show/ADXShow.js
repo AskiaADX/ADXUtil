@@ -81,7 +81,8 @@ Show.prototype.writeMessage = function writeMessage(text) {
  * @param {String} options.output Name of the ADX Output to use
  * @param {String} options.fixture FileName of the ADX fixture to use
  * @param {String} [options.masterPage] Path of the master page to use (ADC Only)
- * @param {String} [options.properties] ADC properties (in url query string format: 'param1=value1&param2-value2')
+ * @param {String} [options.properties] ADX properties (in url query string format: 'param1=value1&param2-value2')
+ * @param {String} [options.themes] ADX theme properties (in url query string format: 'param1=value1&param2-value2')
  * @param {InteractiveADXShell} [options.adxShell] Interactive ADXShell process
  * @param {Boolean} [options.silent=false] Silent mode: Don't message in the console but only through the callback
  * @param {Function} callback Callback function
@@ -121,6 +122,9 @@ Show.prototype.show = function show(options, callback) {
     }
     if (options.properties) {
         args.push('"-properties:' + options.properties + '"');
+    }
+    if (options.themes) {
+        args.push('"-themes:' + options.themes + '"');
     }
     args.push('"' + this.adxDirectoryPath + '"');
 

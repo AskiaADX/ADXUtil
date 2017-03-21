@@ -51,7 +51,7 @@ Interview.prototype.constructor = Interview;
  * @param {Object} [options] Options of the command
  * @param {String} [options.fixture] Name of the fixture file to use
  * @param {String} [options.emulation] Name of the fixture file to use as emulation
- * @param {String} [options.properties] Properties of the ADX
+ * @param {String} [options.properties] Properties of the ADX  (in url query string format: 'param1=value1&param2-value2')
  * @param {String} [options.parameters] Parameters to update the interview
  * @param {String} [options.themes] Themes variables to set
  * @param {Function} [callback] Callback function
