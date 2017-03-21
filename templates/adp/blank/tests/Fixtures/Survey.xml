@@ -12,27 +12,39 @@
                     <LongCaption>Long caption of the single closed question</LongCaption>
                     <Modalities>
                         <Modality ID="1">
-                            <ShortCaption>Response A</ShortCaption>
+                            <ShortCaption>Absolutely</ShortCaption>
                         </Modality>
                         <Modality ID="2">
-                            <ShortCaption>Response B</ShortCaption>
+                            <ShortCaption>Rather yes</ShortCaption>
                         </Modality>
                         <Modality ID="3">
-                            <ShortCaption>Response C</ShortCaption>
+                            <ShortCaption>Rather no</ShortCaption>
+                        </Modality>
+                        <Modality ID="4">
+                            <ShortCaption>Not at all</ShortCaption>
+                        </Modality>
+                        <Modality ID="5">
+                            <ShortCaption>Don't know</ShortCaption>
                         </Modality>
                     </Modalities>
                 </Question>
                 <Question ID="2" Shortcut="multiple" ADCName="default"  Order="2" ElementType="question" AllowDK="0" QuestionType="closed" MaxResponse="3" MinResponse="0" Translated="0">
                     <LongCaption>Long caption of the multi-coded question</LongCaption>
                     <Modalities>
-                        <Modality ID="5">
-                            <ShortCaption>Response A</ShortCaption>
-                        </Modality>
                         <Modality ID="6">
-                            <ShortCaption>Response B</ShortCaption>
+                            <ShortCaption>Product A</ShortCaption>
                         </Modality>
                         <Modality ID="7">
-                            <ShortCaption>Response C</ShortCaption>
+                            <ShortCaption>Product B</ShortCaption>
+                        </Modality>
+                        <Modality ID="8">
+                            <ShortCaption>Product C</ShortCaption>
+                        </Modality>
+                        <Modality ID="9">
+                            <ShortCaption>Product D</ShortCaption>
+                        </Modality>
+                        <Modality ID="10" Exclusive="1">
+                            <ShortCaption>None of them</ShortCaption>
                         </Modality>
                     </Modalities>
                 </Question>

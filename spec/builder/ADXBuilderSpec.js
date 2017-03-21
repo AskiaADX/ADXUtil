@@ -386,6 +386,38 @@ let successMsg;
                 expect(outputPath).toEqual('adx\\path\\dir\\bin\\myadx.adp');
             });
 
+            it("should compress the .adx file in the `bin` directory with an appropriate compression level", () => {
+                /* Arrange */
+                spies.validateHook = function (options, callback) {
+                    this.adxName = 'myadx';
+                    this.adxDirectoryPath = 'adx/path/dir/';
+                    this.adxConfigurator = new Configurator('/adx/path/dir');
+                    this.adxConfigurator.fromXml('<control></control>');
+                    callback(null, {});
+                };
+                let zipArg;
+                let zip = {
+                    generate : (obj) => {
+                        zipArg = obj;
+                    },
+                    folder : () => {},
+                    file : () => {}
+                };
+                spies.getNewZip.andCallFake(() => {
+                    return zip;
+                });
+                /* Act */
+                adxBuilder.build(null, 'adx/path/dir');
+                /* Assert */
+                expect(zipArg).toEqual({
+                    type: "nodebuffer",
+                    compression: 'DEFLATE',
+                    compressionOptions: {
+                        level: 6
+                    }
+                }); 
+            });
+
         });
 
         describe("done", () => {
