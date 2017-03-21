@@ -383,6 +383,11 @@
              \brief Extension properties collection for the element
             
         </member>
+        <member name="P:AskiaCore.IElement.ThemeProperties">
+            
+             \brief Theme properties collection for the element
+            
+        </member>
         <member name="P:AskiaCore.IElement.BeforeStart">
             
              \brief HTML code to inject before the element start
@@ -807,6 +812,11 @@
             Value assign to the property
             </summary>
         </member>
+        <member name="P:AskiaCore.IExtensionProperty.IsInherited">
+            <summary>
+            Tells if the property is inherited or set at the current level
+            </summary>
+        </member>
         <member name="T:AskiaCore.IExtensionPropertyCollection">
             <summary>
             Collection of the extension (ADX) property
@@ -852,6 +862,11 @@
         <member name="M:AskiaCore.IExtensionPropertyCollection.Clear">
             <summary>
             Remove all properties from the collection
+            </summary>
+        </member>
+        <member name="M:AskiaCore.IExtensionPropertyCollection.GetResolvedCascadingValues">
+            <summary>
+            Get all properties including the ones resolving to default values
             </summary>
         </member>
         <member name="T:AskiaCore.IExtensionPropertyIterator">
@@ -3979,7 +3994,7 @@
                  </para>
                  <para>
                      The concurrent management of survey with context is mostly done to allows edition 
-                     by mutliple users at the same time on the same survey.
+                     by multiple users at the same time on the same survey.
                  </para>
              </remarks>
              <example>
@@ -4305,6 +4320,16 @@
              \brief Page templates collection for the survey
             
         </member>
+        <member name="P:AskiaCore.ISurvey.ExtensionProperties">
+            
+             \brief Extension properties collection for the survey
+            
+        </member>
+        <member name="P:AskiaCore.ISurvey.ThemeProperties">
+            
+             \brief Theme properties collection for the survey
+            
+        </member>
         <member name="M:AskiaCore.ISurvey.GetMessages">
             
              \brief Returns a collection of the messages for the
@@ -4353,6 +4378,83 @@
             
              \brief Generates a survey from this template
             
+        </member>
+        <member name="T:AskiaCore.IThemeProperty">
+            <summary>
+            Represents the key/value pair Theme property
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IThemeProperty.Name">
+            <summary>
+            Name of the property
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IThemeProperty.Value">
+            <summary>
+            Value assign to the property
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IThemeProperty.IsInherited">
+            <summary>
+            Tells if the property is inherited or set at the current level
+            </summary>
+        </member>
+        <member name="T:AskiaCore.IThemePropertyCollection">
+            <summary>
+            Collection of the Theme property
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IThemePropertyCollection.Count">
+            <summary>
+            Returns the number of properties in the collection
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IThemePropertyCollection.Item(System.String)">
+            <summary>
+            Returns the value associated with the specified property name
+            </summary>
+            <param name="name">Name of the property to read</param>
+            <returns>Return null if the property was not found</returns>
+        </member>
+        <member name="M:AskiaCore.IThemePropertyCollection.Contains(System.String)">
+            <summary>
+            Indicates if the collection contains the specified property
+            </summary>
+            <param name="name">Name of the property to search</param>
+            <returns>True when the collection contains the specified property, otherwize false</returns>
+        </member>
+        <member name="M:AskiaCore.IThemePropertyCollection.Create(System.String,System.String)">
+            <summary>
+            Create a property using the specified name and value
+            </summary>
+            <remarks>
+            If the name of the property already exist, this method override it's value
+            </remarks>
+            <param name="name">Name of the property to create</param>
+            <param name="value">Value of the new create property</param>
+            <returns>The property that has been created</returns>
+        </member>
+        <member name="M:AskiaCore.IThemePropertyCollection.Remove(System.String)">
+            <summary>
+            Remove the specified property from the collection
+            </summary>
+            <param name="name">Name of the property to remove</param>
+            <returns>Returns true if the property was found and removed</returns>
+        </member>
+        <member name="M:AskiaCore.IThemePropertyCollection.Clear">
+            <summary>
+            Remove all properties from the collection
+            </summary>
+        </member>
+        <member name="M:AskiaCore.IThemePropertyCollection.GetResolvedCascadingValues">
+            <summary>
+            Get all properties including the ones resolving to default values
+            </summary>
+        </member>
+        <member name="T:AskiaCore.IThemePropertyIterator">
+            <summary>
+            Iterator over the collection of Theme properties
+            </summary>
         </member>
         <member name="T:AskiaCore.DatabaseTypes">
             <summary>

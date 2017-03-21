@@ -276,7 +276,7 @@ That should show the result of the `MyADXOutputName` with the specified fixture.
 
 ## API Usage
 
-Please find the [full API documentation here](http://www.askia.com/Downloads/dev/docs/ADCUtil/index.html)
+Please find the [full API documentation here](http://installers.askia.com/helpdesk/devs/ADXUtilDoc/ADX.html)
 
 Example of usage of existing ADX
 
