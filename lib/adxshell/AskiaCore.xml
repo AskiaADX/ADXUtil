@@ -4188,12 +4188,22 @@
              \brief Saves to file in exchange format (.qex)
             
         </member>
+        <member name="M:AskiaCore.ISurvey.SaveToExchangeFormat(System.String,System.String)">
+            
+             \brief Saves to file in exchange format (.qex)
+            
+        </member>
         <member name="M:AskiaCore.ISurvey.SaveToExchangeFormat(System.Byte[]@)">
             
              \brief Saves to memory in exchange format (.qex)
             
         </member>
         <member name="M:AskiaCore.ISurvey.ReadFromExchangeFormat(System.String)">
+            
+             \brief Reads from file in exchange format (.qex)
+            
+        </member>
+        <member name="M:AskiaCore.ISurvey.ReadFromExchangeFormat(System.String,System.String)">
             
              \brief Reads from file in exchange format (.qex)
             
