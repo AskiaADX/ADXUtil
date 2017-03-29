@@ -328,6 +328,7 @@ function createJSONArticle (self, callback) {
         }
 
         const conf = self.configurator.get();
+        const projectType = self.configurator.projectType;
         const replacements = [
             {
                 pattern : /\{\{ADXProperties:HTML\}\}/gi,
@@ -335,7 +336,7 @@ function createJSONArticle (self, callback) {
             },
             {
                 pattern : /\{\{ADXListKeyWords\}\}/gi,
-                replacement : self.configurator.projectType + "; javascript; control; design; askiadesign; " + conf.info.name
+                replacement : `${projectType}; javascript; ${projectType === "adp" ? "page" : "control"}; design; askiadesign; ${conf.info.name}`
             },
             {
                 pattern : /\{\{ADXConstraints\}\}/gi,
