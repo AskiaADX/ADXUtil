@@ -263,6 +263,7 @@ describe("ADXPublisherZenDesk", function() {
                     delete notCompletedOptions[option];
 
                     var config = new Configurator('.');
+                    config.projectType = "adc";
                     var publisherZenDesk = new PublisherZenDesk(config, {}, notCompletedOptions);
                 }).toThrow(errMsg.missingPublishArgs + '\n missing argument : ' + option);
             });
@@ -270,7 +271,7 @@ describe("ADXPublisherZenDesk", function() {
 
         it('should instantiate the #configurator when everything is ok', function () {
             var config = new Configurator('.');
-
+            config.projectType = "adc";
             var publisherZenDesk = new PublisherZenDesk(config, {}, options);
 
             expect(publisherZenDesk.configurator).toBe(config);
@@ -279,6 +280,7 @@ describe("ADXPublisherZenDesk", function() {
         it("should instantiate the zendesk client with the right options", function() {
 
             var config = new Configurator('.');
+            config.projectType = "adc";
             var publisherZenDesk = new PublisherZenDesk(config, {}, options);
 
             expect(spies.zendesk.createClient).toHaveBeenCalledWith({
@@ -291,6 +293,7 @@ describe("ADXPublisherZenDesk", function() {
 
         it("should instantiate the zendesk#client when everything is ok", function() {
             var config = new Configurator('.');
+            config.projectType = "adc";
             var publisherZenDesk = new PublisherZenDesk(config, {}, options);
 
             expect(publisherZenDesk.client).toBe(fakeClient);
@@ -300,6 +303,7 @@ describe("ADXPublisherZenDesk", function() {
     describe("#publish", function() {
         it("should request to post the adc file when he is present in " + common.ADX_BIN_PATH, function() {
             var config = new Configurator('.');
+            config.projectType = "adc";
             var publisherZenDesk = new PublisherZenDesk(config, {}, options);
             var name = config.get().info.name;
             var p = path.resolve(path.join(config.path, common.ADX_BIN_PATH, name + '.adc'));
@@ -315,8 +319,27 @@ describe("ADXPublisherZenDesk", function() {
             });
         });
 
+        it("should request to post the adp file when he is present in " + common.ADX_BIN_PATH, function() {
+            var config = new Configurator('.');
+            config.projectType = "adp";
+            var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+            var name = config.get().info.name;
+            var p = path.resolve(path.join(config.path, common.ADX_BIN_PATH, name + '.adp'));
+            
+            runSync(function (done) {
+                spies.request.post.andCallFake(function (obj, cb) {
+                    expect(obj.formData).toEqual({
+                        file : p
+                    });
+                    done();
+                });
+                publisherZenDesk.publish();
+            });
+        });
+
         it("should request to post the qex file when he is present in " + common.QEX_PATH, function() {
             var config = new Configurator('.');
+            config.projectType = "adc";
             var publisherZenDesk = new PublisherZenDesk(config, {}, options);
             var name = config.get().info.name;
             var p = path.resolve(path.join(config.path, common.QEX_PATH, name + '.qex'));
@@ -344,6 +367,7 @@ describe("ADXPublisherZenDesk", function() {
            
         it("should request to post the png file when he is present in root", function() {
             var config = new Configurator('.');
+            config.projectType = "adc";
             var publisherZenDesk = new PublisherZenDesk(config, {}, options);
             var p = path.resolve(path.join(config.path, 'preview.png'));
             var n = 0;
@@ -370,6 +394,7 @@ describe("ADXPublisherZenDesk", function() {
         
         it("should output an error when the .adc file is missing in " + common.ADX_BIN_PATH, function() {
             var config = new Configurator('.');
+            config.projectType = "adc";
             var publisherZenDesk = new PublisherZenDesk(config, {}, options);
             spies.fs.stat.andCallFake(function (p, cb) {
                 if (/test-adx\.adc$/.test(p)) {
@@ -395,6 +420,7 @@ describe("ADXPublisherZenDesk", function() {
         describe("findSectionIdByTitle", function() {
             it("should output an error when the section is not found", function() {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var opts = JSON.parse(JSON.stringify(options));
                 opts.section = 'an non-existing section';
                 var publisherZenDesk = new PublisherZenDesk(config, {}, opts);
@@ -409,6 +435,7 @@ describe("ADXPublisherZenDesk", function() {
 
             it("should output an error when the section's title is not a string'", function() {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var opts = JSON.parse(JSON.stringify(options));
                 opts.section = {name : 'a weird object'};
                 var publisherZenDesk = new PublisherZenDesk(config, {}, opts);
@@ -423,6 +450,7 @@ describe("ADXPublisherZenDesk", function() {
 
             it("should output an error when it could not retrieve the list of sections", function() {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var error = new Error('an error');
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
 
@@ -440,6 +468,7 @@ describe("ADXPublisherZenDesk", function() {
 
             it("should create an article with the right section ID", function() {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
 
                 runSync(function (done) {
@@ -454,6 +483,7 @@ describe("ADXPublisherZenDesk", function() {
 
             it("should find the section with the same name case insensitive", function() {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var opts = JSON.parse(JSON.stringify(options));
                 opts.section = 'A_SECTION';
                 var publisherZenDesk = new PublisherZenDesk(config, {}, opts);
@@ -472,6 +502,7 @@ describe("ADXPublisherZenDesk", function() {
         describe("createJSONArticle", function() {
             it("should output an error when it could not read the article template", function () {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var error = new Error('An error');
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
                 spies.fs.readFile.andCallFake(function (p, o, cb) {
@@ -488,6 +519,7 @@ describe("ADXPublisherZenDesk", function() {
 
             it("should output an error when the JSON article is not correct", function() {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
                 spies.fs.readFile.andCallFake(function (p, o, cb) {
                     cb(null, "body article");
@@ -509,63 +541,101 @@ describe("ADXPublisherZenDesk", function() {
                 });
             });
 
-            it("should eval the body with the right patterns", function () {
+            it("should eval the body with the right patterns for adc", function () {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
                 var name = config.get().info.name;
                 spies.fs.readFile.andCallFake(function (p, o, cb) {
+                    expect(p).toEqual(path.join(__dirname,"../../", common.ZENDESK_ADC_ARTICLE_TEMPLATE_PATH));
                     cb(null, '{{ADXProperties:HTML}}, {{ADXListKeyWords}}, {{ADXConstraints}}');
                 });
 
                 runSync(function (done) {
                     spyOn(fakeClient.articles, "create").andCallFake(function (id, json) {
-                        var str = '<table class="askiatable" dir="ltr" cellspacing="0" cellpadding="0">' +
-                            '<colgroup><col width="281" /><col width="192" /><col width="867" /></colgroup>' +
-                            '<tbody><tr><td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Parameters&quot;]">Parameters</td>' +
-                            '<td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Type&quot;]">Type</td>' +
-                            '<td style="text-transform: uppercase; font-weight: bold;" data-sheets-value="[null,2,&quot;Comments and/or possible value&quot;]">Comments and/or possible value</td>' +
-                            '</tr><tr><td> </td><td> </td><td> </td></tr>' +
-                            '<tr>\n' +
-                            '<th data-sheets-value="[null,2,&quot;General&quot;]">General</th>\n' +
-                            '<td> </td>\n' +
-                            '<td> </td>\n' +
-                            '</tr>\n' +
-                            '<tr>\n' +
-                            '<td data-sheets-value="[null,2,&quot;Rendering type&quot;]">Rendering type</td>\n' +
-                            '<td data-sheets-value="[null,2,&quot;string&quot;]">string</td>\n' +
-                            '<td data-sheets-value="[null,2,&quot;Type of rendering classic&quot;,null,null,null,1]">Description : Type of rendering<br/>Value : classic<br/>Options : Classic, Image</td>\n' +
-                            '</tr>\n' +
-                            '<tr>\n' +
-                            '<td data-sheets-value="[null,2,&quot;Open-ended question for semi-open&quot;]">Open-ended question for semi-open</td>\n' +
-                            '<td data-sheets-value="[null,2,&quot;question&quot;]">question</td>\n' +
-                            '<td data-sheets-value="[null,2,&quot;Additional open-ended question that could be use to emulate semi-open &quot;,null,null,null,1]">Description : Additional open-ended question that could be use to emulate semi-open</td>\n' +
-                            '</tr>\n' +
-                            '<tr>\n' +
-                            '<th data-sheets-value="[null,2,&quot;Rendering type images&quot;]">Rendering type images</th>\n' +
-                            '<td> </td>\n' +
-                            '<td> </td>\n' +
-                            '</tr>\n' +
-                            '<tr>\n' +
-                            '<td data-sheets-value="[null,2,&quot;Image for single question&quot;]">Image for single question</td>\n' +
-                            '<td data-sheets-value="[null,2,&quot;file&quot;]">file</td>\n' +
-                            '<td data-sheets-value="[null,2,&quot;Image of single question when the rendering type is image Single.png&quot;,null,null,null,1]">Description : Image of single question when the rendering type is image<br/>Value : Single.png</td>\n' +
-                            '</tr>\n' +
-                            '<tr>\n' +
-                            '<td data-sheets-value="[null,2,&quot;Image for multiple question&quot;]">Image for multiple question</td>\n' +
-                            '<td data-sheets-value="[null,2,&quot;file&quot;]">file</td>\n' +
-                            '<td data-sheets-value="[null,2,&quot;Image of multiple question when the rendering type is image Multiple.png&quot;,null,null,null,1]">Description : Image of multiple question when the rendering type is image<br/>Value : Multiple.png</td>\n' +
-                            '</tr>\n' +
-                            '</tbody></table>, ' +
-                            'adc; adc2; javascript; control; design; askiadesign; test-adx, ' +
-                            'This control is compatible with ' + 
-                            'single, multiple' +
-                            ' questions.\n' +
-                            'Number minimum of responses : 2.\n' +
-                            'Number maximum of responses : *.\n' +
-                            'You can use the following controls : ' +
-                            'label, responseblock.';
 
-                        expect(json.article.body).toEqual(str);
+                        expect(json.article.body.indexOf("{{ADX")).toEqual(-1);
+                        done();
+                    });
+                    publisherZenDesk.publish(function() {});
+
+                });
+            });
+
+            it("should eval the body with the right patterns for adp", function () {
+                var config = new Configurator('.');
+                config.projectType = "adp";
+                config.get.andReturn({
+                    info: {
+                        name: 'test-adx'
+                    },
+                    properties: {
+                        categories: [
+                            {
+                                name: "General",
+                                properties: [
+                                    {
+                                        id: "renderingType",
+                                        name: "Rendering type",
+                                        type: "string",
+                                        description: "Type of rendering",
+                                        value: "classic",
+                                        options: [
+                                            {
+                                                value: "classic",
+                                                text: "Classic"
+                                            },
+                                            {
+                                                value: "image",
+                                                text: "Image"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        id: "other",
+                                        name: "Open-ended question for semi-open",
+                                        type: "question",
+                                        numeric: true,
+                                        open: true,
+                                        description: "Additional open-ended question that could be use to emulate semi-open"
+                                    }
+                                ]
+                            },
+                            {
+                                name: "Rendering type images",
+                                properties: [
+                                    {
+                                        id: "singleImage",
+                                        name: "Image for single question",
+                                        type: "file",
+                                        fileExtension: ".png, .gif, .jpg",
+                                        description: "Image of single question when the rendering type is image",
+                                        value: "Single.png"
+                                    },
+                                    {
+                                        id: "multipleImage",
+                                        name: "Image for multiple question",
+                                        type: "file",
+                                        fileExtension: ".png, .gif, .jpg",
+                                        description: "Image of multiple question when the rendering type is image",
+                                        value: "Multiple.png"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                });
+                var publisherZenDesk = new PublisherZenDesk(config, {}, options);
+                var name = config.get().info.name;
+                spies.fs.readFile.andCallFake(function (p, o, cb) {
+                    expect(p).toEqual(path.join(__dirname,"../../", common.ZENDESK_ADP_ARTICLE_TEMPLATE_PATH));
+                    cb(null, '{{ADXProperties:HTML}}, {{ADXListKeyWords}}, {{ADXConstraints}}');
+                });
+                
+                runSync(function (done) {
+                    spyOn(fakeClient.articles, "create").andCallFake(function (id, json) {
+
+                        expect(json.article.body.indexOf("{{ADX")).toEqual(-1);
                         done();
                     });
                     publisherZenDesk.publish(function() {});
@@ -577,6 +647,7 @@ describe("ADXPublisherZenDesk", function() {
         describe("deleteAttachments", function(){
             it("should output an error when it could not retrieve the list of article within the section", function () {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var error = new Error('An error');
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
                 spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
@@ -593,6 +664,7 @@ describe("ADXPublisherZenDesk", function() {
 
             it("should output an error when it could not retrieve the list of attachments within the article", function () {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var error = new Error('An error');
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
                 spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
@@ -614,6 +686,7 @@ describe("ADXPublisherZenDesk", function() {
             
             it("should output an error when it found duplicate article title", function () {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
                 spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
                     cb(null, null, [
@@ -632,6 +705,7 @@ describe("ADXPublisherZenDesk", function() {
 
             it("should delete the article's attachments when it found one article with the same name and if it have attachments", function () {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
                 spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
                     cb(null, null, [
@@ -649,6 +723,7 @@ describe("ADXPublisherZenDesk", function() {
 
             it("should not delete article's attachments when it not found the article", function () {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
 
                 runSync(function (done) {
@@ -661,6 +736,7 @@ describe("ADXPublisherZenDesk", function() {
             
             it("should return the id of the article whitch already exist", function () {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var error = new Error('An error');
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
                 spyOn(fakeClient.articles, "listBySection").andCallFake(function (id, cb) {
@@ -682,6 +758,7 @@ describe("ADXPublisherZenDesk", function() {
         describe("uploadAvailableFiles", function() {
             it("should output an error when it could not send the request", function () {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var error = new Error('An error');
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
                 spies.request.post.andCallFake(function (obj, cb) {
@@ -699,6 +776,7 @@ describe("ADXPublisherZenDesk", function() {
             function testPost(o, index) {
                 it("should call request.post with the correct arguments for " + o.name, function() {
                     var config = new Configurator('.');
+                    config.projectType = "adc";
                     var publisherZenDesk = new PublisherZenDesk(config, {}, options);
                     var name = config.get().info.name;
                     o.path = path.resolve(path.join(config.path, o.suffix));
@@ -716,7 +794,7 @@ describe("ADXPublisherZenDesk", function() {
                                     headers : {
                                         'Authorization' : "Basic " + new Buffer(options.username + ":" + options.password).toString('base64')
                                     }
-                                })
+                                });
                                 done();
                             }
                             n++;
@@ -751,6 +829,7 @@ describe("ADXPublisherZenDesk", function() {
         describe("update article with attachments", function() {
             it("should call updateForArticle with the attachments", function () {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var publisherZenDesk = new PublisherZenDesk(config, {}, options);
                 spyOn(fakeClient.articles, "create").andCallFake(function (id, jsonArticle, cb) {
                     cb(null, null, {
@@ -778,6 +857,7 @@ describe("ADXPublisherZenDesk", function() {
         describe("update article with attachments", function() {
             it("should call update with the correct arguments", function () {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var publisherZenDesk = new PublisherZenDesk(config, {}, {
                     url              :'https://uri',
                     section          : 'a_section',
@@ -814,6 +894,7 @@ describe("ADXPublisherZenDesk", function() {
         describe('#'  + method, function () {
             it('should call the `common.' + method + '` when no #logger is defined', function () {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var publisherZendeskInstance = new PublisherZenDesk(config, {}, options);
                 publisherZendeskInstance[method]('a message', 'arg 1', 'arg 2');
                 expect(common[method]).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
@@ -821,6 +902,7 @@ describe("ADXPublisherZenDesk", function() {
 
             it('should call the `common.' + method + '` when the #logger is defined but without the ' + method + ' method.', function () {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var publisherZendeskInstance = new PublisherZenDesk(config, {}, options);
                 publisherZendeskInstance.logger = {};
                 publisherZendeskInstance[method]('a message', 'arg 1', 'arg 2');
@@ -829,6 +911,7 @@ describe("ADXPublisherZenDesk", function() {
 
             it('should not call the `common.' + method + '` when the #logger is defined with the ' + method + ' method.', function () {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var publisherZendeskInstance = new PublisherZenDesk(config, {}, options);
                 publisherZendeskInstance.logger = {};
                 publisherZendeskInstance.logger[method] = function () {};
@@ -838,6 +921,7 @@ describe("ADXPublisherZenDesk", function() {
 
             it('should call the `logger.' + method + '` when it\'s defined', function () {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var publisherZendeskInstance = new PublisherZenDesk(config, {}, options);
                 publisherZendeskInstance.logger = {};
                 publisherZendeskInstance.logger[method] = function () {};
@@ -848,6 +932,7 @@ describe("ADXPublisherZenDesk", function() {
 
             it('should wrap the message inside a div with the `' + className + '` when the printMode=html', function () {
                 var config = new Configurator('.');
+                config.projectType = "adc";
                 var publisherZendeskInstance = new PublisherZenDesk(config, {}, options);
                 publisherZendeskInstance.printMode = 'html';
                 publisherZendeskInstance[method]('a message', 'arg 1', 'arg 2');

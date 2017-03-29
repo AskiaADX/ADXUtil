@@ -203,7 +203,8 @@ exports.messages = {
 
 //Publish
 
-exports.ZENDESK_ARTICLE_TEMPLATE_PATH = exports.TEMPLATES_PATH + 'publish/zendesk/article.html';
+exports.ZENDESK_ADC_ARTICLE_TEMPLATE_PATH = exports.TEMPLATES_PATH + 'publish/zendesk/adc.html';
+exports.ZENDESK_ADP_ARTICLE_TEMPLATE_PATH = exports.TEMPLATES_PATH + 'publish/zendesk/adp.html';
 exports.QEX_PATH = '/example';
 
 

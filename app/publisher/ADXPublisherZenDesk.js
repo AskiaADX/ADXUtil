@@ -241,12 +241,13 @@ function generateHtmlCodeForProperty(property) {
 }
 
 /**
- * Transform the constraints of an adc (from the config) to a sentence
+ * Transform the constraints of an adx (from the config) to a sentence
  *
  * @param {Object} constraints The constraints.
  * @ignore
  */
 function constraintsToSentence(constraints) {
+    if (!constraints) return "";
     const questions = [];
     const controls = [];
     if (constraints.questions) {
@@ -319,7 +320,8 @@ function propertiesToHtml(prop) {
  * @ignore
  */
 function createJSONArticle (self, callback) {
-    fs.readFile(path.join(__dirname,"../../", common.ZENDESK_ARTICLE_TEMPLATE_PATH), 'utf-8', (err, data) => {
+    const pathTemplate = (self.configurator.projectType === "adp") ? common.ZENDESK_ADP_ARTICLE_TEMPLATE_PATH : common.ZENDESK_ADC_ARTICLE_TEMPLATE_PATH;
+    fs.readFile(path.join(__dirname,"../../", pathTemplate), 'utf-8', (err, data) => {
         if (err) {
             callback(err);
             return;
@@ -333,7 +335,7 @@ function createJSONArticle (self, callback) {
             },
             {
                 pattern : /\{\{ADXListKeyWords\}\}/gi,
-                replacement : "adc; adc2; javascript; control; design; askiadesign; " + conf.info.name
+                replacement : self.configurator.projectType + "; javascript; control; design; askiadesign; " + conf.info.name
             },
             {
                 pattern : /\{\{ADXConstraints\}\}/gi,
@@ -419,7 +421,7 @@ function deleteAttachmentsIfArticle(self, title, section_id, callback) {
 }
 
 /**
- * Upload all the files that are available (.adc, .qex, .png)
+ * Upload all the files that are available (.adx, .qex, .png)
  *
  * @param {PublisherZenDesk} self
  * @param {Array} files An array containing Strings which are the absolute paths of the files
@@ -450,7 +452,8 @@ function uploadAvailableFiles(self, files, articleId, callback) {
 
             body = JSON.parse(body);
 
-            const prefix = files[index].match(/\.([a-z]+)$/i)[1];
+            let prefix = files[index].match(/\.([a-z]+)$/i)[1];
+            if (prefix.toLowerCase() === "adc" || prefix.toLowerCase() === "adp") prefix = "adx";
             attachments[prefix] = {
                 id   : body.article_attachment.id,
                 name : body.article_attachment.file_name
@@ -464,7 +467,7 @@ function uploadAvailableFiles(self, files, articleId, callback) {
                 callback(null, attachments);
             }
         });
-    };
+    }
 
     uploadAvailableFilesRecursive(0);
 }
@@ -546,7 +549,7 @@ PublisherZenDesk.prototype.publish = function(callback) {
 
                     const filesToPush = [];
                     const name = self.configurator.get().info.name;
-                    const binPath = path.resolve(path.join(self.configurator.path, common.ADX_BIN_PATH, name + '.adc'));
+                    const binPath = path.resolve(path.join(self.configurator.path, common.ADX_BIN_PATH, name + '.' + self.configurator.projectType));
                     fs.stat(binPath, (err, stats) => {
                         if (stats && stats.isFile()) {
                             filesToPush.push(binPath);
@@ -579,7 +582,7 @@ PublisherZenDesk.prototype.publish = function(callback) {
                                         },
                                         {
                                             pattern : /\{\{ADXFileURL\}\}/gi,
-                                            replacement : '<a href="/hc/en-us/article_attachments/' + attachments.adc.id + '/' + attachments.adc.name + '">click here</a>'
+                                            replacement : '<a href="/hc/en-us/article_attachments/' + attachments.adx.id + '/' + attachments.adx.name + '">click here</a>'
                                         }
                                     ];
 
