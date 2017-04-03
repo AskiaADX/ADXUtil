@@ -26,14 +26,15 @@ If useList Then
         Dim attrChecked
         For i = 1 To CurrentQuestion.AvailableResponses.Count
             inputName   = CurrentQuestion.AvailableResponses[i].InputName()
-            inputId     = inputName.Replace(" ", "_")
+            inputId     = inputName.Replace(" ", "_").Replace("M", "askia-input")
             inputValue  = CurrentQuestion.AvailableResponses[i].InputValue()
             attrChecked = On(CurrentQuestion.AvailableResponses[i].IsSelected, "checked=\"checked\"", "")
             caption     = CurrentQuestion.AvailableResponses[i].Caption
         %}
-        <li>
+        <li class="askia-response">
             <input type="checkbox" name="{%= inputName %}" id="{%= inputId %}" {%:= attrChecked %} />
-            <label for="{%= inputId %}">{%= caption %}</label><br />
+            <label for="{%= inputId %}" class="askia-checkbox"></label>
+            <label for="{%= inputId %}" class="askia-response-label">{%= caption %}</label>
         </li>
         {% Next %}
     </ul>

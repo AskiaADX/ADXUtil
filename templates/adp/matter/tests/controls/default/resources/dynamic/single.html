@@ -25,14 +25,15 @@ If useList Then %}
         Dim inputId
         Dim attrChecked
         For i = 1 To CurrentQuestion.AvailableResponses.Count 
-            inputId     = inputName + "_" + i
+            inputId     = (inputName + "_" + i).Replace("U", "askia-input")
             attrChecked = On(CurrentQuestion.AvailableResponses[i].IsSelected, "checked=\"checked\"", "")
             inputValue  = CurrentQuestion.AvailableResponses[i].InputValue()
             caption     = CurrentQuestion.AvailableResponses[i].Caption
         %}
         <li class="askia-response">
             <input type="radio" name="{%= inputName %}" id="{%= inputId %}" value="{%= inputValue %}" {%:= attrChecked %} />
-            <label for="{%= inputId %}">{%= caption %}</label>
+            <label for="{%= inputId %}" class="askia-radio"></label>
+            <label for="{%= inputId %}" class="askia-response-label">{%= caption %}</label>
         </li>
         {% Next %}
     </ul>
