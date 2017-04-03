@@ -304,21 +304,37 @@
     }
     
     document.addEventListener("DOMContentLoaded", function(){
-        document.addEventListener("click", function(event){
-            var el = event.target || event.srcElement;
-            if ((el.nodeName === "INPUT") && (el.type === "checkbox") && (el.className.indexOf("askia-exclusive") >= 0)) {
-                manageExclusive(el);
-            }
-        });
+        //document.addEventListener("click", function(event){
+        //    var el = event.target || event.srcElement;
+        //    if ((el.nodeName === "INPUT") && (el.type === "checkbox") && (el.className.indexOf("askia-exclusive") >= 0)) {
+        //        manageExclusive(el);
+        //    }
+        //});
         document.addEventListener("change", function(event){
             var el = event.target || event.srcElement;
-            if (((el.nodeName === "INPUT") && (el.type === "radio" || el.type === "checkbox")) || el.nodeName === "SELECT") {
+            if (((el.nodeName === "INPUT") && 
+            (el.parentElement.className.indexOf("askia-response") >= 0 ||
+             el.parentElement.className.indexOf("askia-control") >= 0 ||
+              el.parentElement.className.indexOf("askia-grid-row") >= 0 ||
+               el.parentElement.parentElement.className.indexOf("askia-grid-row") >= 0)  && 
+               (el.type === "radio" || el.type === "checkbox")) || el.nodeName === "SELECT") {
                 askia.triggerAnswer();
             }
         });
         document.addEventListener("input", function(event){
             var el = event.target || event.srcElement;
-            if ((el.nodeName === "TEXTAREA") || ((el.nodeName === "INPUT") && (el.type === "color" || el.type === "date" || el.type === "datetime" || el.type === "email" || el.type === "month" || el.type === "number" || el.type === "password" || el.type === "range" || el.type === "search" || el.type === "tel" || el.type === "text" || el.type === "time" || el.type === "url" || el.type === "week"))) {
+            if (((el.nodeName === "TEXTAREA") || 
+            ((el.nodeName === "INPUT") && (el.type === "color" ||
+             el.type === "date" || el.type === "datetime" ||
+              el.type === "email" || el.type === "month" ||
+               el.type === "number" || el.type === "password" ||
+                el.type === "range" || el.type === "search" ||
+                 el.type === "tel" || el.type === "text" ||
+                  el.type === "time" || el.type === "url" || el.type === "week"))) && 
+                  (el.parentElement.className.indexOf("askia-response") >= 0 ||
+                   el.parentElement.className.indexOf("askia-control") >= 0 ||
+                    el.parentElement.className.indexOf("askia-grid-row") >= 0 ||
+                     el.parentElement.parentElement.className.indexOf("askia-grid-row") >= 0)) {
                 askia.triggerAnswer();
             }
         });
