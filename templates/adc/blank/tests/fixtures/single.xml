@@ -25,19 +25,19 @@
 	<Question ID="1" Shortcut="single" Order="1" ElementType="question" AllowDK="1" QuestionType="closed" MaxResponse="1" MinResponse="0" Translated="0">
 	<LongCaption>single</LongCaption>
 	<Modalities>
-	<Modality ID="1">
+	<Modality ID="1" Resource="4">
 	<ShortCaption>Absolutely</ShortCaption>
 	</Modality>
-	<Modality ID="2">
+	<Modality ID="2" Resource="5">
 	<ShortCaption>Rather yes</ShortCaption>
 	</Modality>
-  <Modality ID="3">
-    <ShortCaption>Rather no</ShortCaption>
+  <Modality ID="3" Resource="2">
+    <ShortCaption>Rather No</ShortCaption>
   </Modality>
-  <Modality ID="4">
+  <Modality ID="4" Resource="3">
     <ShortCaption>Not at all</ShortCaption>
   </Modality>
-  <Modality ID="5">
+  <Modality ID="5" Resource="1">
     <ShortCaption>Don't know</ShortCaption>
   </Modality>
 	</Modalities>
@@ -45,6 +45,38 @@
 	</Questions>
 	</Question>
 	</Questions>
+	<Resources>
+	<Resource ID="1" Name="neutral" Type="0" Code="0" LanguageID="0" Checksum="-1190233690">
+	<InControl/>
+	<Params/>
+	<Mime/>
+	<Path>../../../SurveyResources/neutral.png</Path>
+	</Resource>
+	<Resource ID="2" Name="sad_1" Type="0" Code="0" LanguageID="0" Checksum="329623545">
+	<InControl/>
+	<Params/>
+	<Mime/>
+	<Path>../../../SurveyResources/sad_1.png</Path>
+	</Resource>
+	<Resource ID="3" Name="sad_2" Type="0" Code="0" LanguageID="0" Checksum="-1081185914">
+	<InControl/>
+	<Params/>
+	<Mime/>
+	<Path>../../../SurveyResources/sad_2.png</Path>
+	</Resource>
+	<Resource ID="4" Name="smile_1" Type="0" Code="0" LanguageID="0" Checksum="232495086">
+	<InControl/>
+	<Params/>
+	<Mime/>
+	<Path>../../../SurveyResources/smile_1.png</Path>
+	</Resource>
+	<Resource ID="5" Name="smile_2" Type="0" Code="0" LanguageID="0" Checksum="-1372580338">
+	<InControl/>
+	<Params/>
+	<Mime/>
+	<Path>../../../SurveyResources/smile_2.png</Path>
+	</Resource>
+	</Resources>
     </Survey>
   </arrange>
 </fixture>
