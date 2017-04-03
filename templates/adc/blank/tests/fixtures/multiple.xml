@@ -86,7 +86,7 @@
   <InControl/>
   <Params/>
   <Mime/>
-  <Path>../../../SurveyResources/pb.pb</Path>
+  <Path>../../../SurveyResources/pb.png</Path>
   </Resource>
   <Resource ID="8" Name="pc" Type="0" Code="0" LanguageID="0" Checksum="-1259586742">
   <InControl/>
