@@ -4071,6 +4071,11 @@
             Description of the survey
             </summary>
         </member>
+        <member name="M:AskiaCore.ISurvey.TransformIntoSurveyTemplate">
+            <summary>
+            Promotes teh current survey to a survey Template
+            </summary>
+        </member>
         <member name="P:AskiaCore.ISurvey.DefaultLanguageId">
             <summary>
             Id of the survey default Language
