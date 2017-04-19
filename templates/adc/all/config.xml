@@ -35,9 +35,10 @@
       <content fileName="open.html" type="html" mode="dynamic" position="none" />
       <content fileName="numeric.html" type="html" mode="dynamic" position="none" />
       <content fileName="datetime.html" type="html" mode="dynamic" position="none" />
-
       <content fileName="default.css" type="css" mode="static" position="head" />
       <content fileName="default.html" type="html" mode="dynamic" position="placeholder" />
+      <content fileName="default.js" type="javascript" mode="static" position="foot" />
+      <content fileName="multiple.js" type="javascript" mode="dynamic" position="foot" />
     </output>
   </outputs>
 
