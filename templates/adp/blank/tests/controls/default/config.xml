@@ -31,14 +31,14 @@
     <output id="default">
       <description><![CDATA[Default output]]></description>
 	  <content fileName="adc_default.css" type="css" mode="static" position="head" />
-      
       <content fileName="single.html" type="html" mode="dynamic" position="none" />
       <content fileName="multiple.html" type="html" mode="dynamic" position="none" />
       <content fileName="open.html" type="html" mode="dynamic" position="none" />
       <content fileName="numeric.html" type="html" mode="dynamic" position="none" />
       <content fileName="datetime.html" type="html" mode="dynamic" position="none" />
-
       <content fileName="default.html" type="html" mode="dynamic" position="placeholder" />
+	  <content fileName="default.js" type="javascript" mode="static" position="foot" />
+      <content fileName="multiple.js" type="javascript" mode="dynamic" position="foot" />
     </output>
   </outputs>
 

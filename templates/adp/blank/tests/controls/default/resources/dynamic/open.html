@@ -1,23 +1,23 @@
-{% 
+﻿{% 
 Dim inputName  =  CurrentQuestion.InputName()
 Dim inputValue =  CurrentQuestion.InputValue()
 
-Dim datalist    = CurrentADC.PropValue("datalist").Split("|")     
+Dim datalist    = CurrentADC.Var("datalist").ToString().Split("|")
 Dim attrList    = On(datalist.Count > 0, "list=\"" + inputName + "\"", "")
 Dim i
 
-Dim inputType  = CurrentADC.PropValue("opensubtype")
-Dim multiline  = (CurrentADC.PropValue("multiline") = "1") ' Convert to boolean
+Dim inputType  = CurrentADC.Var("opensubtype")
+Dim multiline  = CurrentADC.Var("multiline")
 
 Dim maxValue = CurrentQuestion.MaxValue
-Dim attrMax  = On(maxValue <> DK AND maxValue > 0, "maxLength=\"" + maxValue + "\"", "")
+Dim attrMax  = On(maxValue <> DK, "maxLength=\"" + maxValue + "\"", "")
 
-Dim placeholder = CurrentADC.PropValue("placeholder")
+Dim placeholder = CurrentADC.Var("placeholder")
 Dim attrPlaceholder = On(placeholder <> "", "placeholder=\"" + placeholder + "\"", "")
 
 Dim attrRequired = On(CurrentQuestion.IsAllowDK, "required=\"required\"", "")
 
-If inputType = "text" And multiline Then
+If inputType = "text" And multiline = True Then
 %}
 <textarea name="{%= inputName %}" {%:= attrMax %} {%:= attrPlaceholder %} {%:= attrRequired %}>{%= inputValue %}</textarea>
 {% Else %}

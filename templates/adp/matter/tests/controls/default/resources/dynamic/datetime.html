@@ -1,5 +1,5 @@
 ﻿{%
-Dim placeholder = CurrentADC.PropValue("placeholder")
+Dim placeholder = CurrentADC.Var("placeholder")
 Dim attrPlaceholder = On(placeholder <> "", "placeholder=\"" + placeholder + "\"", "")
 Dim attrRequired = On(CurrentQuestion.IsAllowDK, "required=\"required\"", "")
 
