@@ -2,7 +2,7 @@
 'Theme
 Dim WhiteColor = Theme.WhiteColor
 Dim BlackColor = Theme.BlackColor
-Dim PrimaryColor = Theme.PrimaryColor
+Dim PrimaryColor = CurrentADP.Var("ribbon_footer_background_color")
 Dim PrimaryDarkColor = Theme.PrimaryDarkColor
 Dim PrimaryLightColor = Theme.PrimaryLightColor
 Dim SecondaryColor = Theme.SecondaryColor

@@ -1,6 +1,6 @@
 {
   "name": "adxutil",
-  "version": "2.0.0-rc.6",
+  "version": "2.0.0-rc.7",
   "description": "Utilities tools for Askia Design eXtension",
   "main": "./app/ADXUtilAPI.js",
   "dependencies": {

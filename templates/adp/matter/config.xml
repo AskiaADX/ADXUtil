@@ -20,6 +20,7 @@
       <description><![CDATA[Default output]]></description>
       <content fileName="favicon.png" type="image" mode="static" position="none" />
       <content fileName="logo-askia-rvb.png" type="image" mode="static" position="none" />
+	  <content fileName="askia.live.routing.js" type="javascript" mode="dynamic" position="head" />
       <content fileName="html5-ie.js" type="javascript" mode="static" position="head" />
       <content fileName="normalize.min.css" type="css" mode="static" position="head" />
       <content fileName="styles.min.css" type="css" mode="static" position="head" />
@@ -68,6 +69,10 @@
       <property xsi:type="standardProperty" id="radio_checkbox_size" name="Radio Checkbox size" type="string" mode="dynamic" require="true" visible="true">
         <description><![CDATA[Radio Checkbox size]]></description>
         <value><![CDATA[1.5rem]]></value>
+      </property>
+	  <property xsi:type="standardProperty" id="ribbon_footer_background_color" name="Ribbon Footer background color" type="color" mode="dynamic" require="true" visible="false" colorFormat="rgba">
+        <description><![CDATA[The background color of the ribbon and footer]]></description>
+        <value><![CDATA[{%= Theme.PrimaryColor %}]]></value>
       </property>
     </category>
     <category id="buttons" name="Buttons">
