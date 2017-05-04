@@ -70,7 +70,7 @@
         <description><![CDATA[Radio Checkbox size]]></description>
         <value><![CDATA[1.5rem]]></value>
       </property>
-	  <property xsi:type="standardProperty" id="ribbon_footer_background_color" name="Ribbon Footer background color" type="color" mode="dynamic" require="true" visible="false" colorFormat="rgba">
+	    <property xsi:type="standardProperty" id="ribbon_footer_background_color" name="Ribbon Footer background color" type="color" mode="dynamic" require="true" visible="false" colorFormat="rgba">
         <description><![CDATA[The background color of the ribbon and footer]]></description>
         <value><![CDATA[{%= Theme.PrimaryColor %}]]></value>
       </property>

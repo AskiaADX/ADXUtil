@@ -11,7 +11,7 @@
   window.CustomEvent = CustomEvent;
 })();
 (function () {
-    if (!window.arrLiveRoutingInputName ||  window.arrLiveRoutingInputName.length <= 0 ) {
+    if (!window.arrLiveRoutingInputCode ||  window.arrLiveRoutingInputCode.length <= 0 ) {
     	return;    
     }
     if (window.AskiaScript) {
@@ -294,7 +294,7 @@
             var el = event.target || event.srcElement;
             // Retrieve the InputCode number of the question
             var rg = /^[a-z]+([0-9]+)(?:\s*|\_*)/i.exec(el.name);
-            if ((window.arrLiveRoutingInputName.indexOf(rg[1]) > -1) && 
+            if (rg && (window.arrLiveRoutingInputCode.indexOf(rg[1]) > -1) && 
                 (((el.nodeName === "INPUT") && 
                   (el.parentElement.className.indexOf("askia-response") >= 0 ||
                    el.parentElement.className.indexOf("askia-control") >= 0 ||
@@ -311,7 +311,7 @@
             var el = event.target || event.srcElement;
             // Retrieve the InputCode number of the question
             var rg = /^[a-z]+([0-9]+)(?:\s*|\_*)/i.exec(el.name);
-            if ((window.arrLiveRoutingInputName.indexOf(rg[1]) > -1) && 
+            if (rg && (window.arrLiveRoutingInputCode.indexOf(rg[1]) > -1) && 
                 (((el.nodeName === "TEXTAREA") || 
                   ((el.nodeName === "INPUT") && (el.type === "color" ||
                     el.type === "date" || el.type === "datetime" ||

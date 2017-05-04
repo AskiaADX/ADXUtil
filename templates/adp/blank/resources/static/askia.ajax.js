@@ -11,6 +11,9 @@
   window.CustomEvent = CustomEvent;
 })();
 (function () {
+    if (!window.arrLiveRoutingInputCode ||  window.arrLiveRoutingInputCode.length <= 0 ) {
+    	return;    
+    }
     if (window.AskiaScript) {
 		AskiaScript.executeLiveRouting = function () {};
 	} 
@@ -282,43 +285,46 @@
         setTimeout(executeLiveRouting, 250);
     }
     
-    /**
-     * Manage the exclusive responses
-     *
-     * @param {HTMLElement} obj HTMLElement (input) clicked
-     */
-    function manageExclusive(obj) {
-        var inputName = obj.name;
-        
-        var tr = obj.parentNode.parentNode.parentNode;
-        for (var i = 1; j = tr.children.length, i < j; i++) {
-            if (obj.parentNode.className.indexOf("exclusive") >= 0 && tr.children[i].children[0] !== obj && tr.children[i].className.indexOf("selected") >= 0) {
-                document.getElementById(tr.children[i].children[0].attributes.id.value).checked = false;
-                removeClass(tr.children[i],'selected');
-            } else if (!(obj.parentNode.className.indexOf("exclusive") >= 0) && (tr.children[i].children[0] !== obj) && (tr.children[i].className.indexOf("selected") >= 0) && (tr.children[i].className.indexOf("exclusive") >= 0)) {
-                document.getElementById(tr.children[i].children[0].attributes.id.value).checked = false;
-                removeClass(tr.children[i],'selected');
-            }
-        }
-
-    }
-    
     document.addEventListener("DOMContentLoaded", function(){
-        document.addEventListener("click", function(event){
-            var el = event.target || event.srcElement;
-            if ((el.nodeName === "INPUT") && (el.type === "checkbox") && (el.className.indexOf("askia-exclusive") >= 0)) {
-                manageExclusive(el);
-            }
-        });
+        
+        /**
+         * Change event listener for the closed question form controls
+         */
         document.addEventListener("change", function(event){
             var el = event.target || event.srcElement;
-            if (((el.nodeName === "INPUT") && (el.type === "radio" || el.type === "checkbox")) || el.nodeName === "SELECT") {
+            // Retrieve the InputCode number of the question
+            var rg = /^[a-z]+([0-9]+)(?:\s*|\_*)/i.exec(el.name);
+            if (rg && (window.arrLiveRoutingInputCode.indexOf(rg[1]) > -1) && 
+                (((el.nodeName === "INPUT") && 
+                  (el.parentElement.className.indexOf("askia-response") >= 0 ||
+                   el.parentElement.className.indexOf("askia-control") >= 0 ||
+                   el.parentElement.className.indexOf("askia-grid-row") >= 0 ||
+                   el.parentElement.parentElement.className.indexOf("askia-grid-row") >= 0)  && 
+                  (el.type === "radio" || el.type === "checkbox")) || el.nodeName === "SELECT")) {
                 askia.triggerAnswer();
             }
         });
+        /**
+         * Input event listener for the numerical and open ended question form controls
+         */
         document.addEventListener("input", function(event){
             var el = event.target || event.srcElement;
-            if ((el.nodeName === "TEXTAREA") || ((el.nodeName === "INPUT") && (el.type === "color" || el.type === "date" || el.type === "datetime" || el.type === "email" || el.type === "month" || el.type === "number" || el.type === "password" || el.type === "range" || el.type === "search" || el.type === "tel" || el.type === "text" || el.type === "time" || el.type === "url" || el.type === "week"))) {
+            // Retrieve the InputCode number of the question
+            var rg = /^[a-z]+([0-9]+)(?:\s*|\_*)/i.exec(el.name);
+            if (rg && (window.arrLiveRoutingInputCode.indexOf(rg[1]) > -1) && 
+                (((el.nodeName === "TEXTAREA") || 
+                  ((el.nodeName === "INPUT") && (el.type === "color" ||
+                    el.type === "date" || el.type === "datetime" ||
+                    el.type === "email" || el.type === "month" ||
+                    el.type === "number" || el.type === "password" ||
+                    el.type === "range" || el.type === "search" ||
+                    el.type === "tel" || el.type === "text" ||
+                    el.type === "time" || el.type === "url" || el.type === "week"))) && 
+                 (el.parentElement.className.indexOf("askia-response") >= 0 ||
+                  el.parentElement.className.indexOf("askia-control") >= 0 ||
+                  el.parentElement.className.indexOf("askia-grid-row") >= 0 ||
+                  el.parentElement.parentElement.className.indexOf("askia-grid-row") >= 0 ||
+                  el.className.indexOf("askia-live") >= 0))) {
                 askia.triggerAnswer();
             }
         });

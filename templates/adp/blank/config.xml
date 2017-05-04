@@ -23,7 +23,8 @@
   <outputs defaultOutput="default">
     <output id="default" masterPage="default.html">
       <description><![CDATA[Default output]]></description>
-	  <content fileName="askia.ajax.min.js" type="javascript" mode="static" position="foot" />
+      <content fileName="askia.live.routing.js" type="javascript" mode="dynamic" position="head" />
+	    <content fileName="askia.ajax.min.js" type="javascript" mode="static" position="foot" />
     </output>
   </outputs>
   <properties>
