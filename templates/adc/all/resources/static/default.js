@@ -57,8 +57,12 @@
    function AdcDefault(options) {
       this.options = options;
       this.instanceId = options.instanceId || 1;
+      this.currentQuestion = options.currentQuestion || "";
+      this.type = options.type || "";
 
-      addEvent(document.getElementById("adc_" + this.instanceId), "click", clickTable);
+      if (this.type === "multiple") {
+      	addEvent(document.getElementById("adc_" + this.instanceId), "click", clickTable);   
+      }
    }
 
    /**

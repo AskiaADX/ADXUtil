@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<page xmlns="http://www.askia.com/2.1.0/ADPSchema"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://www.askia.com/2.1.0/ADPSchema https://raw.githubusercontent.com/AskiaADX/ADXSchema/2.1.0/ADPSchema.xsd"
-         version="2.1.0"
-         askiaCompat="5.4.3">
+<page  xmlns="http://www.askia.com/2.1.0/ADPSchema"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.askia.com/2.1.0/ADPSchema https://raw.githubusercontent.com/AskiaADX/ADXSchema/2.1.0/ADPSchema.xsd"
+          version="2.1.0"
+          askiaCompat="5.4.2">
   <info>
     <name>{{ADXName}}</name>
     <guid>{{ADXGuid}}</guid>
@@ -23,7 +23,7 @@
   <outputs defaultOutput="default">
     <output id="default" masterPage="default.html">
       <description><![CDATA[Default output]]></description>
-      <content fileName="askia.live.routing.js" type="javascript" mode="dynamic" position="head" />
+		<content fileName="askia.live.routing.js" type="javascript" mode="dynamic" position="head" />
 	    <content fileName="askia.ajax.min.js" type="javascript" mode="static" position="foot" />
     </output>
   </outputs>

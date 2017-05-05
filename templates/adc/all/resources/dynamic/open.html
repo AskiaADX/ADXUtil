@@ -19,7 +19,7 @@ Dim attrRequired = On(CurrentQuestion.IsAllowDK, "required=\"required\"", "")
 
 If inputType = "text" And multiline Then
 %}
-<textarea name="{%= inputName %}" {%:= attrMax %} {%:= attrPlaceholder %} {%:= attrRequired %}>{%= inputValue %}</textarea>
+<textarea name="{%= inputName %}" {%:= attrMax %} {%:= attrPlaceholder %} {%:= attrRequired %}>{%:= inputValue %}</textarea>
 {% Else %}
     {% If datalist.Count > 0 Then %}
         <datalist id="{%= inputName %}">
@@ -28,6 +28,6 @@ If inputType = "text" And multiline Then
         {% Next %}
         </datalist>
     {% EndIf %}    
-<input type="{%= inputType %}" name="{%= inputName %}" value="{%= inputValue %}" {%:= attrMax %} {%:= attrPlaceholder %} {%:= attrRequired %} {%:= attrList %}/>
+<input type="{%= inputType %}" name="{%= inputName %}" value="{%:= inputValue %}" {%:= attrMax %} {%:= attrPlaceholder %} {%:= attrRequired %} {%:= attrList %}/>
 {% EndIf %}
 

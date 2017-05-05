@@ -29,10 +29,10 @@ If rangeLength > 0 And rangeLength <= 20 Then
     <select name="{%= inputName %}">
         <option value=""></option>    
     {% For i = 0 To rangeLength %}
-        <option value="{%= x %}">{%= x %}</option>
+        <option value="{%:= x %}">{%:= x %}</option>
         {% x = x + unitStep %}
     {% Next %}
     </select>
 {% Else %}
-    <input type="number" name="{%= inputName %}" value="{%= inputValue %}" {%:= attrMin %} {%:= attrMax %} {%:= attrStep %} {%:= attrPlaceholder %} {%:= attrRequired %}/>
+    <input type="number" name="{%= inputName %}" value="{%:= inputValue %}" {%:= attrMin %} {%:= attrMax %} {%:= attrStep %} {%:= attrPlaceholder %} {%:= attrRequired %}/>
 {% EndIf %}
