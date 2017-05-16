@@ -20,7 +20,7 @@
       <description><![CDATA[Default output]]></description>
       <content fileName="favicon.png" type="image" mode="static" position="none" />
       <content fileName="logo-askia-rvb.png" type="image" mode="static" position="none" />
-	  <content fileName="askia.live.routing.js" type="javascript" mode="dynamic" position="head" />
+	    <content fileName="askia.live.routing.js" type="javascript" mode="dynamic" position="head" />
       <content fileName="html5-ie.js" type="javascript" mode="static" position="head" />
       <content fileName="normalize.min.css" type="css" mode="static" position="head" />
       <content fileName="styles.min.css" type="css" mode="static" position="head" />
@@ -34,20 +34,20 @@
         <description><![CDATA[Title of the window]]></description>
         <value><![CDATA[Askia Web Survey]]></value>
       </property>
-      <property xsi:type="standardProperty" id="survey_logo_src" name="Survey Logo Src" type="string" require="false" visible="true">
+      <property xsi:type="standardProperty" id="survey_logo_src" name="Logo path" type="string" require="false" visible="true">
         <description><![CDATA[The logo of the survey which will be display next to the survey name]]></description>
         <value></value>
       </property>
-      <property xsi:type="standardProperty" id="survey_logo_alt" name="Survey Logo Alt" type="string" require="false" visible="true">
-        <description><![CDATA[The alt of the survey logo]]></description>
+      <property xsi:type="standardProperty" id="survey_logo_alt" name="Logo alternate text" type="string" require="false" visible="true">
+        <description><![CDATA[The alternate text of the logo]]></description>
         <value></value>
       </property>
-      <property xsi:type="standardProperty" id="survey_name" name="Survey Name" type="string" require="false" visible="true">
-        <description><![CDATA[the name of the survey]]></description>
+      <property xsi:type="standardProperty" id="survey_name" name="Survey name" type="string" require="false" visible="true">
+        <description><![CDATA[The name of the survey]]></description>
         <value></value>
       </property>
-      <property xsi:type="standardProperty" id="errors_caption" name="Errors caption" type="string" mode="dynamic" require="false" visible="true">
-        <description><![CDATA[Errors caption]]></description>
+      <property xsi:type="standardProperty" id="errors_caption" name="Error caption" type="string" mode="dynamic" require="false" visible="true">
+        <description><![CDATA[Error caption]]></description>
         <value></value>
       </property>
       <property xsi:type="standardProperty" id="display_progress_value" name="Display progress value" type="string" mode="dynamic" require="true" visible="true">
@@ -66,18 +66,18 @@
           <option value="no" text="No" />
         </options>
       </property>
-      <property xsi:type="standardProperty" id="radio_checkbox_size" name="Radio Checkbox size" type="string" mode="dynamic" require="true" visible="true">
-        <description><![CDATA[Radio Checkbox size]]></description>
+      <property xsi:type="standardProperty" id="radio_checkbox_size" name="Radio and checkbox size" type="string" mode="dynamic" require="true" visible="true">
+        <description><![CDATA[Radio and checkbox size]]></description>
         <value><![CDATA[1.5rem]]></value>
       </property>
-	    <property xsi:type="standardProperty" id="ribbon_footer_background_color" name="Ribbon Footer background color" type="color" mode="dynamic" require="true" visible="false" colorFormat="rgba">
+      <property xsi:type="standardProperty" id="ribbon_footer_background_color" name="Ribbon and footer background color" type="color" mode="dynamic" require="true" visible="false" colorFormat="rgba">
         <description><![CDATA[The background color of the ribbon and footer]]></description>
         <value><![CDATA[{%= Theme.PrimaryColor %}]]></value>
       </property>
     </category>
     <category id="buttons" name="Buttons">
-      <property xsi:type="standardProperty" id="buttons_alignement" name="Buttons alignement" type="string" mode="dynamic" require="true" visible="true">
-        <description><![CDATA[Buttons alignement]]></description>
+      <property xsi:type="standardProperty" id="buttons_alignement" name="Alignment" type="string" mode="dynamic" require="true" visible="true">
+        <description><![CDATA[The alignment of the buttons]]></description>
         <value><![CDATA[center]]></value>
         <options>
           <option value="left" text="Left" />

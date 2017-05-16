@@ -83,6 +83,11 @@ footer {
 {% EndIf %}
 header.large, .askiaquestions, input[type=text], input[type=number], textarea {
     color: rgba({%= BlackColor %});
+    background-color: rgba({%= WhiteColor %});
+}
+
+header.fixed {
+    box-shadow: 0 4px 5px 0 rgba({%= BlackColor.ToRGB() %}, .14);
 }
 
 header.fixed .progressWrapper {
@@ -133,6 +138,7 @@ header.fixed .progressWrapper {
     padding: {%= VPadding %} {%= HPadding %};
     margin: 0 auto {%= VPadding %} auto;
     margin: 0 auto 3em auto\9;
+    box-shadow: 0 4px 5px 0 rgba({%= BlackColor.ToRGB() %}, .14), 0 1px 10px 0 rgba({%= BlackColor.ToRGB() %}, .12), 0 2px 4px -1px rgba({%= BlackColor.ToRGB() %}, .2);
 }
 
 .askia-question-label {
@@ -149,13 +155,16 @@ header.fixed .progressWrapper {
 .askia-grid-row td, .askia-grid-header td {
     border-bottom: {%= BorderWidth %} solid rgba({%= NeutralDarkColor.ToRGB() %},1.0);
 }
+{% If (Browser.Mobile = False) Then %}
 .askia-grid-row:hover td {
     background-color: rgba({%= BlackColor.ToRGB() %},.1);
 }
+{% EndIf %}
 
 .askia-grid-row .askia-question-label {
     font-size: {%= NormalFS %};
     padding-left: 0.5em;
+    width: 45%;
 }
 
 .instruction {
@@ -177,11 +186,14 @@ header.fixed .progressWrapper {
 .askia-response {
     font-size: {%= NormalFS %};
     padding: 5px;
+    cursor: pointer;
 }
+{% If (Browser.Mobile = False) Then %}
 .askia-response:hover {
     background-color : rgba({%= BlackColor.ToRGB() %}, .1);
     cursor: pointer;
 }
+{% EndIf %}
 .askia-grid-header .askia-response:hover {
     background-color : transparent; 
 }
@@ -190,6 +202,13 @@ header.fixed .progressWrapper {
     font-size: {%= NormalFS %};
     border-radius: {%= BorderRadius %};
     padding: {%= VPadding %} 0;
+    box-shadow: 0 2px 5px rgba({%= BlackColor.ToRGB() %}, 0.3);
+}
+.btn:after {
+    box-shadow: inset 0 0 0 5em rgba({%= WhiteColor.ToRGB() %}, 0.5);
+}
+.btn:hover {
+    box-shadow: 0 2px 8px rgba({%= BlackColor.ToRGB() %}, 0.6);
 }
 input[type=checkbox]:checked~label.askia-response-label, input[type=radio]:checked~label.askia-response-label {
     color: rgba({%= SecondaryColor %});
@@ -220,7 +239,7 @@ input[type=radio] + label.askia-radio:after {
 input[type=text], input[type=number], textarea {
     font-size: {%= NormalFS %};
     border: {%= BorderWidth %} solid rgba({%= NeutralColor %});
-    padding: {%= VPadding %} {%= HPadding %};
+    padding: 0.5em 0.5em;
 }
 input[type=text]:focus, input[type=number]:focus, textarea:focus {
     border: {%= BorderWidth %} solid rgba({%= SecondaryColor %});
@@ -252,6 +271,9 @@ input[type=text]:hover, input[type=number]:hover, textarea:hover {
 .secondary:hover {
     background-color: rgba({%= NeutralColor %});
     color: rgba({%= PrimaryDarkColor %});
+}
+.secondary.disabled:hover {
+    box-shadow: 0 2px 5px rgba({%= BlackColor.ToRGB() %}, 0.3);
 }
 .footerLeft {
     padding: 0 0 0 {%= HPadding %};
