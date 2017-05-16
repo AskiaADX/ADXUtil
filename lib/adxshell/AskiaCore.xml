@@ -20,103 +20,6 @@
              \brief %Category interface
             
         </member>
-        <member name="T:AskiaCore.IRecordEntity">
-            <summary>
-                Represents an entity with a corresponding database entry
-            </summary>
-        </member>
-        <member name="M:AskiaCore.IRecordEntity.IsDeleted">
-            <summary>
-            Indicates if the record is flagged as deleted
-            </summary>
-            <remarks><strong>TODO::Change to property instead of method</strong></remarks>
-            <returns></returns>
-        </member>
-        <member name="M:AskiaCore.IRecordEntity.IsLoaded">
-            <summary>
-            Checks if the record is loaded from the database
-            </summary>
-            <returns>
-                Return true when the record was successfully loaded, otherwize return false.
-                In such case refer to the <see cref="P:AskiaCore.IRecordEntity.LastError"/> property.
-            </returns>
-        </member>
-        <member name="M:AskiaCore.IRecordEntity.Save">
-            <summary>
-            Saves the record
-            </summary>
-            <returns>
-                Return true when the record was successfully saved, otherwize return false.
-                In such case refer to the <see cref="P:AskiaCore.IRecordEntity.LastError"/> property.
-            </returns>
-        </member>
-        <member name="M:AskiaCore.IRecordEntity.ReLoad">
-            <summary>
-            ReLoads the record
-            </summary>
-            <returns>
-                Return true when the record was successfully re-loaded, otherwize return false.
-                In such case refer to the <see cref="P:AskiaCore.IRecordEntity.LastError"/> property.
-            </returns>
-        </member>
-        <member name="M:AskiaCore.IRecordEntity.Delete">
-            <summary>
-            Deletes the record in the database
-            </summary>
-            <returns>
-                Return true when the record was successfully deleted, otherwize return false.
-                In such case refer to the <see cref="P:AskiaCore.IRecordEntity.LastError"/> property.
-            </returns>
-        </member>
-        <member name="M:AskiaCore.IRecordEntity.Restore">
-            <summary>
-            Restores the deleted record in the database
-            </summary>
-            <returns>
-                Return true when the record was successfully restored, otherwize return false.
-                In such case refer to the <see cref="P:AskiaCore.IRecordEntity.LastError"/> property.
-            </returns>
-        </member>
-        <member name="P:AskiaCore.IRecordEntity.Id">
-            <summary>
-            Id of the record
-            </summary>
-        </member>
-        <member name="P:AskiaCore.IRecordEntity.CreatedBy">
-            <summary>
-            Id of the user which created the record
-            </summary>
-        </member>
-        <member name="P:AskiaCore.IRecordEntity.CreatedAt">
-            <summary>
-            DateTime the record was created at
-            </summary>
-        </member>
-        <member name="P:AskiaCore.IRecordEntity.UpdatedBy">
-            <summary>
-            Id of the user which last updated the record
-            </summary>
-        </member>
-        <member name="P:AskiaCore.IRecordEntity.UpdatedAt">
-            <summary>
-            DateTime at which the record was last updated
-            </summary>
-        </member>
-        <member name="P:AskiaCore.IRecordEntity.DeletedBy">
-            <summary>
-            Id of the user which last deleted the record
-            </summary>
-        </member>
-        <member name="P:AskiaCore.IRecordEntity.DeletedAt">
-            <summary>
-            DateTime at which the record was last deleted
-            </summary>
-        </member>
-        <member name="P:AskiaCore.IRecordEntity.LastError">
-            <summary>
-            Last error that occurred
-            </summary>
-        </member>
         <member name="P:AskiaCore.ICategory.Name">
             
              \brief Name of the category
@@ -127,14 +30,19 @@
              \brief %Category collection
             
         </member>
-        <member name="M:AskiaCore.ICategoryCollection.Add(System.Int32)">
+        <member name="P:AskiaCore.ICategoryCollection.Count">
             
-             \brief Add a category given its id
+             \brief Number of categories in the collection
             
         </member>
-        <member name="M:AskiaCore.ICategoryCollection.Add(System.String)">
+        <member name="P:AskiaCore.ICategoryCollection.Item(System.String)">
             
-             \brief Add a category given its name
+             \brief Find a category by name
+            
+        </member>
+        <member name="M:AskiaCore.ICategoryCollection.Create(System.String)">
+            
+             \brief Create a category given its name
             
         </member>
         <member name="M:AskiaCore.ICategoryCollection.Remove(System.Int32)">
@@ -147,76 +55,49 @@
              \brief Remove a category from the collection given its name
             
         </member>
-        <member name="P:AskiaCore.ICategoryCollection.Count">
+        <member name="T:AskiaCore.ICategoryIterator">
             
-             \brief Number of categories in the collection
-            
-        </member>
-        <member name="P:AskiaCore.ICategoryCollection.Item(System.Int32)">
-            
-             \brief Find a category by id
+             \brief %Category iterator
             
         </member>
-        <member name="P:AskiaCore.ICategoryCollection.Item(System.String)">
-            
-             \brief Find a category by name
-            
-        </member>
-        <member name="T:AskiaCore.ICategoryCollection2">
+        <member name="T:AskiaCore.ICategoryRefCollection">
             
              \brief %Category collection
             
         </member>
-        <member name="T:AskiaCore.IRecordEntitiesOwner`1">
-            <summary>
-            Generic interface for record collections with ownership
-            </summary>
-            <remarks>
-            <strong>TODO::Maybe change the name of to IRecordEntityCollection and use a method GetById() instead of the brackets accessor</strong>
-            </remarks>
-            <typeparam name="TEntityType">Type of record in the collection</typeparam>
-        </member>
-        <member name="M:AskiaCore.IRecordEntitiesOwner`1.Create">
-            <summary>
-            Creates a new element
-            </summary>
-            <returns>Returns the created entity</returns>
-        </member>
-        <member name="P:AskiaCore.IRecordEntitiesOwner`1.Item(System.Int32)">
-            <summary>
-            Finds a record entity by id
-            </summary>
-            <param name="id">Id of the record entity to find</param>
-            <returns>Return the record entity with the specified id or null when not found</returns>
-        </member>
-        <member name="M:AskiaCore.ICategoryCollection2.Create(System.String)">
-            
-             \brief Create a scenario given its name
-            
-        </member>
-        <member name="M:AskiaCore.ICategoryCollection2.Remove(System.Int32)">
-            
-             \brief Remove a category from the collection given its id
-            
-        </member>
-        <member name="M:AskiaCore.ICategoryCollection2.Remove(System.String)">
-            
-             \brief Remove a category from the collection given its name
-            
-        </member>
-        <member name="P:AskiaCore.ICategoryCollection2.Count">
+        <member name="P:AskiaCore.ICategoryRefCollection.Count">
             
              \brief Number of categories in the collection
             
         </member>
-        <member name="P:AskiaCore.ICategoryCollection2.Item(System.String)">
+        <member name="P:AskiaCore.ICategoryRefCollection.Item(System.Int32)">
+            
+             \brief Find a category by id
+            
+        </member>
+        <member name="P:AskiaCore.ICategoryRefCollection.Item(System.String)">
             
              \brief Find a category by name
             
         </member>
-        <member name="T:AskiaCore.ICategoryIterator">
+        <member name="M:AskiaCore.ICategoryRefCollection.Add(System.Int32)">
             
-             \brief %Category iterator
+             \brief Add a category given its id
+            
+        </member>
+        <member name="M:AskiaCore.ICategoryRefCollection.Add(System.String)">
+            
+             \brief Add a category given its name
+            
+        </member>
+        <member name="M:AskiaCore.ICategoryRefCollection.Remove(System.Int32)">
+            
+             \brief Remove a category from the collection given its id
+            
+        </member>
+        <member name="M:AskiaCore.ICategoryRefCollection.Remove(System.String)">
+            
+             \brief Remove a category from the collection given its name
             
         </member>
         <member name="T:AskiaCore.IContext">
@@ -323,28 +204,6 @@
                 Returns the collection of possible errors
             </summary>
         </member>
-        <member name="M:AskiaCore.IControl.LoadFromDirectory(System.String,System.String)">
-            
-             \brief Loads the control from a directory
-            
-        </member>
-        <member name="M:AskiaCore.IControl.LoadFromFileAndExtract(System.String,System.String,System.String)">
-            
-             \brief Loads the control from a file and extract its content
-                    to a directory
-            
-        </member>
-        <member name="M:AskiaCore.IControl.LoadFromMemoryAndExtract(System.String,System.String)">
-            
-             \brief Loads the control from memory and extracts its content
-                    to a directory
-            
-        </member>
-        <member name="M:AskiaCore.IControl.RenderForQuestion(AskiaCore.ISurvey,AskiaCore.IInterview,System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
-            
-             \brief Renderds the control for a given question of a given survey interview
-            
-        </member>
         <member name="P:AskiaCore.IControl.Name">
             
              \brief Name of the control
@@ -360,9 +219,41 @@
              \brief Data contained within the file
             
         </member>
+        <member name="M:AskiaCore.IControl.LoadFromDirectory(System.String)">
+            
+             \brief Loads the control from a directory
+            
+        </member>
+        <member name="M:AskiaCore.IControl.LoadFromFileAndExtract(System.String,System.String)">
+            
+             \brief Loads the control from a file and extract its content
+                    to a directory
+            
+        </member>
+        <member name="M:AskiaCore.IControl.LoadFromMemoryAndExtract(System.String)">
+            
+             \brief Loads the control from memory and extracts its content
+                    to a directory
+            
+        </member>
+        <member name="M:AskiaCore.IControl.RenderForQuestion(AskiaCore.ISurvey,AskiaCore.IInterview,System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+            
+             \brief Renderds the control for a given question of a given survey interview
+            
+        </member>
         <member name="T:AskiaCore.IControlCollection">
             
-             \brief %IControl collection
+             \brief %Control collection
+            
+        </member>
+        <member name="P:AskiaCore.IControlCollection.Count">
+            
+             \brief Number of controls in the collection
+            
+        </member>
+        <member name="P:AskiaCore.IControlCollection.Item(System.String)">
+            
+             \brief Find a control by name
             
         </member>
         <member name="M:AskiaCore.IControlCollection.Create(System.String)">
@@ -380,24 +271,44 @@
              \brief Remove a control from the collection given its name
             
         </member>
-        <member name="P:AskiaCore.IControlCollection.Count">
+        <member name="T:AskiaCore.IControlIterator">
+            
+             \brief %Control iterator
+            
+        </member>
+        <member name="T:AskiaCore.IControlRefCollection">
+            
+             \brief %IControl collection
+            
+        </member>
+        <member name="P:AskiaCore.IControlRefCollection.Count">
             
              \brief Number of controls in the collection
             
         </member>
-        <member name="P:AskiaCore.IControlCollection.Item(System.Int32)">
+        <member name="P:AskiaCore.IControlRefCollection.Item(System.Int32)">
             
              \brief Find a control by id
             
         </member>
-        <member name="P:AskiaCore.IControlCollection.Item(System.String)">
+        <member name="P:AskiaCore.IControlRefCollection.Item(System.String)">
             
              \brief Find a control by name
             
         </member>
-        <member name="T:AskiaCore.IControlIterator">
+        <member name="M:AskiaCore.IControlRefCollection.Create(System.String)">
             
-             \brief %Control iterator
+             \brief Create a control given its name
+            
+        </member>
+        <member name="M:AskiaCore.IControlRefCollection.Remove(System.Int32)">
+            
+             \brief Remove a control from the collection given its id
+            
+        </member>
+        <member name="M:AskiaCore.IControlRefCollection.Remove(System.String)">
+            
+             \brief Remove a control from the collection given its name
             
         </member>
         <member name="T:AskiaCore.ControlsFactory">
@@ -430,26 +341,6 @@
              \brief Defines if the Eleemnt is reachable
             
         </member>
-        <member name="M:AskiaCore.IElement.GetLanguageCaption(System.Int32)">
-            
-             \brief Gets the caption text for a given language
-            
-        </member>
-        <member name="M:AskiaCore.IElement.SetLanguageCaption(System.Int32,System.String)">
-            
-             \brief Sets the caption text for a given language
-            
-        </member>
-        <member name="M:AskiaCore.IElement.RenderPage(AskiaCore.IInterview,System.String)">
-            
-             \brief Render the corresponding page for the specified interview
-            
-        </member>
-        <member name="M:AskiaCore.IElement.RenderControl(AskiaCore.IInterview,System.String)">
-            
-             \brief Render the corresponding control for the specified interview
-            
-        </member>
         <member name="P:AskiaCore.IElement.QuestionId">
             
              \brief Id of the question related to the element
@@ -475,14 +366,26 @@
              \brief Type of the element
             
         </member>
-        <member name="P:AskiaCore.IElement.ControlId">
+        <member name="P:AskiaCore.IElement.ExtensionId">
             
-             \brief Id of the control related to the element
+             \brief Id of the extension (control or page template) related to the element
             
+        </member>
+        <member name="M:AskiaCore.IElement.SetExtension(System.Int32)">
+            <summary>
+            Set the id of extension depending on the type of the element (Control or Page Template)
+            </summary>
+            <param name="id">Id of the control or page template</param>
+            <returns></returns>
         </member>
         <member name="P:AskiaCore.IElement.ExtensionProperties">
             
              \brief Extension properties collection for the element
+            
+        </member>
+        <member name="P:AskiaCore.IElement.ThemeProperties">
+            
+             \brief Theme properties collection for the element
             
         </member>
         <member name="P:AskiaCore.IElement.BeforeStart">
@@ -520,6 +423,16 @@
              \brief Style
             
         </member>
+        <member name="M:AskiaCore.IElement.GetLanguageCaption(System.Int32)">
+            
+             \brief Gets the caption text for a given language
+            
+        </member>
+        <member name="M:AskiaCore.IElement.SetLanguageCaption(System.Int32,System.String)">
+            
+             \brief Sets the caption text for a given language
+            
+        </member>
         <member name="P:AskiaCore.IElement.Children">
             
              \brief Children elements collection for the element
@@ -530,9 +443,54 @@
              \brief Media elements collection for the element
             
         </member>
+        <member name="M:AskiaCore.IElement.RenderPage(AskiaCore.IInterview,System.String)">
+            
+             \brief Render the corresponding page for the specified interview
+            
+        </member>
+        <member name="M:AskiaCore.IElement.RenderControl(AskiaCore.IInterview,System.String)">
+            
+             \brief Render the corresponding control for the specified interview
+            
+        </member>
+        <member name="P:AskiaCore.IElement.PrevSibling">
+            
+             \brief Previous sibling element
+            
+        </member>
+        <member name="P:AskiaCore.IElement.PrevSiblingId">
+            
+             \brief Previous sibling Id
+            
+        </member>
+        <member name="P:AskiaCore.IElement.NextSibling">
+            
+             \brief Next sibling element
+            
+        </member>
+        <member name="P:AskiaCore.IElement.NextSiblingId">
+            
+             \brief Next sibling Id
+            
+        </member>
+        <member name="P:AskiaCore.IElement.FirstChild">
+            
+             \brief First child element
+            
+        </member>
+        <member name="P:AskiaCore.IElement.LastChild">
+            
+             \brief Last child element
+            
+        </member>
         <member name="T:AskiaCore.IElementCollection">
             
              \brief %Element collection
+            
+        </member>
+        <member name="P:AskiaCore.IElementCollection.Count">
+            
+             \brief Number of elements in the collection
             
         </member>
         <member name="M:AskiaCore.IElementCollection.GetById(System.Int32)">
@@ -545,14 +503,16 @@
              \brief Get the first element with the given type
             
         </member>
+        <member name="M:AskiaCore.IElementCollection.Create(System.Int32)">
+            <summary>
+            Creates a new child element at a given position
+            </summary>
+            <param name="position">Position at which the child element should be created</param>
+            <returns>Returns the created entity</returns>
+        </member>
         <member name="M:AskiaCore.IElementCollection.Remove(System.Int32)">
             
              \brief Remove a element from the collection given its id
-            
-        </member>
-        <member name="P:AskiaCore.IElementCollection.Count">
-            
-             \brief Number of elements in the collection
             
         </member>
         <member name="T:AskiaCore.IElementIterator">
@@ -590,6 +550,16 @@
                 Missing question, could not find the specified question. <br/>
                 TODO::Better explain in which case that occurs
                 TODO::If related to ADX probably prefix it
+            </summary>
+        </member>
+        <member name="F:AskiaCore.ErrorType.CannotLoadPageTemplate">
+            <summary>
+                Could not load the specified page template
+            </summary>
+        </member>
+        <member name="F:AskiaCore.ErrorType.CannotLoadControl">
+            <summary>
+                Could not load the specified control
             </summary>
         </member>
         <member name="F:AskiaCore.ErrorType.Script">
@@ -777,6 +747,21 @@
                 Could not save structure modifications
             </summary>
         </member>
+        <member name="F:AskiaCore.ErrorType.InvalidElementId">
+            <summary>
+                The specified element id is invalid
+            </summary>
+        </member>
+        <member name="F:AskiaCore.ErrorType.UnmovableElementType">
+            <summary>
+                The specified element type cannot be moved
+            </summary>
+        </member>
+        <member name="F:AskiaCore.ErrorType.InvalidElementMove">
+            <summary>
+                The specified element move is invalid
+            </summary>
+        </member>
         <member name="T:AskiaCore.IError">
             <summary>
                 Error returned by AskiaCore
@@ -827,10 +812,27 @@
             Value assign to the property
             </summary>
         </member>
+        <member name="P:AskiaCore.IExtensionProperty.IsInherited">
+            <summary>
+            Tells if the property is inherited or set at the current level
+            </summary>
+        </member>
         <member name="T:AskiaCore.IExtensionPropertyCollection">
             <summary>
             Collection of the extension (ADX) property
             </summary>
+        </member>
+        <member name="P:AskiaCore.IExtensionPropertyCollection.Count">
+            <summary>
+            Returns the number of properties in the collection
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IExtensionPropertyCollection.Item(System.String)">
+            <summary>
+            Returns the value associated with the specified property name
+            </summary>
+            <param name="name">Name of the property to read</param>
+            <returns>Return null if the property was not found</returns>
         </member>
         <member name="M:AskiaCore.IExtensionPropertyCollection.Contains(System.String)">
             <summary>
@@ -862,17 +864,10 @@
             Remove all properties from the collection
             </summary>
         </member>
-        <member name="P:AskiaCore.IExtensionPropertyCollection.Count">
+        <member name="M:AskiaCore.IExtensionPropertyCollection.GetResolvedCascadingValues">
             <summary>
-            Returns the number of properties in the collection
+            Get all properties including the ones resolving to default values
             </summary>
-        </member>
-        <member name="P:AskiaCore.IExtensionPropertyCollection.Item(System.String)">
-            <summary>
-            Returns the value associated with the specified property name
-            </summary>
-            <param name="name">Name of the property to read</param>
-            <returns>Return null if the property was not found</returns>
         </member>
         <member name="T:AskiaCore.IExtensionPropertyIterator">
             <summary>
@@ -998,22 +993,6 @@
             Represents the result of many <see cref="T:AskiaCore.IInterview"/> methods
             </summary>
         </member>
-        <member name="T:AskiaCore.IMethodResult">
-            <summary>
-            Represents the result of method called
-            </summary>
-        </member>
-        <member name="P:AskiaCore.IMethodResult.Success">
-            <summary>
-            Indicates if the method called was successfully executed
-            </summary>
-        </member>
-        <member name="P:AskiaCore.IMethodResult.Error">
-            <summary>
-            Returns the error that has been generated by the called method, <br/>
-            it could be null when the called method succeed (<see cref="P:AskiaCore.IMethodResult.Success"/> is true).
-            </summary>
-        </member>
         <member name="P:AskiaCore.IInterviewMethodResult.IsCompleted">
             <summary>
             Indicates if the interview is completed
@@ -1026,7 +1005,7 @@
             </summary>
             <remarks>
                 <para>
-                    This method doesn't necesseraly move to the page that follow the current page.<br/>
+                    This method doesn't necesseraly move to the page that follow the current page.<br />
                     According to the specified parameters, this method could:<br/>
                     - stay on the same page<br/>
                     - go to the previous visible page<br/>
@@ -1037,7 +1016,7 @@
                 </para>
             </remarks>
             <param name="parameters">Respondent answers and web parameters</param>
-            <returns>Returns <see cref="!:InterviewMoveOnResult.Ok"/> until a page is accessible</returns>
+            <returns>Returns <see cref="!:IInterviewMethodResult.Success"/> until a page is accessible</returns>
         </member>
         <member name="P:AskiaCore.IInterview.CurrentPage">
             <summary>
@@ -1047,6 +1026,26 @@
         <member name="P:AskiaCore.IInterview.CurrentPosition">
             <summary>
             Returns the current position of the interview
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IInterview.PreviousPosition">
+            <summary>
+            Returns the previous position of the interview
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IInterview.PreviousPage">
+            <summary>
+            Returns the previous interview page element
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IInterview.NextPosition">
+            <summary>
+            Returns the next possible position of the interview
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IInterview.NextPage">
+            <summary>
+            Returns the next possible interview page element
             </summary>
         </member>
         <member name="P:AskiaCore.IInterview.WebInformation">
@@ -1074,16 +1073,6 @@
              \brief %Language collection
             
         </member>
-        <member name="M:AskiaCore.ILanguageCollection.Add(AskiaCore.ILanguage)">
-            
-             \brief Creates a new language in the collection given its name
-            
-        </member>
-        <member name="M:AskiaCore.ILanguageCollection.Remove(System.Int32)">
-            
-             \brief Remove a language from the collection given its id
-            
-        </member>
         <member name="P:AskiaCore.ILanguageCollection.Count">
             
              \brief Number of languages in the collection
@@ -1092,6 +1081,16 @@
         <member name="P:AskiaCore.ILanguageCollection.Item(System.Int32)">
             
              \brief Find a language by id
+            
+        </member>
+        <member name="M:AskiaCore.ILanguageCollection.Add(AskiaCore.ILanguage)">
+            
+             \brief Creates a new language in the collection given its name
+            
+        </member>
+        <member name="M:AskiaCore.ILanguageCollection.Remove(System.Int32)">
+            
+             \brief Remove a language from the collection given its id
             
         </member>
         <member name="T:AskiaCore.ILanguageIterator">
@@ -1139,14 +1138,14 @@
              \brief %Media collection
             
         </member>
-        <member name="M:AskiaCore.IMediaCollection.Remove(System.Int32)">
-            
-             \brief Remove a media from the collection given its id
-            
-        </member>
         <member name="P:AskiaCore.IMediaCollection.Count">
             
              \brief Number of media in the collection
+            
+        </member>
+        <member name="M:AskiaCore.IMediaCollection.Remove(System.Int32)">
+            
+             \brief Remove a media from the collection given its id
             
         </member>
         <member name="T:AskiaCore.IMediaIterator">
@@ -1164,6 +1163,16 @@
              \brief %MediaElement interface
             
         </member>
+        <member name="P:AskiaCore.IMediaElement.Id">
+            
+             \brief Id of the record
+            
+        </member>
+        <member name="P:AskiaCore.IMediaElement.LastError">
+            
+             \brief Last error that occurred
+            
+        </member>
         <member name="M:AskiaCore.IMediaElement.IsLoaded">
             
              \brief Checks if the record is loaded from the database
@@ -1177,16 +1186,6 @@
         <member name="M:AskiaCore.IMediaElement.ReLoad">
             
              \brief ReLoads the record
-            
-        </member>
-        <member name="P:AskiaCore.IMediaElement.Id">
-            
-             \brief Id of the record
-            
-        </member>
-        <member name="P:AskiaCore.IMediaElement.LastError">
-            
-             \brief Last error that occurred
             
         </member>
         <member name="P:AskiaCore.IMediaElement.ElementId">
@@ -1269,6 +1268,11 @@
              \brief %MediaElement collection
             
         </member>
+        <member name="P:AskiaCore.IMediaElementCollection.Count">
+            
+             \brief Number of media elements in the collection
+            
+        </member>
         <member name="M:AskiaCore.IMediaElementCollection.Create(System.Int32)">
             
              \brief Create a media element given its media id
@@ -1277,11 +1281,6 @@
         <member name="M:AskiaCore.IMediaElementCollection.GetByMediaId(System.Int32)">
             
              \brief Retrieves the media element associated to the given media id
-            
-        </member>
-        <member name="P:AskiaCore.IMediaElementCollection.Count">
-            
-             \brief Number of media elements in the collection
             
         </member>
         <member name="T:AskiaCore.IMediaElementIterator">
@@ -1301,7 +1300,22 @@
         </member>
         <member name="P:AskiaCore.IPageRender.Html">
             <summary>
-                HTML code of the rendered page
+                Full HTML code of the rendered page (including head, form, foot)
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IPageRender.Header">
+            <summary>
+               Header section of the HTML code of the rendered page
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IPageRender.Form">
+            <summary>
+               Form section of the HTML code of the rendered page
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IPageRender.Footer">
+            <summary>
+                Footer section of the HTML code of the rendered page
             </summary>
         </member>
         <member name="P:AskiaCore.IPageRender.IsRendered">
@@ -1319,28 +1333,6 @@
             
             </summary>
         </member>
-        <member name="M:AskiaCore.IPageTemplate.LoadFromDirectory(System.String,System.String)">
-            
-             \brief Loads the template from a directory
-            
-        </member>
-        <member name="M:AskiaCore.IPageTemplate.LoadFromFileAndExtract(System.String,System.String,System.String)">
-            
-             \brief Loads the template from a file and extract its content
-                    to a directory
-            
-        </member>
-        <member name="M:AskiaCore.IPageTemplate.LoadFromMemoryAndExtract(System.String,System.String)">
-            
-             \brief Loads the template from memory and extracts its content
-                    to a directory
-            
-        </member>
-        <member name="M:AskiaCore.IPageTemplate.RenderForQuestion(AskiaCore.ISurvey,AskiaCore.IInterview,System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
-            
-             \brief Renderds the page template for a given question of a given survey interview
-            
-        </member>
         <member name="P:AskiaCore.IPageTemplate.Name">
             
              \brief Name of the template
@@ -1356,24 +1348,31 @@
              \brief Data contained within the file
             
         </member>
+        <member name="M:AskiaCore.IPageTemplate.LoadFromDirectory(System.String)">
+            
+             \brief Loads the template from a directory
+            
+        </member>
+        <member name="M:AskiaCore.IPageTemplate.LoadFromFileAndExtract(System.String,System.String)">
+            
+             \brief Loads the template from a file and extract its content
+                    to a directory
+            
+        </member>
+        <member name="M:AskiaCore.IPageTemplate.LoadFromMemoryAndExtract(System.String)">
+            
+             \brief Loads the template from memory and extracts its content
+                    to a directory
+            
+        </member>
+        <member name="M:AskiaCore.IPageTemplate.RenderForQuestion(AskiaCore.ISurvey,AskiaCore.IInterview,System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+            
+             \brief Renderds the page template for a given question of a given survey interview
+            
+        </member>
         <member name="T:AskiaCore.IPageTemplateCollection">
             
              \brief %IPageTemplate collection
-            
-        </member>
-        <member name="M:AskiaCore.IPageTemplateCollection.Create(System.String)">
-            
-             \brief Create a template given its name
-            
-        </member>
-        <member name="M:AskiaCore.IPageTemplateCollection.Remove(System.Int32)">
-            
-             \brief Remove a template from the collection given its id
-            
-        </member>
-        <member name="M:AskiaCore.IPageTemplateCollection.Remove(System.String)">
-            
-             \brief Remove a template from the collection given its name
             
         </member>
         <member name="P:AskiaCore.IPageTemplateCollection.Count">
@@ -1389,6 +1388,21 @@
         <member name="P:AskiaCore.IPageTemplateCollection.Item(System.String)">
             
              \brief Find a template by name
+            
+        </member>
+        <member name="M:AskiaCore.IPageTemplateCollection.Create(System.String)">
+            
+             \brief Create a template given its name
+            
+        </member>
+        <member name="M:AskiaCore.IPageTemplateCollection.Remove(System.Int32)">
+            
+             \brief Remove a template from the collection given its id
+            
+        </member>
+        <member name="M:AskiaCore.IPageTemplateCollection.Remove(System.String)">
+            
+             \brief Remove a template from the collection given its name
             
         </member>
         <member name="T:AskiaCore.IPageTemplateIterator">
@@ -1436,9 +1450,54 @@
              \brief Enumeration of the question importation type
             
         </member>
-        <member name="T:AskiaCore.QuestionClosedImportationType">
+        <member name="T:AskiaCore.QuestionImportationClosedMatchingType">
             
              \brief Enumeration of the question importation type for closed responses
+            
+        </member>
+        <member name="T:AskiaCore.QuestionImportationPanelUpdateType">
+            
+             \brief Enumeration of the question importation update type for panels
+            
+        </member>
+        <member name="T:AskiaCore.IQuestionImportationSettings">
+            
+             \brief Importation Settings Interface
+            
+        </member>
+        <member name="P:AskiaCore.IQuestionImportationSettings.Type">
+            
+             \brief Type of importation
+            
+        </member>
+        <member name="P:AskiaCore.IQuestionImportationSettings.FieldName">
+            
+             \brief TODO
+            
+        </member>
+        <member name="P:AskiaCore.IQuestionImportationSettings.ClosedMatchingType">
+            
+             \brief TODO
+            
+        </member>
+        <member name="P:AskiaCore.IQuestionImportationSettings.IsInvisibleWhenImported">
+            
+             \brief TODO
+            
+        </member>
+        <member name="P:AskiaCore.IQuestionImportationSettings.DatabaseDSN">
+            
+             \brief TODO
+            
+        </member>
+        <member name="P:AskiaCore.IQuestionImportationSettings.SqlQuery">
+            
+             \brief TODO
+            
+        </member>
+        <member name="P:AskiaCore.IQuestionImportationSettings.PanelUpdateType">
+            
+             \brief TODO
             
         </member>
         <member name="T:AskiaCore.LinkedResponseVisibility">
@@ -1466,6 +1525,11 @@
              \brief %RoutingTarget collection
             
         </member>
+        <member name="P:AskiaCore.ILinkedResponseCollection.Count">
+            
+             \brief Number of linked response in the collection
+            
+        </member>
         <member name="M:AskiaCore.ILinkedResponseCollection.Create(System.Int32,AskiaCore.LinkedResponseVisibility)">
             
              \brief Create a linked response given its visibility
@@ -1474,11 +1538,6 @@
         <member name="M:AskiaCore.ILinkedResponseCollection.Remove(System.Int32)">
             
              \brief Remove a linked response from the collection given its responseId
-            
-        </member>
-        <member name="P:AskiaCore.ILinkedResponseCollection.Count">
-            
-             \brief Number of linked response in the collection
             
         </member>
         <member name="T:AskiaCore.ILinkedResponseIterator">
@@ -1494,51 +1553,6 @@
         <member name="M:AskiaCore.IQuestion.IsReachable">
             
              \brief Defines if the Eleemnt is reachable
-            
-        </member>
-        <member name="M:AskiaCore.IQuestion.MoveResponses(System.Collections.Generic.IEnumerable{System.Int32},System.Int32,System.Int32)">
-            
-             \brief Move responses to a given destination
-            
-        </member>
-        <member name="M:AskiaCore.IQuestion.MoveResponses(System.Collections.Generic.IEnumerable{System.Int32},System.Int32,System.Int32,AskiaCore.IModifiedEntities@)">
-            
-             \brief Move responses to a given destination
-            
-        </member>
-        <member name="M:AskiaCore.IQuestion.IndentResponses(System.Collections.Generic.IEnumerable{System.Int32})">
-            
-             \brief Indent responses
-            
-        </member>
-        <member name="M:AskiaCore.IQuestion.IndentResponses(System.Collections.Generic.IEnumerable{System.Int32},AskiaCore.IModifiedEntities@)">
-            
-             \brief Indent responses
-            
-        </member>
-        <member name="M:AskiaCore.IQuestion.UnindentResponses(System.Collections.Generic.IEnumerable{System.Int32})">
-            
-             \brief Unindent responses
-            
-        </member>
-        <member name="M:AskiaCore.IQuestion.UnindentResponses(System.Collections.Generic.IEnumerable{System.Int32},AskiaCore.IModifiedEntities@)">
-            
-             \brief Unindent responses
-            
-        </member>
-        <member name="M:AskiaCore.IQuestion.SaveMovedResponsesPositions">
-            
-             \brief Saves all the positions and parent ids of the responses
-            
-        </member>
-        <member name="M:AskiaCore.IQuestion.GetScenarios">
-            
-             \brief Returns a collection of id of the scenario of this question
-            
-        </member>
-        <member name="M:AskiaCore.IQuestion.GetRecursiveLinkedResponses">
-            
-             \brief retrieve all linked responses recursively based on link type
             
         </member>
         <member name="P:AskiaCore.IQuestion.Shortcut">
@@ -1757,24 +1771,64 @@
              \brief Page element containing the question
             
         </member>
-        <member name="P:AskiaCore.IQuestion.ImportationType">
+        <member name="P:AskiaCore.IQuestion.ControlElement">
             
-             \brief Type of importation
-            
-        </member>
-        <member name="P:AskiaCore.IQuestion.ImportationString">
-            
-             \brief Importation string
+             \brief Control element of the question
             
         </member>
-        <member name="P:AskiaCore.IQuestion.ImportationBase">
+        <member name="P:AskiaCore.IQuestion.ImportationSettings">
             
-             \brief Importation Base
+             \brief Importation settings for this question
             
         </member>
-        <member name="P:AskiaCore.IQuestion.ClosedImportationType">
+        <member name="M:AskiaCore.IQuestion.MoveResponses(System.Collections.Generic.IEnumerable{System.Int32},System.Int32,System.Int32)">
             
-             \brief Type of importation for closed responses
+             \brief Move responses to a given destination
+            
+        </member>
+        <member name="M:AskiaCore.IQuestion.MoveResponses(System.Collections.Generic.IEnumerable{System.Int32},System.Int32,System.Int32,AskiaCore.IModifiedEntities@)">
+            
+             \brief Move responses to a given destination
+            
+        </member>
+        <member name="M:AskiaCore.IQuestion.IndentResponses(System.Collections.Generic.IEnumerable{System.Int32})">
+            
+             \brief Indent responses
+            
+        </member>
+        <member name="M:AskiaCore.IQuestion.IndentResponses(System.Collections.Generic.IEnumerable{System.Int32},AskiaCore.IModifiedEntities@)">
+            
+             \brief Indent responses
+            
+        </member>
+        <member name="M:AskiaCore.IQuestion.UnindentResponses(System.Collections.Generic.IEnumerable{System.Int32})">
+            
+             \brief Unindent responses
+            
+        </member>
+        <member name="M:AskiaCore.IQuestion.UnindentResponses(System.Collections.Generic.IEnumerable{System.Int32},AskiaCore.IModifiedEntities@)">
+            
+             \brief Unindent responses
+            
+        </member>
+        <member name="M:AskiaCore.IQuestion.SaveMovedResponsesPositions">
+            
+             \brief Saves all the positions and parent ids of the responses
+            
+        </member>
+        <member name="M:AskiaCore.IQuestion.GetScenarios">
+            
+             \brief Returns a collection of id of the scenario of this question
+            
+        </member>
+        <member name="M:AskiaCore.IQuestion.AddToScenario(System.Int32)">
+            
+             \brief Add the question to a given scenario
+            
+        </member>
+        <member name="M:AskiaCore.IQuestion.RemoveFromScenario(System.Int32)">
+            
+             \brief remove the question from a given scenario
             
         </member>
         <member name="P:AskiaCore.IQuestion.Categories">
@@ -1787,6 +1841,11 @@
              \brief responses collection for the survey
             
         </member>
+        <member name="M:AskiaCore.IQuestion.GetRecursiveLinkedResponses">
+            
+             \brief retrieve all linked responses recursively based on link type
+            
+        </member>
         <member name="P:AskiaCore.IQuestion.LinkedResponses">
             
              \brief linked responses collection for the survey
@@ -1795,6 +1854,16 @@
         <member name="T:AskiaCore.IQuestionCollection">
             
              \brief %Question collection
+            
+        </member>
+        <member name="P:AskiaCore.IQuestionCollection.Count">
+            
+             \brief Number of questions in the collection
+            
+        </member>
+        <member name="P:AskiaCore.IQuestionCollection.Item(System.String)">
+            
+             \brief Find a question by name
             
         </member>
         <member name="M:AskiaCore.IQuestionCollection.Create(System.String)">
@@ -1829,16 +1898,6 @@
              \brief Remove a question from the collection given its name
             
         </member>
-        <member name="P:AskiaCore.IQuestionCollection.Count">
-            
-             \brief Number of questions in the collection
-            
-        </member>
-        <member name="P:AskiaCore.IQuestionCollection.Item(System.String)">
-            
-             \brief Find a question by name
-            
-        </member>
         <member name="T:AskiaCore.IQuestionIterator">
             
              \brief %Question iterator
@@ -1847,87 +1906,6 @@
         <member name="T:AskiaCore.IQuota">
             
              \brief %IQuota interface
-            
-        </member>
-        <member name="T:AskiaCore.IQuotaNode">
-            
-             \brief %IQuotaNode interface
-            
-        </member>
-        <member name="M:AskiaCore.IQuotaNode.GetLineStateSummarized(AskiaCore.QuotaAvailableType,System.Boolean)">
-            
-             \brief Quota Line state summarized
-            
-        </member>
-        <member name="M:AskiaCore.IQuotaNode.FindNode(System.Int32,System.Boolean)">
-            
-             \brief Find a node by token below this one
-            
-        </member>
-        <member name="P:AskiaCore.IQuotaNode.Root">
-            
-             \brief Main quota object
-            
-        </member>
-        <member name="P:AskiaCore.IQuotaNode.Token">
-            
-             \brief Token of the node
-            
-        </member>
-        <member name="P:AskiaCore.IQuotaNode.Parent">
-            
-             \brief Parent node
-            
-        </member>
-        <member name="P:AskiaCore.IQuotaNode.LineState">
-            
-             \brief Quota Line state
-            
-        </member>
-        <member name="P:AskiaCore.IQuotaNode.AllocatedForWeb">
-            
-             \brief Quota allocations for web brokers
-            
-        </member>
-        <member name="P:AskiaCore.IQuotaNode.AllocatedForFace">
-            
-             \brief Quota allocations for face agents
-            
-        </member>
-        <member name="M:AskiaCore.IQuota.ResetChanges">
-            
-             \brief Reset all changes
-            
-        </member>
-        <member name="M:AskiaCore.IQuota.SetMaximumTargetEmpty">
-            
-             \brief Set empty maximum target 
-            
-        </member>
-        <member name="M:AskiaCore.IQuota.GetMaximumTargetType">
-            
-             \brief Indicates the maximum target type
-            
-        </member>
-        <member name="M:AskiaCore.IQuota.Update(AskiaCore.QuotaUpdateType,System.Byte[],System.Collections.Generic.ICollection{System.Int32})">
-            
-             \brief Process quota update
-            
-        </member>
-        <member name="M:AskiaCore.IQuota.GetUpdate(AskiaCore.QuotaUpdateType@,System.Byte[]@,System.Boolean)">
-            
-             \brief Get quota updates
-            
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:AskiaCore.IQuota.UpdateCountsAndPercentages" -->
-        <member name="M:AskiaCore.IQuota.EqualsTree(AskiaCore.IQuota)">
-            
-             \brief Compare quota tree structure (ignoring settings, version, shortcuts, tokens, etc)
-            
-        </member>
-        <member name="M:AskiaCore.IQuota.QuotaVerify(System.Collections.Generic.IDictionary{System.Int32,System.Collections.Generic.ICollection{AskiaCore.IQuotaIssue}}@)">
-            
-             \brief Verify the quota structure for sanity issues
             
         </member>
         <member name="P:AskiaCore.IQuota.Survey">
@@ -1955,6 +1933,11 @@
              \brief Enable/disable tracking changes - necessary to support GetUpdate
             
         </member>
+        <member name="M:AskiaCore.IQuota.ResetChanges">
+            
+             \brief Reset all changes
+            
+        </member>
         <member name="P:AskiaCore.IQuota.MinimumTargetCount">
             
              \brief Minimum target (count)
@@ -1968,6 +1951,16 @@
         <member name="P:AskiaCore.IQuota.MaximumTargetPercentage">
             
              \brief Maximum target (percentage)
+            
+        </member>
+        <member name="M:AskiaCore.IQuota.SetMaximumTargetEmpty">
+            
+             \brief Set empty maximum target 
+            
+        </member>
+        <member name="M:AskiaCore.IQuota.GetMaximumTargetType">
+            
+             \brief Indicates the maximum target type
             
         </member>
         <member name="P:AskiaCore.IQuota.InterviewsCompletedCount">
@@ -2030,6 +2023,27 @@
              \brief Questions on the root level of the quota tree
             
         </member>
+        <member name="M:AskiaCore.IQuota.Update(AskiaCore.QuotaUpdateType,System.Byte[],System.Collections.Generic.ICollection{System.Int32})">
+            
+             \brief Process quota update
+            
+        </member>
+        <member name="M:AskiaCore.IQuota.GetUpdate(AskiaCore.QuotaUpdateType@,System.Byte[]@,System.Boolean)">
+            
+             \brief Get quota updates
+            
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:AskiaCore.IQuota.UpdateCountsAndPercentages" -->
+        <member name="M:AskiaCore.IQuota.EqualsTree(AskiaCore.IQuota)">
+            
+             \brief Compare quota tree structure (ignoring settings, version, shortcuts, tokens, etc)
+            
+        </member>
+        <member name="M:AskiaCore.IQuota.QuotaVerify(System.Collections.Generic.IDictionary{System.Int32,System.Collections.Generic.ICollection{AskiaCore.IQuotaIssue}}@)">
+            
+             \brief Verify the quota structure for sanity issues
+            
+        </member>
         <member name="T:AskiaCore.QuotaFactory">
             
              \brief %Quota factory
@@ -2045,16 +2059,6 @@
              \brief %IQuotaAllocation interface
             
         </member>
-        <member name="M:AskiaCore.IQuotaAllocation.IsMinimumTargetPercentage">
-            
-             \brief Indicates if the minimum target type is in %
-            
-        </member>
-        <member name="M:AskiaCore.IQuotaAllocation.IsMaximumTargetPercentage">
-            
-             \brief Indicates if the maximum target type is in %
-            
-        </member>
         <member name="P:AskiaCore.IQuotaAllocation.MinimumTargetCount">
             
              \brief Minimum target (count)
@@ -2065,6 +2069,11 @@
              \brief Minimum target (percentage)
             
         </member>
+        <member name="M:AskiaCore.IQuotaAllocation.IsMinimumTargetPercentage">
+            
+             \brief Indicates if the minimum target type is in %
+            
+        </member>
         <member name="P:AskiaCore.IQuotaAllocation.MaximumTargetCount">
             
              \brief Maximum target (count)
@@ -2073,6 +2082,11 @@
         <member name="P:AskiaCore.IQuotaAllocation.MaximumTargetPercentage">
             
              \brief Maximum target (percentage)
+            
+        </member>
+        <member name="M:AskiaCore.IQuotaAllocation.IsMaximumTargetPercentage">
+            
+             \brief Indicates if the maximum target type is in %
             
         </member>
         <member name="T:AskiaCore.IQuotaAllocationCollection">
@@ -2200,34 +2214,54 @@
              \brief Extra data, meaning depends on the issue code
             
         </member>
+        <member name="T:AskiaCore.IQuotaNode">
+            
+             \brief %IQuotaNode interface
+            
+        </member>
+        <member name="P:AskiaCore.IQuotaNode.Root">
+            
+             \brief Main quota object
+            
+        </member>
+        <member name="P:AskiaCore.IQuotaNode.Token">
+            
+             \brief Token of the node
+            
+        </member>
+        <member name="P:AskiaCore.IQuotaNode.Parent">
+            
+             \brief Parent node
+            
+        </member>
+        <member name="P:AskiaCore.IQuotaNode.LineState">
+            
+             \brief Quota Line state
+            
+        </member>
+        <member name="M:AskiaCore.IQuotaNode.GetLineStateSummarized(AskiaCore.QuotaAvailableType,System.Boolean)">
+            
+             \brief Quota Line state summarized
+            
+        </member>
+        <member name="P:AskiaCore.IQuotaNode.AllocatedForWeb">
+            
+             \brief Quota allocations for web brokers
+            
+        </member>
+        <member name="P:AskiaCore.IQuotaNode.AllocatedForFace">
+            
+             \brief Quota allocations for face agents
+            
+        </member>
+        <member name="M:AskiaCore.IQuotaNode.FindNode(System.Int32,System.Boolean)">
+            
+             \brief Find a node by token below this one
+            
+        </member>
         <member name="T:AskiaCore.IQuotaQuestion">
             
              \brief %IQuotaQuestion interface
-            
-        </member>
-        <member name="M:AskiaCore.IQuotaQuestion.CreateResponseNumeric(System.Int32,System.Double,System.Double)">
-            
-             \brief Add a numeric response to this quota question given the %param name="dRangeMin" and %param name="dRangeMax" for the new range
-            
-        </member>
-        <member name="M:AskiaCore.IQuotaQuestion.RemoveResponseNumeric(System.Int32)">
-            
-             \brief Remove numeric response with token %param name="lToken" from this quota question
-            
-        </member>
-        <member name="M:AskiaCore.IQuotaQuestion.CreateResponseGroup(System.String)">
-            
-             \brief Add a group to this QuotaQuestion
-            
-        </member>
-        <member name="M:AskiaCore.IQuotaQuestion.RemoveResponseGroup(System.Int32)">
-            
-             \brief Remove group with token %param name="lToken" from this quota question 
-            
-        </member>
-        <member name="M:AskiaCore.IQuotaQuestion.MoveResponse(System.Int32,System.Int32)">
-            
-             \brief Move response with token %param name="sourceToken" from this quota question to  %param name="targetToken". When succesfull, returns new token 
             
         </member>
         <member name="P:AskiaCore.IQuotaQuestion.QuestionId">
@@ -2260,20 +2294,45 @@
              \brief Responses in this quota question
             
         </member>
+        <member name="M:AskiaCore.IQuotaQuestion.CreateResponseNumeric(System.Int32,System.Double,System.Double)">
+            
+             \brief Add a numeric response to this quota question given the %param name="dRangeMin" and %param name="dRangeMax" for the new range
+            
+        </member>
+        <member name="M:AskiaCore.IQuotaQuestion.RemoveResponseNumeric(System.Int32)">
+            
+             \brief Remove numeric response with token %param name="lToken" from this quota question
+            
+        </member>
+        <member name="M:AskiaCore.IQuotaQuestion.CreateResponseGroup(System.String)">
+            
+             \brief Add a group to this QuotaQuestion
+            
+        </member>
+        <member name="M:AskiaCore.IQuotaQuestion.RemoveResponseGroup(System.Int32)">
+            
+             \brief Remove group with token %param name="lToken" from this quota question 
+            
+        </member>
+        <member name="M:AskiaCore.IQuotaQuestion.MoveResponse(System.Int32,System.Int32)">
+            
+             \brief Move response with token %param name="sourceToken" from this quota question to  %param name="targetToken". When succesfull, returns new token 
+            
+        </member>
         <member name="T:AskiaCore.IQuotaQuestionCollection">
             
              \brief %IQuotaQuestion collection
+            
+        </member>
+        <member name="P:AskiaCore.IQuotaQuestionCollection.Item(System.Int32)">
+            
+             \brief Find an IQuotaQuestion by token
             
         </member>
         <member name="M:AskiaCore.IQuotaQuestionCollection.Create(System.Int32)">
             
              \brief Add a new QuotaQuestion to the collection
                     Note that this will create a QuotaResponse for all responses as well
-            
-        </member>
-        <member name="P:AskiaCore.IQuotaQuestionCollection.Item(System.Int32)">
-            
-             \brief Find an IQuotaQuestion by token
             
         </member>
         <member name="T:AskiaCore.IQuotaQuestionIterator">
@@ -2284,26 +2343,6 @@
         <member name="T:AskiaCore.IQuotaResponse">
             
              \brief %IQuotaResponse interface
-            
-        </member>
-        <member name="M:AskiaCore.IQuotaResponse.SetMinimumTargetEmpty">
-            
-             \brief Set empty minimum target 
-            
-        </member>
-        <member name="M:AskiaCore.IQuotaResponse.GetMinimumTargetType">
-            
-             \brief Indicates the minimum target type
-            
-        </member>
-        <member name="M:AskiaCore.IQuotaResponse.SetMaximumTargetEmpty">
-            
-             \brief Set empty maximum target 
-            
-        </member>
-        <member name="M:AskiaCore.IQuotaResponse.GetMaximumTargetType">
-            
-             \brief Indicates the maximum target type
             
         </member>
         <member name="P:AskiaCore.IQuotaResponse.ResponseId">
@@ -2326,6 +2365,16 @@
              \brief Minimum target (percentage)
             
         </member>
+        <member name="M:AskiaCore.IQuotaResponse.SetMinimumTargetEmpty">
+            
+             \brief Set empty minimum target 
+            
+        </member>
+        <member name="M:AskiaCore.IQuotaResponse.GetMinimumTargetType">
+            
+             \brief Indicates the minimum target type
+            
+        </member>
         <member name="P:AskiaCore.IQuotaResponse.MaximumTargetCount">
             
              \brief Maximum target (count)
@@ -2334,6 +2383,16 @@
         <member name="P:AskiaCore.IQuotaResponse.MaximumTargetPercentage">
             
              \brief Maximum target (percentage)
+            
+        </member>
+        <member name="M:AskiaCore.IQuotaResponse.SetMaximumTargetEmpty">
+            
+             \brief Set empty maximum target 
+            
+        </member>
+        <member name="M:AskiaCore.IQuotaResponse.GetMaximumTargetType">
+            
+             \brief Indicates the maximum target type
             
         </member>
         <member name="P:AskiaCore.IQuotaResponse.Priority">
@@ -2536,6 +2595,125 @@
              \brief Range Maximum
             
         </member>
+        <member name="T:AskiaCore.IRecordEntity">
+            <summary>
+                Represents an entity with a corresponding database entry
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IRecordEntity.Id">
+            <summary>
+            Id of the record
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IRecordEntity.CreatedBy">
+            <summary>
+            Id of the user which created the record
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IRecordEntity.CreatedAt">
+            <summary>
+            DateTime the record was created at
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IRecordEntity.UpdatedBy">
+            <summary>
+            Id of the user which last updated the record
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IRecordEntity.UpdatedAt">
+            <summary>
+            DateTime at which the record was last updated
+            </summary>
+        </member>
+        <member name="M:AskiaCore.IRecordEntity.IsDeleted">
+            <summary>
+            Indicates if the record is flagged as deleted
+            </summary>
+            <remarks><strong>TODO::Change to property instead of method</strong></remarks>
+            <returns></returns>
+        </member>
+        <member name="P:AskiaCore.IRecordEntity.DeletedBy">
+            <summary>
+            Id of the user which last deleted the record
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IRecordEntity.DeletedAt">
+            <summary>
+            DateTime at which the record was last deleted
+            </summary>
+        </member>
+        <member name="M:AskiaCore.IRecordEntity.IsLoaded">
+            <summary>
+            Checks if the record is loaded from the database
+            </summary>
+            <returns>
+                Return true when the record was successfully loaded, otherwize return false.
+                In such case refer to the <see cref="P:AskiaCore.IRecordEntity.LastError"/> property.
+            </returns>
+        </member>
+        <member name="M:AskiaCore.IRecordEntity.Save">
+            <summary>
+            Saves the record
+            </summary>
+            <returns>
+                Return true when the record was successfully saved, otherwize return false.
+                In such case refer to the <see cref="P:AskiaCore.IRecordEntity.LastError"/> property.
+            </returns>
+        </member>
+        <member name="M:AskiaCore.IRecordEntity.Reload">
+            <summary>
+            Reloads the record
+            </summary>
+            <returns>
+                Return true when the record was successfully reloaded, otherwize return false.
+                In such case refer to the <see cref="P:AskiaCore.IRecordEntity.LastError"/> property.
+            </returns>
+        </member>
+        <member name="M:AskiaCore.IRecordEntity.Delete">
+            <summary>
+            Deletes the record in the database
+            </summary>
+            <returns>
+                Return true when the record was successfully deleted, otherwize return false.
+                In such case refer to the <see cref="P:AskiaCore.IRecordEntity.LastError"/> property.
+            </returns>
+        </member>
+        <member name="M:AskiaCore.IRecordEntity.Restore">
+            <summary>
+            Restores the deleted record in the database
+            </summary>
+            <returns>
+                Return true when the record was successfully restored, otherwize return false.
+                In such case refer to the <see cref="P:AskiaCore.IRecordEntity.LastError"/> property.
+            </returns>
+        </member>
+        <member name="P:AskiaCore.IRecordEntity.LastError">
+            <summary>
+            Last error that occurred
+            </summary>
+        </member>
+        <member name="T:AskiaCore.IRecordEntitiesOwner`1">
+            <summary>
+            Generic interface for record collections with ownership
+            </summary>
+            <remarks>
+            <strong>TODO::Maybe change the name of to IRecordEntityCollection and use a method GetById() instead of the brackets accessor</strong>
+            </remarks>
+            <typeparam name="TEntityType">Type of record in the collection</typeparam>
+        </member>
+        <member name="M:AskiaCore.IRecordEntitiesOwner`1.Create">
+            <summary>
+            Creates a new element
+            </summary>
+            <returns>Returns the created entity</returns>
+        </member>
+        <member name="P:AskiaCore.IRecordEntitiesOwner`1.Item(System.Int32)">
+            <summary>
+            Finds a record entity by id
+            </summary>
+            <param name="id">Id of the record entity to find</param>
+            <returns>Return the record entity with the specified id or null when not found</returns>
+        </member>
         <member name="T:AskiaCore.ResourceType">
             
              \brief Enumeration of the resource type
@@ -2556,29 +2734,19 @@
              \brief Type of the resource
             
         </member>
-        <member name="P:AskiaCore.IResource.LanguageFiles">
+        <member name="P:AskiaCore.IResource.TranslatedFiles">
             
-             \brief Dictionary of the resource files by language
+             \brief collection of the resource files by language
+            
+        </member>
+        <member name="M:AskiaCore.IResource.Extract(System.String)">
+            
+             \brief Extract the resource to the disk
             
         </member>
         <member name="T:AskiaCore.IResourceCollection">
             
              \brief %Resource collection
-            
-        </member>
-        <member name="M:AskiaCore.IResourceCollection.Create(System.String)">
-            
-             \brief Create a resource given its name
-            
-        </member>
-        <member name="M:AskiaCore.IResourceCollection.Remove(System.Int32)">
-            
-             \brief Remove a resource from the collection given its id
-            
-        </member>
-        <member name="M:AskiaCore.IResourceCollection.Remove(System.String)">
-            
-             \brief Remove a resource from the collection given its name
             
         </member>
         <member name="P:AskiaCore.IResourceCollection.Count">
@@ -2596,19 +2764,69 @@
              \brief Find a resource by name
             
         </member>
+        <member name="M:AskiaCore.IResourceCollection.Create(System.String)">
+            
+             \brief Create a resource given its name
+            
+        </member>
+        <member name="M:AskiaCore.IResourceCollection.Remove(System.Int32)">
+            
+             \brief Remove a resource from the collection given its id
+            
+        </member>
+        <member name="M:AskiaCore.IResourceCollection.Remove(System.String)">
+            
+             \brief Remove a resource from the collection given its name
+            
+        </member>
         <member name="T:AskiaCore.IResourceIterator">
             
              \brief %Resource iterator
             
         </member>
-        <member name="P:AskiaCore.IResourceFile.FilePath">
+        <member name="P:AskiaCore.IResourceFile.IsExternal">
             
-             \brief Path of the file once extracted
+             \brief Indicates if the resource is external
+            
+        </member>
+        <member name="P:AskiaCore.IResourceFile.FileLocation">
+            
+             \brief Location of the file
             
         </member>
         <member name="P:AskiaCore.IResourceFile.Data">
             
              \brief Data contained within the file
+            
+        </member>
+        <member name="T:AskiaCore.IResourceFileCollection">
+            
+             \brief %Resource collection
+            
+        </member>
+        <member name="P:AskiaCore.IResourceFileCollection.Count">
+            
+             \brief Number of resource files in the collection
+            
+        </member>
+        <member name="P:AskiaCore.IResourceFileCollection.Item(System.Int32)">
+            
+             \brief Find a resource file by language id
+            
+        </member>
+        <member name="M:AskiaCore.IResourceFileCollection.Create(System.Int32)">
+            
+             \brief Create a resource file given its language id
+            
+        </member>
+        <member name="M:AskiaCore.IResourceFileCollection.Remove(System.Int32)">
+            
+             \brief Removes a resource file given its language id
+            
+        </member>
+        <member name="T:AskiaCore.IResourceFileIterator">
+            
+             \brief %Control iterator
             
         </member>
         <member name="T:AskiaCore.ResponseType">
@@ -2629,21 +2847,6 @@
         <member name="T:AskiaCore.IResponse">
             
              \brief %Response interface
-            
-        </member>
-        <member name="M:AskiaCore.IResponse.GetMainCaption">
-            
-             \brief Gets main caption of the response for the given context
-            
-        </member>
-        <member name="M:AskiaCore.IResponse.SetMainCaption(System.String)">
-            
-             \brief Sets main caption of the response for the given context
-            
-        </member>
-        <member name="M:AskiaCore.IResponse.GetScenarios">
-            
-             \brief Returns a collection of id of the scenario of this response
             
         </member>
         <member name="P:AskiaCore.IResponse.QuestionId">
@@ -2736,9 +2939,39 @@
              \brief User data for the response
             
         </member>
+        <member name="M:AskiaCore.IResponse.GetMainCaption">
+            
+             \brief Gets main caption of the response for the given context
+            
+        </member>
+        <member name="M:AskiaCore.IResponse.SetMainCaption(System.String)">
+            
+             \brief Sets main caption of the response for the given context
+            
+        </member>
+        <member name="M:AskiaCore.IResponse.GetScenarios">
+            
+             \brief Returns a collection of id of the scenario of this response
+            
+        </member>
+        <member name="M:AskiaCore.IResponse.AddToScenario(System.Int32)">
+            
+             \brief Add the response to a given scenario
+            
+        </member>
+        <member name="M:AskiaCore.IResponse.RemoveFromScenario(System.Int32)">
+            
+             \brief Removes the response from a given scenario
+            
+        </member>
         <member name="T:AskiaCore.IResponseCollection">
             
              \brief %Response collection
+            
+        </member>
+        <member name="P:AskiaCore.IResponseCollection.Count">
+            
+             \brief Number of responses in the collection
             
         </member>
         <member name="M:AskiaCore.IResponseCollection.Create(System.String)">
@@ -2768,15 +3001,26 @@
              \brief Remove a response from the collection given its id
             
         </member>
-        <member name="P:AskiaCore.IResponseCollection.Count">
-            
-             \brief Number of responses in the collection
-            
-        </member>
         <member name="T:AskiaCore.IResponseIterator">
             
              \brief %response iterator
             
+        </member>
+        <member name="T:AskiaCore.IMethodResult">
+            <summary>
+            Represents the result of method called
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IMethodResult.Success">
+            <summary>
+            Indicates if the method called was successfully executed
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IMethodResult.Error">
+            <summary>
+            Returns the error that has been generated by the called method, <br/>
+            it could be null when the called method succeed (<see cref="P:AskiaCore.IMethodResult.Success"/> is true).
+            </summary>
         </member>
         <member name="T:AskiaCore.RoutingActionType">
             
@@ -2823,6 +3067,11 @@
              \brief %RoutingTarget collection
             
         </member>
+        <member name="P:AskiaCore.IRoutingTargetCollection.Count">
+            
+             \brief Number of routing targets in the collection
+            
+        </member>
         <member name="M:AskiaCore.IRoutingTargetCollection.Create(AskiaCore.RoutingTargetType,System.Int32)">
             
              \brief Create a routing target given its type
@@ -2836,11 +3085,6 @@
         <member name="M:AskiaCore.IRoutingTargetCollection.RemoveAll">
             
              \brief Remove a all routing targets
-            
-        </member>
-        <member name="P:AskiaCore.IRoutingTargetCollection.Count">
-            
-             \brief Number of routing targets in the collection
             
         </member>
         <member name="T:AskiaCore.IRoutingTargetIterator">
@@ -2871,16 +3115,6 @@
         <member name="T:AskiaCore.IRouting">
             
              \brief %Routing interface
-            
-        </member>
-        <member name="M:AskiaCore.IRouting.GetScenarios">
-            
-             \brief Returns a collection of id of the scenario of this routing
-            
-        </member>
-        <member name="M:AskiaCore.IRouting.Compile">
-            
-             \brief Compiles the routing ?
             
         </member>
         <member name="P:AskiaCore.IRouting.Name">
@@ -2933,6 +3167,21 @@
              \brief Is the routing run during edits
             
         </member>
+        <member name="M:AskiaCore.IRouting.GetScenarios">
+            
+             \brief Returns a collection of id of the scenario of this routing
+            
+        </member>
+        <member name="M:AskiaCore.IRouting.AddToScenario(System.Int32)">
+            
+             \brief Add the routing to a given scenario
+            
+        </member>
+        <member name="M:AskiaCore.IRouting.RemoveFromScenario(System.Int32)">
+            
+             \brief removes the routing from a given scenario
+            
+        </member>
         <member name="P:AskiaCore.IRouting.ActionParameters">
             
              \brief Returns a collection of the routing action parameters
@@ -2951,9 +3200,24 @@
              to this filter
             
         </member>
+        <member name="M:AskiaCore.IRouting.Compile">
+            
+             \brief Compiles the routing ?
+            
+        </member>
         <member name="T:AskiaCore.IRoutingCollection">
             
              \brief %Routing collection
+            
+        </member>
+        <member name="P:AskiaCore.IRoutingCollection.Count">
+            
+             \brief Number of routings in the collection
+            
+        </member>
+        <member name="P:AskiaCore.IRoutingCollection.Item(System.String)">
+            
+             \brief Find a routing by shortcut
             
         </member>
         <member name="M:AskiaCore.IRoutingCollection.Create(System.String)">
@@ -2971,16 +3235,6 @@
              \brief Remove a routing from the collection given its name
             
         </member>
-        <member name="P:AskiaCore.IRoutingCollection.Count">
-            
-             \brief Number of routings in the collection
-            
-        </member>
-        <member name="P:AskiaCore.IRoutingCollection.Item(System.String)">
-            
-             \brief Find a routing by shortcut
-            
-        </member>
         <member name="T:AskiaCore.IRoutingIterator">
             
              \brief %Routing iterator
@@ -2991,19 +3245,24 @@
              \brief Enumeration of the scenario entity type
             
         </member>
+        <member name="T:AskiaCore.IScenarioEntity">
+            
+             \brief %Scenario entity interface
+            
+        </member>
+        <member name="P:AskiaCore.IScenarioEntity.Type">
+            
+             \brief Type of the entity
+            
+        </member>
+        <member name="P:AskiaCore.IScenarioEntity.Id">
+            
+             \brief Id of the entity
+            
+        </member>
         <member name="T:AskiaCore.IScenario">
             
              \brief %Scenario interface
-            
-        </member>
-        <member name="M:AskiaCore.IScenario.AddEntity(AskiaCore.ScenarioEntityType,System.Int32)">
-            
-             \brief Adds an entity to a scenario
-            
-        </member>
-        <member name="M:AskiaCore.IScenario.RemoveEntity(AskiaCore.ScenarioEntityType,System.Int32)">
-            
-             \brief Removes an entity from a scenario
             
         </member>
         <member name="P:AskiaCore.IScenario.Name">
@@ -3016,9 +3275,39 @@
              \brief Description of the scenario
             
         </member>
+        <member name="M:AskiaCore.IScenario.AddEntity(AskiaCore.ScenarioEntityType,System.Int32)">
+            
+             \brief Adds an entity to the scenario
+            
+        </member>
+        <member name="M:AskiaCore.IScenario.RemoveEntity(AskiaCore.ScenarioEntityType,System.Int32)">
+            
+             \brief Removes an entity from the scenario
+            
+        </member>
+        <member name="M:AskiaCore.IScenario.GetEntities">
+            
+             \brief Retrives all the scenario's entities
+            
+        </member>
         <member name="T:AskiaCore.IScenarioCollection">
             
              \brief %Scenario collection
+            
+        </member>
+        <member name="P:AskiaCore.IScenarioCollection.Count">
+            
+             \brief Number of scenarios in the collection
+            
+        </member>
+        <member name="P:AskiaCore.IScenarioCollection.Item(System.Int32)">
+            
+             \brief Find a scenario by id
+            
+        </member>
+        <member name="P:AskiaCore.IScenarioCollection.Item(System.String)">
+            
+             \brief Find a scenario by name
             
         </member>
         <member name="M:AskiaCore.IScenarioCollection.Create(System.String)">
@@ -3039,21 +3328,6 @@
         <member name="M:AskiaCore.IScenarioCollection.Remove(System.String)">
             
              \brief Remove a scenario from the collection given its name
-            
-        </member>
-        <member name="P:AskiaCore.IScenarioCollection.Count">
-            
-             \brief Number of scenarios in the collection
-            
-        </member>
-        <member name="P:AskiaCore.IScenarioCollection.Item(System.Int32)">
-            
-             \brief Find a scenario by id
-            
-        </member>
-        <member name="P:AskiaCore.IScenarioCollection.Item(System.String)">
-            
-             \brief Find a scenario by name
             
         </member>
         <member name="T:AskiaCore.IScenarioIterator">
@@ -3720,7 +3994,7 @@
                  </para>
                  <para>
                      The concurrent management of survey with context is mostly done to allows edition 
-                     by mutliple users at the same time on the same survey.
+                     by multiple users at the same time on the same survey.
                  </para>
              </remarks>
              <example>
@@ -3782,6 +4056,49 @@
                  </code>
              </example>
         </member>
+        <member name="P:AskiaCore.ISurvey.PortalId">
+            <summary>
+            Id of the survey in AskiaPortal database
+            </summary>
+        </member>
+        <member name="P:AskiaCore.ISurvey.Name">
+            <summary>
+            Name of the survey
+            </summary>
+        </member>
+        <member name="P:AskiaCore.ISurvey.Description">
+            <summary>
+            Description of the survey
+            </summary>
+        </member>
+        <member name="M:AskiaCore.ISurvey.TransformIntoSurveyTemplate">
+            <summary>
+            Promotes teh current survey to a survey Template
+            </summary>
+        </member>
+        <member name="P:AskiaCore.ISurvey.DefaultLanguageId">
+            <summary>
+            Id of the survey default Language
+            </summary>
+            <value>If not specified the default language will be English (2057)</value>
+        </member>
+        <member name="P:AskiaCore.ISurvey.DefaultPagesTemplateId">
+            <summary>
+            Returns the id of the survey default page template
+            </summary>
+        </member>
+        <member name="P:AskiaCore.ISurvey.Version">
+            <summary>
+            Gets the version of the engine that created the survey
+            </summary>
+        </member>
+        <member name="M:AskiaCore.ISurvey.SetDefaultPagesTemplate(System.Int32)">
+            <summary>
+            Set the default pages template id for the whole survey
+            </summary>
+            <param name="id">Valid page template id</param>
+            <returns>Return the result of the operation</returns>
+        </member>
         <member name="M:AskiaCore.ISurvey.MoveQuestions(System.Collections.Generic.IEnumerable{System.Int32},System.Int32,System.Int32)">
             <summary>
             Move questions to a given destination
@@ -3794,7 +4111,7 @@
             </remarks>
             <param name="questionIds">Ids of questions to move</param>
             <param name="targetParentId">Id of the parent target question</param>
-            <param name="targetPosition">Position at which the questions will be moved as the parent target children</param>
+            <param name="targetPosition">Position at which the questions will be moved as the parent target child</param>
             <returns>Return the result of the movement</returns>
         </member>
         <member name="M:AskiaCore.ISurvey.IndentQuestions(System.Collections.Generic.IEnumerable{System.Int32})">
@@ -3851,6 +4168,21 @@
             <param name="lastQuestionId">Last id of the question range to split</param>
             <returns>Return the result of the split</returns>
         </member>
+        <member name="M:AskiaCore.ISurvey.MoveElement(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Move element to a given destination
+            </summary>
+            <remarks>
+            <strong>This method automatically saves the modifications in the database</strong>
+            </remarks>
+            <remarks>
+            TODO Movement rules
+            </remarks>
+            <param name="elementId">Id of the element to move</param>
+            <param name="targetParentId">Id of the parent target element</param>
+            <param name="targetPosition">Position at which the element will be moved as the parent target child</param>
+            <returns>Return the result of the movement</returns>
+        </member>
         <member name="M:AskiaCore.ISurvey.SaveAll">
             
              \brief Saves all the survey recursively
@@ -3861,12 +4193,22 @@
              \brief Saves to file in exchange format (.qex)
             
         </member>
+        <member name="M:AskiaCore.ISurvey.SaveToExchangeFormat(System.String,System.String)">
+            
+             \brief Saves to file in exchange format (.qex)
+            
+        </member>
         <member name="M:AskiaCore.ISurvey.SaveToExchangeFormat(System.Byte[]@)">
             
              \brief Saves to memory in exchange format (.qex)
             
         </member>
         <member name="M:AskiaCore.ISurvey.ReadFromExchangeFormat(System.String)">
+            
+             \brief Reads from file in exchange format (.qex)
+            
+        </member>
+        <member name="M:AskiaCore.ISurvey.ReadFromExchangeFormat(System.String,System.String)">
             
              \brief Reads from file in exchange format (.qex)
             
@@ -3916,59 +4258,20 @@
              \brief Checks all the survey (basically calls all other check functions)
             
         </member>
+        <member name="M:AskiaCore.ISurvey.ExtractResources">
+            
+             \brief extract resources to their apropriate location (see persistent)
+            
+        </member>
+        <member name="M:AskiaCore.ISurvey.CheckResourceFileLocationAlreadyExist(System.String)">
+            
+             \brief checks if the given resource file location already exist
+            
+        </member>
         <member name="M:AskiaCore.ISurvey.CreateInterview">
             
              \brief Creates an interview from this survey
             
-        </member>
-        <member name="M:AskiaCore.ISurvey.FindResponse(System.Int32)">
-            
-             \brief Retrieve a response from within the questions of the 
-                    survey given its id
-            
-        </member>
-        <member name="M:AskiaCore.ISurvey.FindResponses(System.Collections.Generic.ICollection{System.Int32})">
-            
-             \brief Retrieve responses from within the questions of the 
-                    survey given their ids
-            
-        </member>
-        <member name="M:AskiaCore.ISurvey.GetMessages">
-            
-             \brief Returns a collection of the messages for the
-                    current language
-            
-        </member>
-        <member name="P:AskiaCore.ISurvey.PortalId">
-            <summary>
-            Id of the survey in AskiaPortal database
-            </summary>
-        </member>
-        <member name="P:AskiaCore.ISurvey.Name">
-            <summary>
-            Name of the survey
-            </summary>
-        </member>
-        <member name="P:AskiaCore.ISurvey.Description">
-            <summary>
-            Description of the survey
-            </summary>
-        </member>
-        <member name="P:AskiaCore.ISurvey.DefaultLanguageId">
-            <summary>
-            Id of the survey default Language
-            </summary>
-            <value>If not specified the default language will be English (2057)</value>
-        </member>
-        <member name="P:AskiaCore.ISurvey.DefaultPagesTemplateId">
-            <summary>
-            Id of the survey default page template
-            </summary>
-        </member>
-        <member name="P:AskiaCore.ISurvey.Version">
-            <summary>
-            Gets the version of the engine that created the survey
-            </summary>
         </member>
         <member name="P:AskiaCore.ISurvey.Languages">
             
@@ -3995,6 +4298,18 @@
              \brief Questions collection for the survey
             
         </member>
+        <member name="M:AskiaCore.ISurvey.FindResponse(System.Int32)">
+            
+             \brief Retrieve a response from within the questions of the 
+                    survey given its id
+            
+        </member>
+        <member name="M:AskiaCore.ISurvey.FindResponses(System.Collections.Generic.ICollection{System.Int32})">
+            
+             \brief Retrieve responses from within the questions of the 
+                    survey given their ids
+            
+        </member>
         <member name="P:AskiaCore.ISurvey.Routings">
             
              \brief Routings collection for the survey
@@ -4018,6 +4333,22 @@
         <member name="P:AskiaCore.ISurvey.PageTemplates">
             
              \brief Page templates collection for the survey
+            
+        </member>
+        <member name="P:AskiaCore.ISurvey.ExtensionProperties">
+            
+             \brief Extension properties collection for the survey
+            
+        </member>
+        <member name="P:AskiaCore.ISurvey.ThemeProperties">
+            
+             \brief Theme properties collection for the survey
+            
+        </member>
+        <member name="M:AskiaCore.ISurvey.GetMessages">
+            
+             \brief Returns a collection of the messages for the
+                    current language
             
         </member>
         <member name="T:AskiaCore.ImplementationAssembly">
@@ -4057,6 +4388,88 @@
             <param name="methodName">Name of the method to invoke</param>
             <param name="parameters">List of parameters to invoke the static method</param>
             <returns>Return the instance of the class or null</returns>
+        </member>
+        <member name="M:AskiaCore.ISurveyTemplate.GenerateSurvey">
+            
+             \brief Generates a survey from this template
+            
+        </member>
+        <member name="T:AskiaCore.IThemeProperty">
+            <summary>
+            Represents the key/value pair Theme property
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IThemeProperty.Name">
+            <summary>
+            Name of the property
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IThemeProperty.Value">
+            <summary>
+            Value assign to the property
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IThemeProperty.IsInherited">
+            <summary>
+            Tells if the property is inherited or set at the current level
+            </summary>
+        </member>
+        <member name="T:AskiaCore.IThemePropertyCollection">
+            <summary>
+            Collection of the Theme property
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IThemePropertyCollection.Count">
+            <summary>
+            Returns the number of properties in the collection
+            </summary>
+        </member>
+        <member name="P:AskiaCore.IThemePropertyCollection.Item(System.String)">
+            <summary>
+            Returns the value associated with the specified property name
+            </summary>
+            <param name="name">Name of the property to read</param>
+            <returns>Return null if the property was not found</returns>
+        </member>
+        <member name="M:AskiaCore.IThemePropertyCollection.Contains(System.String)">
+            <summary>
+            Indicates if the collection contains the specified property
+            </summary>
+            <param name="name">Name of the property to search</param>
+            <returns>True when the collection contains the specified property, otherwize false</returns>
+        </member>
+        <member name="M:AskiaCore.IThemePropertyCollection.Create(System.String,System.String)">
+            <summary>
+            Create a property using the specified name and value
+            </summary>
+            <remarks>
+            If the name of the property already exist, this method override it's value
+            </remarks>
+            <param name="name">Name of the property to create</param>
+            <param name="value">Value of the new create property</param>
+            <returns>The property that has been created</returns>
+        </member>
+        <member name="M:AskiaCore.IThemePropertyCollection.Remove(System.String)">
+            <summary>
+            Remove the specified property from the collection
+            </summary>
+            <param name="name">Name of the property to remove</param>
+            <returns>Returns true if the property was found and removed</returns>
+        </member>
+        <member name="M:AskiaCore.IThemePropertyCollection.Clear">
+            <summary>
+            Remove all properties from the collection
+            </summary>
+        </member>
+        <member name="M:AskiaCore.IThemePropertyCollection.GetResolvedCascadingValues">
+            <summary>
+            Get all properties including the ones resolving to default values
+            </summary>
+        </member>
+        <member name="T:AskiaCore.IThemePropertyIterator">
+            <summary>
+            Iterator over the collection of Theme properties
+            </summary>
         </member>
         <member name="T:AskiaCore.DatabaseTypes">
             <summary>
@@ -4103,6 +4516,9 @@
                             {
                                 // Initialize the database connection string (Where the survey was stored)
                                 Persistent.InitDatabaseConnection("connectionstring", DatabaseTypes.PORTAL);
+                                // Initialize the /Resources folder Path and URL
+                                Persistent.ResourcesPath = "C:\\Inetpub\\wwwroot\\MyApp\\Resources\\";
+                                Persistent.ResourcesUrl = "/Resources/";
                             }
             
                             protected void Application_End(object sender, EventArgs e)
@@ -4114,6 +4530,16 @@
                     }
                 </code>
             </example>
+        </member>
+        <member name="P:AskiaCore.Persistent.ResourcesPath">
+            <summary>
+            Full physical path to the /Resources directory
+            </summary>
+        </member>
+        <member name="P:AskiaCore.Persistent.ResourcesUrl">
+            <summary>
+            URL (relative) to the /Resources directory
+            </summary>
         </member>
         <member name="M:AskiaCore.Persistent.InitASPEnvironement">
             <summary>
@@ -4323,6 +4749,11 @@
              <param name="context">Context used to access the survey</param>
              <param name="id">Id (from AskiaPortal database) of the survey to access</param>
              <returns>The instance of survey or null if not found</returns>
+        </member>
+        <member name="M:AskiaCore.SurveyFactory.GetSurveyTemplatesMap(AskiaCore.IContext)">
+            
+             \brief SurveyTemplates collection
+            
         </member>
         <member name="M:AskiaCore.SurveyFactory.ClearCache">
             <summary>

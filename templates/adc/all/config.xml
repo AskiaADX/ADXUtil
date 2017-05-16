@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<control xmlns="http://www.askia.com/2.1.0/ADCSchema"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://www.askia.com/2.1.0/ADCSchema https://raw.githubusercontent.com/AskiaADX/ADXSchema/2.1.0/ADCSchema.xsd"
-         version="2.1.0"
-         askiaCompat="5.4.3">
+<control  xmlns="http://www.askia.com/2.1.0/ADCSchema"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.askia.com/2.1.0/ADCSchema https://raw.githubusercontent.com/AskiaADX/ADXSchema/2.1.0/ADCSchema.xsd"
+          version="2.1.0"
+          askiaCompat="5.4.2">
   <info>
     <name>{{ADXName}}</name>
     <guid>{{ADXGuid}}</guid>
@@ -35,9 +35,10 @@
       <content fileName="open.html" type="html" mode="dynamic" position="none" />
       <content fileName="numeric.html" type="html" mode="dynamic" position="none" />
       <content fileName="datetime.html" type="html" mode="dynamic" position="none" />
-
       <content fileName="default.css" type="css" mode="static" position="head" />
       <content fileName="default.html" type="html" mode="dynamic" position="placeholder" />
+      <content fileName="default.js" type="javascript" mode="static" position="foot" />
+      <content fileName="Initializer.js" type="javascript" mode="dynamic" position="foot" />
     </output>
   </outputs>
 

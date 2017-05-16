@@ -1,20 +1,42 @@
-var childProcess = require('child_process');
-var path         = require('path');
-var common       = require('./common.js');
+"use strict";
 
+const childProcess = require('child_process');
+const path         = require('path');
+const common       = require('./common.js');
 
 /**
+ * Create an interactive spawn process with the ADXShell.
+ *
  * Manage the ADXShell process in interactive mode.
  *
  * It allow a single instance creation of the ADXShell
  * and a bi-directional communication using the stdio of the spawn process
  *
  * @class InteractiveADXShell
- * @private
+ * @param {String} dir Path of the ADX directory
+ * @param {Object} [options] Options
+ * @param {"interactive"|"interview"} [options.mode='interactive'] Interactive mode
  */
 function InteractiveADXShell(dir, options) {
+    /**
+     * Path of the ADX directory
+     *
+     * @name InteractiveADXShell#path
+     * @type {String}
+     */
     this.path = dir;
+
+    /**
+     * Mode of interaction.
+     *
+     * - interactive (arbitrary command)
+     * - interview (interact with interview)
+     *
+     * @name InteractiveADXShell#mode
+     * @type {String}
+     */
     this.mode = 'interactive';
+
     if (options) {
         if (options.mode) {
             if (options.mode !== 'interactive' && options.mode !== 'interview') {
@@ -27,11 +49,7 @@ function InteractiveADXShell(dir, options) {
 
 /**
  * Create an interactive spawn process with the ADXShell
- *
- * @constructor
- * @param {String} dir Path of the ADX directory
- * @param {Object} [options] Options
- * @param {"interactive"|"interview"} [options.mode='interactive'] Interactive mode
+ * @ignore
  */
 InteractiveADXShell.prototype.constructor = InteractiveADXShell;
 
@@ -39,15 +57,17 @@ InteractiveADXShell.prototype.constructor = InteractiveADXShell;
 /**
  * Send the specified command in the ADXShell process
  *
- * @param {String} command Command to execute
- * @param {Function} callback
+ * @param {String} command ADXShell command to execute
+ * @param {Function} callback Callback
+ * @param {Error} callback.err Error
+ * @param {String} callback.result Result message of the ADXShell process
  */
 InteractiveADXShell.prototype.exec = function exec(command, callback) {
-    var self = this;
-    var message = [],
-        errorMessage = [],
-        errTimeout,
-        commandAsString = command;
+    const self = this;
+    const message = [];
+    const errorMessage = [];
+    let errTimeout;
+    let commandAsString = command;
 
     if (Array.isArray(command)) {
         commandAsString = commandAsString.join(' ');
@@ -55,8 +75,8 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
 
 
     if (!self._process) {
-        var root =  path.resolve(__dirname, "../../");
-        var args = [];
+        const root =  path.resolve(__dirname, "../../");
+        let args = [];
         switch (self.mode) {
             case 'interactive':
                 args.push('interactive', self.path);
@@ -88,7 +108,7 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
                 return;
             }
         }
-        var str = data.toString();
+        let str = data.toString();
         if (!/^\[ADXShell:End\]/m.test(str)) {
             message.push(str);
         } else {
@@ -107,7 +127,7 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
     }
 
     function onError(data) {
-        var str = data.toString();
+        let str = data.toString();
         if (!/^\[ADXShell:End\]/m.test(str)) {
             errorMessage.push(str);
             // If an hard error the message end is never throw,

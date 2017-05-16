@@ -1,7 +1,5 @@
 # ADXUtil
 
-*WIP (WORK IN PROGRESS)*
-
 This utilities is use to facilitate the creation and the packaging of ADX project (ADP and ADC).
 
 It contains validators and allow to display outputs of the ADX using the ADXEngine. 
@@ -64,13 +62,14 @@ This application works through Windows PowerShell
     --authorEmail <email>     default email of the author to set in the config
     --authorCompany <name>    default company of the author to set in the config
     --authorWebsite <website> default website of the author to set in the config
-    --promoted                the article will be promoted (appear with a star in ZenDesk Platform)
-    --enableComments          the comments will be enabled on the article corresponding to the ADC on ZenDesk
     --username <name>         the username login to connect to the platform
     --pwd <password>          the password login to connect to the platform
-    --sectionTitle <title>    The name of the section where the adc will be posted (ZenDesk)
-    --remoteUri <uri>         The remote URI of the platform
-	--surveyDemoUrl <url>	The url to start the survey demo
+    --url <uri>        		  the remote URI of the platform
+	--demoUrl <url>			  the url to start the survey demo
+    --section <title>    	  the name of the section where the adc will be posted (ZenDesk)
+    --promoted                the article will be promoted (appear with a star in ZenDesk Platform)
+    --disableComments         the comments will be disabled on the article corresponding to the ADC on ZenDesk
+    
     
 ### Generate
 
@@ -128,24 +127,6 @@ Then enter the following command with a platform argument and then the options y
 
 
 You can use following command line options for the ZenDesk publisher:
-
-* --url 
-URL of the ZenDesk where to push
-
-* --section  
-Name of the section within which the article will be created
-
-* --username           
-Username to connect into ZenDesk
- 
-* --password           
-Password to connect into ZenDesk
-
-* --promoted           
-Create a promoted article
-
-* --disableComments
-Create an article with disabled commentscd 
 
 #### List of possible error messages
 
@@ -295,35 +276,52 @@ That should show the result of the `MyADXOutputName` with the specified fixture.
 
 ## API Usage
 
-Please find the [full API documentation here](http://www.askia.com/Downloads/dev/docs/ADCUtil/index.html)
+Please find the [full API documentation here](http://installers.askia.com/helpdesk/devs/ADXUtilDoc/ADX.html)
 
 Example of usage of existing ADX
 
-    var ADX = require('adxutil').ADX;
+    const ADX = require('adxutil').ADX;
     
-    var myAdx = new ADX('path/to/adx/dir');
+    const myAdx = new ADX('path/to/adx/dir');
         
     // Validate an ADX
-    myAdx.validate({test : false, autoTest : false}, function (err, report) {
+    const configTest = {
+        test : false, 
+        autoTest : false
+    }; 
+    myAdx.validate(configTest, (err, report) => {
         // Callback when the ADX structure has been validated
     });
     
     // Show the output of an ADX
-    myAdx.show({ output : 'fallback', fixture : 'single.xml'  },  function (err, output) {
+    const configShow = { 
+        output : 'fallback', 
+        fixture : 'single.xml'  
+    };
+    myAdx.show(configShow,  (err, output) => {
         // Callback with the output of the ADX
     });
     
     // Build the ADX (package it)
-    myAdx.build({test : false, autoTest : false}, function (err, path, report) {
+    const configBuild = {
+        test : false, 
+        autoTest : false
+    };
+    myAdx.build(configBuild, (err, path, report) => {
         // Callback when the ADX has been built 
     });
     
 
 Generate and use the new ADX instance
     
-    ADX.generate('myNewADC', {type : 'adc', output : '/path/of/parent/dir', template : 'blank'}, function (err, adc) {
+    const configGeneration = {
+        type : 'adc', 
+        output : '/path/of/parent/dir', 
+        template : 'blank'
+    };
+    ADX.generate('myNewADC', configGeneration , (err, adc) => {
         console.log(adc.path);
-        adc.load(function (err) {
+        adc.load((err) => {
             if (err) {
                 console.log(err);
                 return;
@@ -335,9 +333,14 @@ Generate and use the new ADX instance
     
 OR
 
-    ADX.generate('myNewADP', {type : 'adp', output : '/path/of/parent/dir', template : 'default'}, function (err, adp) {
+    const configGeneration = {
+        type : 'adp', 
+        output : '/path/of/parent/dir', 
+        template : 'default'
+    };
+    ADX.generate('myNewADP', configGeneration, (err, adp) => {
         console.log(adp.path);
-        adp.load(function (err) {
+        adp.load((err) => {
             if (err) {
                 console.log(err);
                 return;

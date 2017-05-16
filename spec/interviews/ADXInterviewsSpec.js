@@ -8,7 +8,7 @@ describe('ADXInterviews', function () {
         spies = {},
         errMsg,
         successMsg,
-        uuid            = require('node-uuid');
+        uuid            = require('uuid');
 
     beforeEach(function () {
         // Clean the cache, obtain a fresh instance of the adxInterviews each time
@@ -228,7 +228,7 @@ describe('ADXInterviews', function () {
                 expect(typeof inter.execCommand).toBe('function');
             });
 
-            it('should call the #shell#exec method with the `command`, `options` and `callback` parameters', function () {
+            it('should call the #shell#exec method with the `command`, `emulation` and `callback` parameters', function () {
                 var factory = new InterviewsFactory('my/path');
                 var inter = factory.create();
                 function cb(){
@@ -236,7 +236,7 @@ describe('ADXInterviews', function () {
                 }
                 inter.execCommand('command', {
                     fixture    : 'a_fixture',
-                    output     : 'an_output',
+                    emulation  : 'the_emulation',
                     properties : 'someproperties',
                     parameters : 'someparameters',
                     themes     : 'somethemesvariables'
@@ -245,7 +245,7 @@ describe('ADXInterviews', function () {
                 expect(spies.interactiveExec).toHaveBeenCalledWith([
                     'command',
                     '"-fixture:a_fixture"',
-                    '"-output:an_output"',
+                    '"-emulation:the_emulation"',
                     '"-properties:someproperties"',
                     '"-parameters:someparameters"',
                     '"-themes:somethemesvariables"'

@@ -9,6 +9,8 @@
     list-style-type: none;
 }
 .adc-default textarea {
-    width  : 250px;
+    width: 100%;
+    min-width: 80%;
+    max-width: 90%;
     height : 50px;
 }

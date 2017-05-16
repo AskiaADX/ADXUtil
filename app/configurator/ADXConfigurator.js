@@ -1,30 +1,31 @@
-var fs = require('fs');
-var path = require('path');
-var et = require('elementtree');
-var subElement = et.SubElement;
-var common = require('../common/common.js');
-var errMsg = common.messages.error;
+const fs            = require('fs');
+const path          = require('path');
+const et            = require('elementtree');
+const subElement    = et.SubElement;
+const common        = require('../common/common.js');
+const errMsg        = common.messages.error;
 
 /**
  * Object used to read and manipulate the config.xml file of an ADX
  *
- *      var ADX = require('adxutil').ADX;
+ *      const ADX = require('adxutil').ADX;
  *
- *      var myAdx = new ADX('path/to/adx/');
+ *      const myAdx = new ADX('path/to/adx/');
  *      myAdx.load(function (err) {
  *          if (err) {
  *              throw err;
  *          }
  *
  *          // Get the instance of the Configurator
- *          var conf = myAdx.configurator;
+ *          const conf = myAdx.configurator;
  *
  *          console.log(conf.info.name());
  *
  *      });
  *
  *
- * @class ADX.Configurator
+ * @class Configurator
+ * @param {String} dir Path of the ADX directory
  */
 function Configurator(dir) {
     if (!dir) {
@@ -33,44 +34,58 @@ function Configurator(dir) {
 
     /**
      * Path of the ADX directory
+     *
+     * @name Configurator#path
      * @type {String}
      */
     this.path   = dir;
 
     /**
      * Type of the project (`adc` or `adp`)
-     * @type {"adc"|"adp"}
+     *
+     * @name Configurator#projectType
+     * @type {String|"adc"|"adp"}
      */
     this.projectType = null;
 
     /**
      * Version of the ADX project
+     *
+     * @name Configurator#projectVersion
      * @type {String}
      */
     this.projectVersion = null;
 
     /**
      * XML document (ElementTree)
-     * @private
+     *
+     * @name Configurator#xmlDoc
      * @type {Object}
+     * @private
      */
     this.xmldoc = null;
 
     /**
      * Info of the ADX
-     * @type {ADX.Configurator.Info}
+     *
+     * @name Configurator#info
+     * @type {Configurator.Info}
      */
     this.info = null;
 
     /**
      * Outputs of the ADX
-     * @type {ADX.Configurator.Outputs}
+     *
+     * @name Configurator#outputs
+     * @type {Configurator.Outputs}
      */
     this.outputs = null;
 
     /**
      * Properties of the ADX
-     * @type {ADX.Configurator.Properties}
+     *
+     * @name Configurator#properties
+     * @type {Configurator.Properties}
      */
     this.properties = null;
 }
@@ -78,8 +93,7 @@ function Configurator(dir) {
 /**
  * Create a new instance of the ADX configurator object
  *
- * @constructor
- * @param {String} dir Path of the ADX directory
+ * @ignore
  */
 Configurator.prototype.constructor = Configurator;
 
@@ -100,9 +114,9 @@ Configurator.prototype.constructor = Configurator;
 Configurator.prototype.load = function load(callback) {
     
     callback = callback || function () {};
-    var self = this;
+    const self = this;
 
-    common.dirExists(this.path, function (err, isExist) {
+    common.dirExists(this.path, (err, isExist) => {
         if (err) {
             callback(err);
             return;
@@ -112,10 +126,10 @@ Configurator.prototype.load = function load(callback) {
             return;
         }
 
-        var filePath = path.join(self.path, common.CONFIG_FILE_NAME);
+        const filePath = path.join(self.path, common.CONFIG_FILE_NAME);
         
 
-        fs.readFile(filePath, function (err, data) {
+        fs.readFile(filePath, (err, data) => {
             if (err) {
                 callback(err);
                 return;
@@ -325,16 +339,16 @@ Configurator.prototype.set = function set(data) {
  * @return {String}
  */
 Configurator.prototype.toXml = function toXml() {
-    var xml = [],
-        projectType = this.projectType,
-        projectVersion = this.projectVersion,
-        rootName = (projectType === 'adc') ? 'control' : 'page',
-        namespaceURI = 'http://www.askia.com/' + projectVersion + '/' + projectType.toUpperCase() + 'Schema',
-        schemaURI = 'https://raw.githubusercontent.com/AskiaADX/ADXSchema/' + projectVersion + '/' + projectType.toUpperCase() + 'Schema.xsd',
-        askiaCompat,
-        infoXml = this.info.toXml(),
-        outputsXml = this.outputs.toXml(),
-        propertiesXml = this.properties.toXml();
+    const xml = [];
+    const projectType = this.projectType;
+    const projectVersion = this.projectVersion;
+    const rootName = (projectType === 'adc') ? 'control' : 'page';
+    const namespaceURI = 'http://www.askia.com/' + projectVersion + '/' + projectType.toUpperCase() + 'Schema';
+    const schemaURI = 'https://raw.githubusercontent.com/AskiaADX/ADXSchema/' + projectVersion + '/' + projectType.toUpperCase() + 'Schema.xsd';
+    const infoXml = this.info.toXml();
+    const outputsXml = this.outputs.toXml();
+    const propertiesXml = this.properties.toXml();
+    let askiaCompat;
 
     switch(projectVersion) {
         case '2.1.0':
@@ -379,7 +393,7 @@ Configurator.prototype.toXml = function toXml() {
 Configurator.prototype.fromXml = function fromXml(xml) {
     this.xmldoc = et.parse(xml);
 
-    var rootEl = this.xmldoc.getroot();
+    const rootEl = this.xmldoc.getroot();
     switch (rootEl && rootEl.tag) {
         case 'control':
             this.projectType = 'adc';
@@ -405,9 +419,9 @@ Configurator.prototype.fromXml = function fromXml(xml) {
  * @param {Error} callback.err
  */
 Configurator.prototype.save = function save(callback) {
-    var filePath = path.join(this.path, common.CONFIG_FILE_NAME);
-    var self = this;
-    fs.writeFile(filePath, this.toXml(), {encoding : 'utf8'}, function (err) {
+    const filePath = path.join(this.path, common.CONFIG_FILE_NAME);
+    const self = this;
+    fs.writeFile(filePath, this.toXml(), {encoding : 'utf8'}, (err) => {
         if (!err) {
             self.load(callback);
         } else {
@@ -421,32 +435,39 @@ Configurator.prototype.save = function save(callback) {
 /**
  * Provide an object to manipulate the meta-information of the ADX (config.xml > info)
  *
- *      var ADX = require('adxutil').ADX;
+ *      const ADX = require('adxutil').ADX;
  *
- *      var myAdx = new ADX('path/to/adx/');
+ *      const myAdx = new ADX('path/to/adx/');
  *      myAdx.load(function (err) {
  *          if (err) {
  *              throw err;
  *          }
  *
  *          // Get the instance of the Info
- *          var info = myAdx.configurator.info;
+ *          const info = myAdx.configurator.info;
  *
  *          console.log(info.get());
  *
  *      });
  *
- * @class ADX.Configurator.Info
+ * @class Configurator.Info
+ * @param {ADX.Configurator} configurator Instance of the configurator
  */
 function ADXInfo(configurator) {
+
+    /**
+     * Parent configurator
+     *
+     * @name Configurator.Info#configurator
+     * @type {Configurator}
+     */
     this.configurator = configurator;
 }
 
 /**
  * Creates a new instance of ADX Info
  *
- * @constructor
- * @param {ADX.Configurator} configurator Instance of the configurator
+ * @ignore
  */
 ADXInfo.prototype.constructor = ADXInfo;
 
@@ -479,24 +500,26 @@ ADXInfo.prototype.constructor = ADXInfo;
  *       //   }
  *       // }
  *
+ * @name Configurator.Info#get
+ * @function
  * @return {Object}
  */
 ADXInfo.prototype.get = function get() {
-    var self = this,
-        result = {},
-        projectType = this.configurator.projectType,
-        projectVersion = this.configurator.projectVersion,
-        infos = ["name", "guid", "version", "date", "description", "company", "author", "site", "helpURL"];
+    const self = this;
+    const result = {};
+    const projectType = this.configurator.projectType;
+    const projectVersion = this.configurator.projectVersion;
+    const info = ["name", "guid", "version", "date", "description", "company", "author", "site", "helpURL"];
 
     if (projectType === 'adc') {
-        infos.push("categories");
+        info.push("categories");
         if (projectVersion === '2.0.0') {
-            infos.push("style");
+            info.push("style");
         }
-        infos.push("constraints");
+        info.push("constraints");
     }
 
-    infos.forEach(function (methodName) {
+    info.forEach((methodName) => {
          result[methodName] = self[methodName]();
     });
     return result;
@@ -531,6 +554,8 @@ ADXInfo.prototype.get = function get() {
  *        });
  *
  *
+ * @name Configurator.Info#set
+ * @function
  * @param {Object} data Data to set
  * @param {String} [data.name] Name of the ADX
  * @param {String} [data.version] Version of the ADX
@@ -566,7 +591,7 @@ ADXInfo.prototype.get = function get() {
  * @param {Number} [data.constraints.responses.max] Maximum allowed responses
  */
 ADXInfo.prototype.set = function set(data) {
-    var self = this;
+    const self = this;
 
     if (!data) {
         return;
@@ -574,7 +599,7 @@ ADXInfo.prototype.set = function set(data) {
 
 
     ["name", "guid", "version", "date", "description", "company", "author", "site",
-        "helpURL", "categories", "style", "constraints"].forEach(function (methodName) {
+        "helpURL", "categories", "style", "constraints"].forEach((methodName) => {
             if (data.hasOwnProperty(methodName)) {
                 self[methodName](data[methodName]);
             }
@@ -592,7 +617,8 @@ ADXInfo.prototype.set = function set(data) {
      *       // Set the name of the ADX
      *       adxInfo.name("New name");
      *
-     * @method name
+     * @name Configurator.Info#name
+     * @function
      * @param {String} [data] Name of the ADX to set
      * @returns {String} Name of the ADX
      */
@@ -603,10 +629,11 @@ ADXInfo.prototype.set = function set(data) {
      *       adxInfo.guid();
      *
      *       // Set the guid of the ADC
-     *       var uuid = require('node-uuid'');
+     *       const uuid = require('uuid'');
      *       adxInfo.guid(uuid.v4());
      *
-     * @method guid
+     * @name Configurator.Info#guid
+     * @function
      * @param {String} [data] GUID of the ADX to set
      * @returns {String} GUID of the ADX
      */
@@ -619,7 +646,8 @@ ADXInfo.prototype.set = function set(data) {
      *       // Set the version of the ADX
      *       adxInfo.version("2.0.0.beta1");
      *
-     * @method version
+     * @name Configurator.Info#version
+     * @function
      * @param {String} [data] Version of the ADX to set
      * @returns {String} Version of the ADX
      */
@@ -632,7 +660,8 @@ ADXInfo.prototype.set = function set(data) {
      *       // Set the description of the ADX
      *       adxInfo.description("This is the description of the ADX");
      *
-     * @method description
+     * @name Configurator.Info#description
+     * @function
      * @param {String} [data] Description of the ADX to set
      * @returns {String} Description of the ADX
      */
@@ -645,7 +674,8 @@ ADXInfo.prototype.set = function set(data) {
      *       // Set the company of the ADX
      *       adxInfo.company("Askia SAS");
      *
-     * @method company
+     * @name Configurator.Info#company
+     * @function
      * @param {String} [data] Company name to set
      * @returns {String} Company of the ADX creator
      */
@@ -658,7 +688,8 @@ ADXInfo.prototype.set = function set(data) {
      *       // Set the author(s) of the ADX
      *       adxInfo.author("John Doe <john.doe@unknow.com>, Foo Bar <foo@bar.com>");
      *
-     * @method author
+     * @name Configurator.Info#author
+     * @function
      * @param {String} [data] Author(s) to set
      * @returns {String} Author(s)
      */
@@ -671,7 +702,8 @@ ADXInfo.prototype.set = function set(data) {
      *       // Set the date
      *       adxInfo.date("2015-06-25");
      *
-     * @method date
+     * @name Configurator.Info#date
+     * @function
      * @param {String} [data] Date to set
      * @returns {String} Date
      */
@@ -684,7 +716,8 @@ ADXInfo.prototype.set = function set(data) {
      *       // Set the site URL
      *       adxInfo.site("http://my.website.com");
      *
-     * @method site
+     * @name Configurator.Info#site
+     * @function
      * @param {String} [data] URL to set
      * @returns {String} Site URL
      */
@@ -697,15 +730,16 @@ ADXInfo.prototype.set = function set(data) {
      *       // Set the help URL
      *       adxInfo.helpURL("http://my.help.file.com");
      *
-     * @method helpURL
+     * @name Configurator.Info#helpURL
+     * @function
      * @param {String} [data] URL to set
      * @returns {String} Help URL
      */
     
     ADXInfo.prototype[propName] = function (data) {
-        var xmldoc = this.configurator.xmldoc;
-        var elInfo = xmldoc.find('info');
-        var isSetter = data !== undefined;
+        const xmldoc = this.configurator.xmldoc;
+        let elInfo = xmldoc.find('info');
+        const isSetter = data !== undefined;
 
         // No root info
         if (!elInfo && isSetter) {
@@ -714,7 +748,7 @@ ADXInfo.prototype.set = function set(data) {
             return '';
         }
 
-        var el = elInfo.find(propName);
+        let el = elInfo.find(propName);
 
         // No element
         if (!el && isSetter) {
@@ -743,8 +777,10 @@ ADXInfo.prototype.set = function set(data) {
  *       });
  *
  * @deprecated
+ * @name Configurator.Info#style
+ * @function
  * @param {Object} [data] Style to set
- * #param {Number} [data.width] Style width
+ * @param {Number} [data.width] Style width
  * @param {Number} [data.height] Style height
  * @returns {Object}
  */
@@ -755,9 +791,9 @@ ADXInfo.prototype.style = function style(data) {
     if (this.configurator.projectVersion !== "2.0.0") {
         return;
     }
-    var xmldoc = this.configurator.xmldoc;
-    var elInfo = xmldoc.find("info");
-    var isSetter = (data !== undefined);
+    const  xmldoc = this.configurator.xmldoc;
+    let elInfo = xmldoc.find("info");
+    const isSetter = (data !== undefined);
 
     if (!elInfo && isSetter) {
         elInfo = subElement(xmldoc.getroot(), "info");
@@ -766,14 +802,15 @@ ADXInfo.prototype.style = function style(data) {
     }
 
 
-    var el = elInfo.find("style");
+    let el = elInfo.find("style");
     if (!el && isSetter) {
         el = subElement(elInfo, "style");
     } else if (!el && !isSetter) {
         return {width : 0, height : 0};
     }
 
-    var result = {}, w, h;
+    const result = {};
+    let w, h;
     if (isSetter) {
         if (data.width !== undefined) {
             el.set("width", data.width);
@@ -801,6 +838,8 @@ ADXInfo.prototype.style = function style(data) {
  *       adxInfo.categories(["General", "Slider", "Single"]);
  *
  * @deprecated
+ * @name Configurator.Info#categories
+ * @function
  * @param {String[]} [data] Array of string which represent the categories to set
  * @returns {String[]} Name of categories
  */
@@ -808,9 +847,9 @@ ADXInfo.prototype.categories = function categories(data) {
     if (this.configurator.projectType !== 'adc') {
         return;
     }
-    var xmldoc = this.configurator.xmldoc;
-    var elInfo = xmldoc.find('info');
-    var isSetter = Array.isArray(data);
+    const xmldoc = this.configurator.xmldoc;
+    let elInfo = xmldoc.find('info');
+    const isSetter = Array.isArray(data);
 
     // No root info
     if (!elInfo && isSetter) {
@@ -819,7 +858,7 @@ ADXInfo.prototype.categories = function categories(data) {
         return [];
     }
 
-    var el = elInfo.find("categories");
+    let el = elInfo.find("categories");
 
     // No categories
     if (!el && isSetter) {
@@ -828,16 +867,16 @@ ADXInfo.prototype.categories = function categories(data) {
         return [];
     }
 
-    var result = [];
+    const result = [];
     if (isSetter) {
         el.delSlice(0, el.len());
-        data.forEach(function (text) {
-            var cat = subElement(el, 'category');
+        data.forEach((text) => {
+            const cat = subElement(el, 'category');
             cat.text = text;
         });
     }
 
-    el.iter('category', function (cat) {
+    el.iter('category', (cat) => {
         result.push(cat.text);
     });
 
@@ -865,7 +904,8 @@ ADXInfo.prototype.categories = function categories(data) {
  *          }
  *       });
  *
- *
+ * @name Configurator.Info#constraints
+ * @function
  * @param {Object} [data] Constraint data to set (ADC ONLY)
  * @return {Object} Constraints
  */
@@ -873,8 +913,8 @@ ADXInfo.prototype.constraints = function constraints(data) {
     if (this.configurator.projectType !== 'adc') {
         return;
     }
-    var xmldoc = this.configurator.xmldoc;
-    var elInfo = xmldoc.find("info");
+    const xmldoc = this.configurator.xmldoc;
+    let elInfo = xmldoc.find("info");
 
     // No root info
     if (!elInfo && data) {
@@ -883,7 +923,7 @@ ADXInfo.prototype.constraints = function constraints(data) {
         return {};
     }
 
-    var el = elInfo.find("constraints");
+    let el = elInfo.find("constraints");
 
     // No constraints
     if (!el && data) {
@@ -892,36 +932,36 @@ ADXInfo.prototype.constraints = function constraints(data) {
         return {};
     }
 
-    var result = {};
+    const result = {};
 
     if (data) {
-        Object.keys(data).forEach(function (on) {
+        Object.keys(data).forEach((on) => {
             if (on !== 'questions' &&  on !== 'responses' &&  on !== 'controls') {
                return;
             }
-            var node = el.find("constraint[@on='" + on + "']");
+            let node = el.find("constraint[@on='" + on + "']");
             if (!node) {
                 node = subElement(el, "constraint");
                 node.set("on", on);
             }
 
-            Object.keys(data[on]).forEach(function (attName) {
-                var value = data[on][attName].toString();
+            Object.keys(data[on]).forEach((attName) => {
+                const value = data[on][attName].toString();
                 node.set(attName,  value);
             });
 
         });
     }
 
-    el.iter('constraint', function (constraint) {
-        var on = constraint.get("on");
-        var value = {};
+    el.iter('constraint', (constraint) => {
+        const on = constraint.get("on");
+        const value = {};
 
-        constraint.keys().forEach(function (attName) {
+        constraint.keys().forEach((attName) => {
             if (attName === 'on') {
                 return;
             }
-            var v = constraint.get(attName);
+            let v = constraint.get(attName);
             if (attName === 'min' || attName === 'max') {
                 if (v !== '*') {
                     v = parseInt(v, 10);
@@ -948,18 +988,20 @@ ADXInfo.prototype.constraints = function constraints(data) {
  *       // Set the constraint 'single' on questions
  *       adxInfo.constraint('questions', 'single', true);
  *
+ * @name Configurator.Info#constraint
+ * @function
  * @param {String} where Which constraint to target
  * @param {String} attName Name of the constraint attribute to get or set
  * @param {Boolean|Number} [attValue] Value of the attribute to set
  * @return {Boolean|Number} Value of the attribute
  */
 ADXInfo.prototype.constraint = function constraint(where, attName, attValue) {
-    var xmldoc = this.configurator.xmldoc;
-    var el = xmldoc.find("info/constraints/constraint[@on='" + where + "']");
-    var result;
+    const xmldoc = this.configurator.xmldoc;
+    let el = xmldoc.find("info/constraints/constraint[@on='" + where + "']");
+    let result;
     if (attValue !== undefined) {
         if (!el) {
-            var parent = xmldoc.find('info/constraints');
+            const parent = xmldoc.find('info/constraints');
             if (!parent) {
                 throw new Error("Unable to find the  `constraints` node ");
             }
@@ -997,24 +1039,24 @@ ADXInfo.prototype.constraint = function constraint(where, attName, attValue) {
  *       adxInfo.toXml();
  *       // -> <info><name>MyADC</name><guid>the-guid</guid>....</info>
  *
+ * @name Configurator.Info#toXml
+ * @function
  * @return {String}
  */
 ADXInfo.prototype.toXml = function toXml() {
-    var xml = [],
-        self = this,
-        projectType = this.configurator.projectType,
-        projectVersion = this.configurator.projectVersion,
-        style,
-        constraints,
-        constraintsKeys = ['questions', 'controls', 'responses'];
+    const xml = [];
+    const self = this;
+    const projectType = this.configurator.projectType;
+    const projectVersion = this.configurator.projectVersion;
+    const constraintsKeys = ['questions', 'controls', 'responses'];
+    let style;
+    let constraints;
 
     xml.push('  <info>');
 
-
-
     ["name", "guid", "version", "date", "description", "company", "author", "site",
-        "helpURL"].forEach(function (methodName) {
-            var data = self[methodName]();
+        "helpURL"].forEach((methodName) => {
+            let data = self[methodName]();
             if (methodName === 'description' || methodName === 'author') {
                 data = '<![CDATA[' + data + ']]>';
             }
@@ -1024,7 +1066,7 @@ ADXInfo.prototype.toXml = function toXml() {
     // ADC Only
     if (projectType === 'adc') {
         xml.push('    <categories>');
-        self.categories().forEach(function (cat) {
+        self.categories().forEach((cat) => {
             xml.push('      <category>' + cat + '</category>');
         });
         xml.push('    </categories>');
@@ -1037,13 +1079,13 @@ ADXInfo.prototype.toXml = function toXml() {
         constraints = self.constraints();
         xml.push('    <constraints>');
 
-        constraintsKeys.forEach(function (on) {
+        constraintsKeys.forEach((on) => {
             if (!constraints[on]) {
                 return;
             }
-            var str = '      <constraint on="' + on + '"',
-                constraint = constraints[on];
-            for(var key in constraint) {
+            let str = '      <constraint on="' + on + '"';
+            let constraint = constraints[on];
+            for(let key in constraint) {
                 if (constraint.hasOwnProperty(key)) {
                     str += ' ' + key + '="' + constraint[key].toString() + '"';
                 }
@@ -1062,32 +1104,38 @@ ADXInfo.prototype.toXml = function toXml() {
 /**
  * Provide an object to manipulate the outputs  of the ADC (config.xml > outputs)
  *
- *      var ADX = require('adxutil').ADX;
+ *      const ADX = require('adxutil').ADX;
  *
- *      var myAdx = new ADC('path/to/adx/');
+ *      const myAdx = new ADC('path/to/adx/');
  *      myAdx.load(function (err) {
  *          if (err) {
  *              throw err;
  *          }
  *
  *          // Get the instance of the Outputs
- *          var outputs = myAdx.configurator.outputs;
+ *          const outputs = myAdx.configurator.outputs;
  *
  *          console.log(outputs.get());
  *
  *      });
  *
- * @class ADX.Configurator.Outputs
+ * @class Configurator.Outputs
+ * @param {ADX.Configurator} configurator Instance of the configurator
  */
 function ADXOutputs(configurator) {
+    /**
+     * Parent configurator
+     *
+     * @name Configurator.Outputs#configurator
+     * @type {Configurator}
+     */
     this.configurator = configurator;
 }
 
 /**
  * Creates a new instance of ADX Outputs
  *
- * @constructor
- * @param {ADX.Configurator} configurator Instance of the configurator
+ * @ignore
  */
 ADXOutputs.prototype.constructor = ADXOutputs;
 
@@ -1100,12 +1148,14 @@ ADXOutputs.prototype.constructor = ADXOutputs;
  *       // Set the default output id
  *       adxOutputs.defaultOutput("without_javascript");
  *
+ * @name Configurator.Outputs#defaultOutput
+ * @function
  * @param {String} [data] Id of the default output to set
  * @returns {String} Id of the default output
  */
 ADXOutputs.prototype.defaultOutput = function defaultOutput(data) {
-    var xmldoc = this.configurator.xmldoc;
-    var el = xmldoc.find("outputs");
+    const xmldoc = this.configurator.xmldoc;
+    let el = xmldoc.find("outputs");
     if (!el) {
         el = subElement(xmldoc.getroot(), 'outputs');
     }
@@ -1134,68 +1184,70 @@ ADXOutputs.prototype.defaultOutput = function defaultOutput(data) {
  *       //      }]
  *       //   }]
  *
+ * @name Configurator.Outputs#get
+ * @function
  * @returns {Object}
  */
 ADXOutputs.prototype.get = function get() {
-    var xmldoc = this.configurator.xmldoc;
-    var projectType = this.configurator.projectType;
-    var el = xmldoc.find("outputs");
-    var outputs = [];
+    const xmldoc = this.configurator.xmldoc;
+    const projectType = this.configurator.projectType;
+    const el = xmldoc.find("outputs");
+    const outputs = [];
 
     if (!el) {
         return null;
     }
 
-    el.iter('output', function (output) {
+    el.iter('output', (output) => {
         // Output element
-        var item = {
+        const item = {
             id : output.get("id")
         };
-        var descEl = output.find("description");
+        const descEl = output.find("description");
         if (descEl) {
             item.description = descEl.text;
         }
-        var conditionEl = output.find("condition");
+        const conditionEl = output.find("condition");
         if (conditionEl) {
             item.condition = conditionEl.text;
         }
 
         // ADC Only
         if (projectType === 'adc') {
-            var defaultGeneration = output.get("defaultGeneration");
+            const defaultGeneration = output.get("defaultGeneration");
             if (defaultGeneration) {
                 item.defaultGeneration = (defaultGeneration === "1" || defaultGeneration === "true");
             }
-            var maxIter = output.get("maxIterations");
+            const maxIter = output.get("maxIterations");
             if (maxIter) {
                 item.maxIterations = (maxIter === "*") ? "*" : parseInt(maxIter, 10);
             }
         }
         // ADP Only
         else if (projectType === 'adp') {
-            var masterPage = output.get("masterPage");
+            const masterPage = output.get("masterPage");
             if (masterPage) {
                 item.masterPage = masterPage;
             }
         }
 
         // Contents
-        var contents = [];
-        output.iter('content', function (content) {
-            var itemContent = {};
-            var fileName = content.get('fileName');
+        const contents = [];
+        output.iter('content', (content) => {
+            const itemContent = {};
+            const fileName = content.get('fileName');
             if (fileName) {
                 itemContent.fileName = fileName;
             }
-            var type = content.get('type');
+            const type = content.get('type');
             if (type) {
                 itemContent.type = type;
             }
-            var mode = content.get('mode');
+            const mode = content.get('mode');
             if (mode) {
                 itemContent.mode = mode;
             }
-            var position = content.get('position');
+            const position = content.get('position');
             if (position) {
                 itemContent.position = position;
             }
@@ -1206,11 +1258,11 @@ ADXOutputs.prototype.get = function get() {
             }
 
             // Attributes
-            var attributes = [];
-            content.iter('attribute', function (attribute) {
-                var itemAttr = {};
+            const attributes = [];
+            content.iter('attribute', (attribute) => {
+                const itemAttr = {};
                 itemAttr.name = attribute.get("name");
-                var value = attribute.find("value");
+                const value = attribute.find("value");
                 if (value) {
                     itemAttr.value = value.text;
                 }
@@ -1222,7 +1274,7 @@ ADXOutputs.prototype.get = function get() {
             }
 
             // Yield
-            var yieldNode = content.find('yield');
+            const yieldNode = content.find('yield');
             if (yieldNode) {
                 itemContent.yieldValue = yieldNode.text;
             }
@@ -1334,6 +1386,8 @@ ADXOutputs.prototype.get = function get() {
  *
  *       });
  *
+ * @name Configurator.Outputs#set
+ * @function
  * @param {Object} data Data to set
  * @param {String} [data.defaultOutput] Id of the default output
  * @param {Object[]} [data.outputs] Outputs
@@ -1352,9 +1406,9 @@ ADXOutputs.prototype.get = function get() {
  * @param {String} [data.outputs.contents.yieldValue] Yield value, used to override the auto-generation
  */
 ADXOutputs.prototype.set = function set(data) {
-    var xmldoc = this.configurator.xmldoc;
-    var el = xmldoc.find("outputs");
-    var projectType = this.configurator.projectType;
+    const xmldoc = this.configurator.xmldoc;
+    let el = xmldoc.find("outputs");
+    const projectType = this.configurator.projectType;
 
     if (!data) {
         return;
@@ -1371,8 +1425,8 @@ ADXOutputs.prototype.set = function set(data) {
         return;
     }
     el.delSlice(0, el.len());
-    data.outputs.forEach(function (output) {
-        var item = subElement(el, 'output');
+    data.outputs.forEach((output) => {
+        const item = subElement(el, 'output');
 
         // All output xml attributes
         item.set("id", output.id || "");
@@ -1406,29 +1460,29 @@ ADXOutputs.prototype.set = function set(data) {
             return;
         }
 
-        output.contents.forEach(function (content) {
+        output.contents.forEach((content) => {
             // ADP don't use content with "placeholder" position
             if (projectType === 'adp' && content.position === 'placeholder') {
                 return;
             }
-            var itemContent = subElement(item, 'content');
+            const itemContent = subElement(item, 'content');
             itemContent.set("fileName", content.fileName || "");
             itemContent.set("type", content.type || "");
             itemContent.set("mode", content.mode || "");
             itemContent.set("position", content.position || "");
 
             if (content.attributes && Array.isArray(content.attributes)) {
-                content.attributes.forEach(function (attribute) {
-                    var itemAttr = subElement(itemContent, 'attribute');
+                content.attributes.forEach((attribute) => {
+                    const itemAttr = subElement(itemContent, 'attribute');
                     itemAttr.set('name', attribute.name || "");
                     if (typeof attribute.value === 'string') {
-                        var itemAttrVal = subElement(itemAttr, 'value');
+                        const itemAttrVal = subElement(itemAttr, 'value');
                         itemAttrVal.text = attribute.value;
                     }
                 });
             }
             if (content.yieldValue) {
-                var itemYield = subElement(itemContent, 'yield');
+                const itemYield = subElement(itemContent, 'yield');
                 itemYield.text = content.yieldValue;
             }
 
@@ -1444,20 +1498,22 @@ ADXOutputs.prototype.set = function set(data) {
  *       adxOutputs.toXml();
  *       // -> <outputs defaultOutput="main"><output id="main"> ...</outputs>
  *
+ * @name Configurator.Outputs#toXml
+ * @function
  * @return {String}
  */
 ADXOutputs.prototype.toXml = function toXml() {
-    var xml = [],
-        data = this.get(),
-        projectType = this.configurator.projectType;
+    const xml = [];
+    const data = this.get();
+    const projectType = this.configurator.projectType;
 
     if (!data) {
         return '';
     }
     xml.push('  <outputs defaultOutput="' + data .defaultOutput + '">');
     if (Array.isArray(data.outputs)) {
-        data.outputs.forEach(function (output) {
-            var outputAttr = '';
+        data.outputs.forEach((output) => {
+            let outputAttr = '';
 
             // ADC Only
             if (projectType === 'adc') {
@@ -1484,12 +1540,12 @@ ADXOutputs.prototype.toXml = function toXml() {
             }
 
             if (Array.isArray(output.contents)) {
-                output.contents.forEach(function (content) {
+                output.contents.forEach((content) => {
                     // ADC Only
                     if (projectType === 'adp' && content.position === 'placeholder'){
                         return;
                     }
-                    var xmlContent = [];
+                    const xmlContent = [];
                     xmlContent.push('      <content');
                     xmlContent.push(' fileName="', content.fileName || "", '"');
                     xmlContent.push(' type="', content.type || "", '"');
@@ -1500,7 +1556,7 @@ ADXOutputs.prototype.toXml = function toXml() {
                     } else {
                         xmlContent.push('>');
                         if (Array.isArray(content.attributes)) {
-                            content.attributes.forEach(function (attr) {
+                            content.attributes.forEach((attr) => {
                                 xmlContent.push('\n        <attribute name="' + attr.name + '">');
                                 if (attr.value) {
                                     xmlContent.push('\n          <value><![CDATA[' + (attr.value || "") + ']]></value>');
@@ -1528,32 +1584,39 @@ ADXOutputs.prototype.toXml = function toXml() {
 /**
  * Provide an object to manipulate the propertues of the ADC (config.xml > properties)
  *
- *      var ADX = require('adxutil').ADX;
+ *      const ADX = require('adxutil').ADX;
  *
- *      var myAdx = new ADX('path/to/adc/');
+ *      const myAdx = new ADX('path/to/adc/');
  *      myAdx.load(function (err) {
  *          if (err) {
  *              throw err;
  *          }
  *
  *          // Get the instance of the Properties
- *          var properties = myAdx.configurator.properties;
+ *          const properties = myAdx.configurator.properties;
  *
  *          console.log(properties.get());
  *
  *      });
  *
- * @class ADX.Configurator.Properties
+ * @class Configurator.Properties
+ * @param {ADX.Configurator} configurator Instance of the configurator
  */
 function ADXProperties(configurator) {
+
+    /**
+     * Parent configurator
+     *
+     * @name Configurator.Properties#configurator
+     * @type {Configurator}
+     */
     this.configurator = configurator;
 }
 
 /**
  * Creates a new instance of ADX Properties
  *
- * @constructor
- * @param {ADX.Configurator} configurator Instance of the configurator
+ * @ignore
  */
 ADXProperties.prototype.constructor = ADXProperties;
 
@@ -1595,34 +1658,36 @@ ADXProperties.prototype.constructor = ADXProperties;
  *       //   }
  *       // }
  *
+ * @name Configurator.Properties#get
+ * @function
  * @returns {Object}
  */
 ADXProperties.prototype.get = function get() {
-    var xmldoc = this.configurator.xmldoc;
-    var projectType = this.configurator.projectType;
-    var el = xmldoc.find("properties");
-    var categories = [];
+    const xmldoc = this.configurator.xmldoc;
+    const projectType = this.configurator.projectType;
+    const el = xmldoc.find("properties");
+    const categories = [];
 
     if (!el) {
         return null;
     }
 
-    el.iter('category', function (category) {
+    el.iter('category', (category) => {
         // Category element
-        var itemCategory = {
+        const itemCategory = {
             id : category.get("id") || "",
             name : category.get("name") || "",
             properties : []
         };
 
-        category.iter('property', function (property) {
-            var itemProperty = {};
-            var xsiType = property.get('xsi:type');
+        category.iter('property', (property) => {
+            const itemProperty = {};
+            const xsiType = property.get('xsi:type');
             if (xsiType && xsiType !== 'standardProperty') {
                 itemProperty.xsiType = xsiType;
             }
             itemProperty.id = property.get('id') || "";
-            var val = property.get('name');
+            let val = property.get('name');
             if (val) {
                 itemProperty.name = val;
             }
@@ -1701,24 +1766,24 @@ ADXProperties.prototype.get = function get() {
                 itemProperty.date = (val !== "false" && val !== "0");
             }
 
-            var desc = property.find('description');
+            const desc = property.find('description');
             if (desc) {
                 itemProperty.description = desc.text;
             }
 
-            property.iter('value', function (value) {
+            property.iter('value', (value) => {
                 // The theme attribute has been deprecated
                 // only use valud that doesn't have this attribute
-                var deprecatedTheme = value.get("theme");
+                const deprecatedTheme = value.get("theme");
                 if (!deprecatedTheme && !("value" in itemProperty)) {
                     itemProperty.value = value.text || "";
                 }
             });
 
-            var options = property.find('options');
+            const options = property.find('options');
             if (options) {
-                var itemOptions = [];
-                options.iter('option', function (option) {
+                const itemOptions = [];
+                options.iter('option', (option) => {
                     itemOptions.push({
                         value : option.get("value") || "",
                         text : option.get("text") || ""
@@ -1774,6 +1839,8 @@ ADXProperties.prototype.get = function get() {
  *          ]
  *       });
  *
+ * @name Configurator.Properties#set
+ * @function
  * @param {Object} data Data to set
  * @param {Object[]} [data.categories] Categories
  * @param {String} [data.categories.id] Id of the category
@@ -1802,9 +1869,9 @@ ADXProperties.prototype.get = function get() {
  * @param {String} [data.categories.properties.options.text] Text of the option to display
  */
 ADXProperties.prototype.set = function set(data) {
-    var xmldoc = this.configurator.xmldoc;
-    var projectType = this.configurator.projectType;
-    var el = xmldoc.find("properties");
+    const xmldoc = this.configurator.xmldoc;
+    const projectType = this.configurator.projectType;
+    let el = xmldoc.find("properties");
 
     if (!data || !data.categories || !Array.isArray(data.categories)) {
         return;
@@ -1814,42 +1881,42 @@ ADXProperties.prototype.set = function set(data) {
         el = subElement(xmldoc.getroot(), 'properties');
     }
     el.delSlice(0, el.len());
-    data.categories.forEach(function (category) {
-        var itemCategory = subElement(el, 'category');
+    data.categories.forEach((category) => {
+        const itemCategory = subElement(el, 'category');
 
         itemCategory.set("id", category.id || "");
         itemCategory.set("name", category.name || "");
 
         if (category.properties && Array.isArray(category.properties)) {
-            category.properties.forEach(function (property) {
+            category.properties.forEach((property) => {
                 // property question is available for the ADC only
                 if (projectType !== 'adc' && property.type === 'question') {
                     return;
                 }
-                var itemProperty = subElement(itemCategory, 'property');
+                const itemProperty = subElement(itemCategory, 'property');
                 itemProperty.set('xsi:type', property.xsiType || "standardProperty");
                 itemProperty.set('id', property.id || "");
-                var props = ["name", "type", "mode", "require", "visible", "min", "max", "decimal", "pattern",
+                const props = ["name", "type", "mode", "require", "visible", "min", "max", "decimal", "pattern",
                     "fileExtension", "colorFormat", "chapter", "single", "multiple", "numeric", "open", "date"];
-                props.forEach(function (prop){
+                props.forEach((prop) => {
                     if (prop in property) {
                         itemProperty.set(prop, property[prop].toString());
                     }
                 });
 
                 if ("description" in property) {
-                    var itemDesc = subElement(itemProperty, "description");
+                    const itemDesc = subElement(itemProperty, "description");
                     itemDesc.text = property.description || "";
                 }
                 if ("value" in property) {
-                    var itemValue = subElement(itemProperty, "value");
+                    const itemValue = subElement(itemProperty, "value");
                     itemValue.text = property.value || "";
                 }
 
                 if (property.options && Array.isArray(property.options)) {
-                    var itemOptions = subElement(itemProperty, "options");
-                    property.options.forEach(function (option) {
-                        var itemOption = subElement(itemOptions, "option");
+                    const itemOptions = subElement(itemProperty, "options");
+                    property.options.forEach((option) => {
+                        const itemOption = subElement(itemOptions, "option");
                         itemOption.set("value", option.value.toString());
                         itemOption.set("text", option.text.toString());
                     });
@@ -1868,33 +1935,36 @@ ADXProperties.prototype.set = function set(data) {
  *       adxProps.toXml();
  *       // -> <properties><category id="genereal" name="Genereal"> ...</properties>
  *
+ * @name Configurator.Properties#toXml
+ * @function
  * @return {String}
  */
 ADXProperties.prototype.toXml = function toXml() {
-    var xml = [],
-        data = this.get(),
-        projectType = this.configurator.projectType;
+    const xml = [];
+    const data = this.get();
+    const projectType = this.configurator.projectType;
 
     if (!data) {
         return '';
     }
     xml.push('  <properties>');
     if (Array.isArray(data.categories)) {
-        data.categories.forEach(function (category) {
+        data.categories.forEach((category) => {
             xml.push('    <category id="' + (category.id || "") + '" name="' + (category.name || "")  + '">');
             if (Array.isArray(category.properties)) {
-                category.properties.forEach(function (property) {
+                category.properties.forEach((property) => {
                     // The property question ia only available for the ADC
                     if (projectType !== 'adc' && property.type === 'question') {
                         return;
                     }
-                    var xmlProp = [], value;
+                    const xmlProp = [];
+                    let value;
                     xmlProp.push('      <property');
                     xmlProp.push(' xsi:type="', (property.xsiType || "standardProperty"), '"');
                     xmlProp.push(' id="', property.id || "", '"');
-                    var props = ["name", "type", "mode", "require", "visible", "min", "max", "decimal", "pattern",
+                    const props = ["name", "type", "mode", "require", "visible", "min", "max", "decimal", "pattern",
                         "fileExtension", "colorFormat", "chapter", "single", "multiple", "numeric", "open", "date"];
-                    props.forEach(function (prop){
+                    props.forEach((prop) => {
                         if (prop in property) {
                             xmlProp.push(' ' + prop + '="', property[prop].toString() , '"');
                         }
@@ -1913,7 +1983,7 @@ ADXProperties.prototype.toXml = function toXml() {
                     }
                     if (property.options && Array.isArray(property.options)) {
                         xmlProp.push('\n        <options>');
-                        property.options.forEach(function (opt) {
+                        property.options.forEach((opt) => {
                             xmlProp.push('\n          <option value="' + opt.value +'" text="' + opt.text + '" />');
                         });
                         xmlProp.push('\n        </options>');

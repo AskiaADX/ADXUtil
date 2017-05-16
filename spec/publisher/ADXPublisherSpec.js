@@ -9,7 +9,8 @@ describe('ADXPublisher', function(){
         successMsg          = common.messages.success,
         errMsg				= common.messages.error,
         Configurator 		= require('../../app/configurator/ADXConfigurator.js').Configurator,
-        preferences         = require('../../app/preferences/ADXPreferences.js');
+        preferences         = require('../../app/preferences/ADXPreferences.js'),
+        Builder   			= require('../../app//builder/ADXBuilder.js').Builder;
 
 
     function PublisherFake(configurator, preferences, options) {
@@ -44,10 +45,19 @@ describe('ADXPublisher', function(){
         spies.configurator.load.andCallFake(function (cb) {
             cb(null);
         });
+        
+        spies.builder = {
+            build : spyOn(Builder.prototype, 'build')
+        };
+        spies.builder.build.andCallFake(function (opts, cb){
+            cb(null);
+        });
 
-        spies.writeError = spyOn(common, 'writeError');
+        // Court-circuit the validation outputs
+        spies.writeError   = spyOn(common, 'writeError');
         spies.writeSuccess = spyOn(common, 'writeSuccess');
         spies.writeMessage = spyOn(common, 'writeMessage');
+        spies.writeWarning = spyOn(common, 'writeWarning');
     });
 
     function runSync(fn) {
@@ -95,6 +105,32 @@ describe('ADXPublisher', function(){
                 var publisher = new Publisher("/my/path");
                 publisher.publish(undefined, null, function (err) {
                     expect(err.message).toEqual(errMsg.missingPlatformArg);
+                    done();
+                });
+            });
+        });
+
+        it("should build the project before publish it", function () {
+            runSync(function (done) {
+
+                var publisher = new Publisher("/my/path");
+                publisher.publish('Fake', {} , function (err) {
+                    expect(spies.builder.build).toHaveBeenCalled();
+                    done();
+                });
+            });
+        });
+
+        it("should return the builder error when failed to build the project", function () {
+            runSync(function (done) {
+                var error = new Error("an error");
+                spies.builder.build.andCallFake(function (opts, cb) {
+                    cb(error);
+                });
+
+                var publisher = new Publisher("/my/path");
+                publisher.publish("Fake", {}, function (err) {
+                    expect(err).toBe(error);
                     done();
                 });
             });
@@ -216,4 +252,47 @@ describe('ADXPublisher', function(){
         });
     });
 
+    function testLogger(method) {
+        var className = method.toLowerCase().replace('write', '');
+        describe('#'  + method, function () {
+            it('should call the `common.' + method + '` when no #logger is defined', function () {
+                var publisherInstance = new Publisher("/my/path");
+                publisherInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(common[method]).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
+            });
+
+            it('should call the `common.' + method + '` when the #logger is defined but without the ' + method + ' method.', function () {
+                var publisherInstance = new Publisher("/my/path");
+                publisherInstance.logger = {};
+                publisherInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(common[method]).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
+            });
+
+            it('should not call the `common.' + method + '` when the #logger is defined with the ' + method + ' method.', function () {
+                var publisherInstance = new Publisher("/my/path");
+                publisherInstance.logger = {};
+                publisherInstance.logger[method] = function () {};
+                publisherInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(common[method]).not.toHaveBeenCalled();
+            });
+
+            it('should call the `logger.' + method + '` when it\'s defined', function () {
+                var publisherInstance = new Publisher("/my/path");
+                publisherInstance.logger = {};
+                publisherInstance.logger[method] = function () {};
+                var spy = spyOn(publisherInstance.logger, method);
+                publisherInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(spy).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
+            });
+
+            it('should wrap the message inside a div with the `' + className + '` when the printMode=html', function () {
+                var publisherInstance = new Publisher("/my/path");
+                publisherInstance.printMode = 'html';
+                publisherInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(common[method]).toHaveBeenCalledWith('<div class="' + className + '">a message</div>', 'arg 1', 'arg 2');
+            });
+        });
+    }
+
+    ['writeMessage', 'writeSuccess', 'writeWarning', 'writeError'].forEach(testLogger);
 });

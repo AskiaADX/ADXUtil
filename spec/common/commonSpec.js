@@ -18,7 +18,7 @@ describe('common', function () {
 
     var fs              = require('fs'),
         clc             = require('cli-color'),
-        uuid        = require('node-uuid'),
+        uuid            = require('uuid'),
         pathHelper      = require('path'),
         util            = require('util'),
         path            = require('path'),
