@@ -127,6 +127,11 @@ exports.messages = {
         noOutputDefinedForShow: "Please specify the name of the output you want to show, using the option -o or --output.",
         noFixtureDefinedForShow: "Please specify the name of the fixture you want to use, using the option -f or --fixture.",
 
+        // Import
+        noXMLPathDefinedForImport: "Please specify the path of the xml file you want to import, using the option --pathXML.",
+        noFileDefinedForImport: "Please specify the path of the name of the fixture you want to create, using the option --fileName.",
+        noQuestionDefinedForImport: "Please specify the path of the question you want to import, using the option --currentQuestion.",
+
         // Configurator
         invalidPathArg: "Invalid `path` argument",
         invalidConfigFile: "Invalid `config.xml` file",
