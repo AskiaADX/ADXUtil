@@ -1031,6 +1031,50 @@
           </xsd:simpleType>
         </xsd:attribute>
 
+        <!-- Additional options for type question -->
+        <xsd:attribute name="chapter" type="xsd:boolean" default="false">
+          <xsd:annotation>
+            <xsd:documentation>
+              Use for the constraint on questions, indicates if the ADC is allowed on chapter.
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="single" type="xsd:boolean" default="false">
+          <xsd:annotation>
+            <xsd:documentation>
+              Use for the constraint on questions, indicates if the ADC is allowed on single closed questions.
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="multiple" type="xsd:boolean" default="false" >
+          <xsd:annotation>
+            <xsd:documentation>
+              Use for the constraint on questions, indicates if the ADC is allowed on multi-coded question.
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="numeric" type="xsd:boolean" default="false">
+          <xsd:annotation>
+            <xsd:documentation>
+              Use for the constraint on questions, indicates if the ADC is allowed on numeric questions.
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="open" type="xsd:boolean" default="false" >
+          <xsd:annotation>
+            <xsd:documentation>
+              Use for the constraint on questions, indicates if the ADC is allowed on open-ended questions.
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="date" type="xsd:boolean" default="false">
+          <xsd:annotation>
+            <xsd:documentation>
+              Use for the constraint on questions, indicates if the ADC is allowed on date questions.
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:attribute>
+
       </xsd:extension>
     </xsd:complexContent>
   </xsd:complexType>
