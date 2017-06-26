@@ -44,6 +44,7 @@ This application works through Windows PowerShell
     publish <platform>            publish the adc on a web platform
     build [<path>]                build the ADX file
     show [<path>]                 show the output of the ADX
+    import [<path>]               import an askia xml into fixtures of an ADX project
     config                        get or set the configuration (use the --authorXXX flags to set the config)
 
     Options:
@@ -69,6 +70,9 @@ This application works through Windows PowerShell
     --section <title>    	  the name of the section where the adc will be posted (ZenDesk)
     --promoted                the article will be promoted (appear with a star in ZenDesk Platform)
     --disableComments         the comments will be disabled on the article corresponding to the ADC on ZenDesk
+    --sourcePath              the path of the askia xml source
+    --targetName              the name of the new xml fixture
+    --currentQuestion         the name of the question to use in the xml target
     
     
 ### Generate
@@ -272,6 +276,28 @@ That should show the result of the `MyADXOutputName` with the specified fixture.
 
     "Please specify the name of the output you want to show, using the option -o or --output.",
     "Please specify the name of the fixture you want to use, using the option -f or --fixture."
+
+### Import
+
+Start @Windows PowerShell@ (@Start > All programs > Accessories > Windows PowerShell > Windows PowerShell@). 
+Target your ADX directory (or indicate the path of your ADX after the @show@ command).
+
+    cd C:\Users\user_name\Documents\ADXProjects\my_adx_name
+
+Then enter the following command:
+
+    ADXUtil show --sourcePath "C:\Askia\adx.xml" --currentQuestion questionName --targetName fixture.xml
+
+
+That should create an xml file in the test/fixture folder of the adx project
+
+#### List of possible error messages
+
+**Errors**
+
+    "Please specify the path of the xml file you want to import, using the option --sourcePath.",
+    "Please specify the path of the name of the fixture you want to create, using the option --targetName."
+    "Please specify the path of the question you want to import, using the option --currentQuestion."
 
 
 ## API Usage
