@@ -51,22 +51,22 @@ describe('ADXImport', function () {
 
 
     describe('#import', function () {
-        it("should output an error when the `pathXML` option is not defined", function () {
+        it("should output an error when the `sourcePath` option is not defined", function () {
             adxImport.adxImport({});
             expect(common.writeError).toHaveBeenCalledWith(errMsg.noXMLPathDefinedForImport);
         });
 
-        it("should output an error when the `fileName` option is not defined", function () {
+        it("should output an error when the `targetName` option is not defined", function () {
             adxImport.adxImport({
-                pathXML : '\\adx\\file.xml'
+                sourcePath : '\\adx\\file.xml'
             });
             expect(common.writeError).toHaveBeenCalledWith(errMsg.noFileDefinedForImport);
         });
 
         it("should output an error when the `currentQuestion` option is not defined", function () {
             adxImport.adxImport({
-                pathXML : '\\adx\\file.xml',
-                fileName : 'fixture.xml'
+                sourcePath : '\\adx\\file.xml',
+                targetName : 'fixture.xml'
             });
             expect(common.writeError).toHaveBeenCalledWith(errMsg.noQuestionDefinedForImport);
         });
@@ -79,13 +79,13 @@ describe('ADXImport', function () {
 
             spyExec.andCallFake(function (file, args, options) {
                 expect(file).toBe('.\\ADXShell.exe');
-                expect(args).toEqual(['import', '"-pathXML:\\adx\\file.xml"', '"-fileName:fixture.xml"', '"-currentQuestion:something"', '"\\adx\\path\\dir"']);
+                expect(args).toEqual(['import', '"-sourcePath:\\adx\\file.xml"', '"-targetName:fixture.xml"', '"-currentQuestion:something"', '"\\adx\\path\\dir"']);
                 expect(options.env).toEqual(common.getChildProcessEnv());
                 expect(options.cwd).toEqual(pathHelper.join(pathHelper.resolve(__dirname, "../../"), common.ADX_UNIT_DIR_PATH))
             });
             adxImport.adxImport({
-                pathXML : '\\adx\\file.xml',
-                fileName : 'fixture.xml',
+                sourcePath : '\\adx\\file.xml',
+                targetName : 'fixture.xml',
                 currentQuestion : 'something'
             }, '/adx/path/dir');
 
@@ -100,12 +100,12 @@ describe('ADXImport', function () {
                 mockCommand = command;
             });
             adxImport.adxImport({
-                pathXML : '\\adx\\file.xml',
-                fileName : 'fixture.xml',
+                sourcePath : '\\adx\\file.xml',
+                targetName : 'fixture.xml',
                 currentQuestion : 'something',
                 adxShell : new InteractiveADXShell()
             }, '/adx/path/dir');
-            expect(mockCommand).toBe('import "-pathXML:\\adx\\file.xml" "-fileName:fixture.xml" "-currentQuestion:something" "\\adx\\path\\dir"');
+            expect(mockCommand).toBe('import "-sourcePath:\\adx\\file.xml" "-targetName:fixture.xml" "-currentQuestion:something" "\\adx\\path\\dir"');
         });
 
         describe("API `callback`", function () {
@@ -135,8 +135,8 @@ describe('ADXImport', function () {
                 var spyWriteError = spyOn(ImportObj, 'writeError');
                 runSync(function (done) {
                     ImportObj.adxImport({
-                        pathXML : '\\adx\\file.xml',
-                        fileName : 'fixture.xml',
+                        sourcePath : '\\adx\\file.xml',
+                        targetName : 'fixture.xml',
                         currentQuestion : 'something'
                     }, function () {
                         expect(spyWriteError).toHaveBeenCalled();
@@ -159,8 +159,8 @@ describe('ADXImport', function () {
                 var spyWriteError = spyOn(ImportObj, 'writeError');
                 runSync(function (done) {
                     ImportObj.adxImport({
-                        pathXML : '\\adx\\file.xml',
-                        fileName : 'fixture.xml',
+                        sourcePath : '\\adx\\file.xml',
+                        targetName : 'fixture.xml',
                         currentQuestion : 'something',
                         silent : true
                     }, function () {
@@ -185,8 +185,8 @@ describe('ADXImport', function () {
                 var spyWriteMessage = spyOn(ImportObj, 'writeMessage');
                 runSync(function (done) {
                     ImportObj.adxImport({
-                        pathXML : '\\adx\\file.xml',
-                        fileName : 'fixture.xml',
+                        sourcePath : '\\adx\\file.xml',
+                        targetName : 'fixture.xml',
                         currentQuestion : 'something'
                     }, function (err, output) {
                         expect(spyWriteMessage).toHaveBeenCalled();
@@ -210,8 +210,8 @@ describe('ADXImport', function () {
                 var spyWriteMessage = spyOn(ImportObj, 'writeMessage');
                 runSync(function (done) {
                     ImportObj.adxImport({
-                        pathXML : '\\adx\\file.xml',
-                        fileName : 'fixture.xml',
+                        sourcePath : '\\adx\\file.xml',
+                        targetName : 'fixture.xml',
                         currentQuestion : 'something',
                         silent : true
                     }, function (err, output) {

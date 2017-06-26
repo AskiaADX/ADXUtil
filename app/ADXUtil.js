@@ -27,10 +27,14 @@ program
     .option('--password <password>', 'platform password for the publish')
     .option('--url <uri>', 'platform URL for the publish')
     .option('--demoUrl <url>' , 'Demo URL of the demo, mostly used for the publish')
-    // Optiosn for the publisher ZenDesk specific
+    // Options for the publisher ZenDesk specific
     .option('--section <title>', 'ZenDesk section where to publish')
     .option('--promoted', 'ZenDesk promoted article')
-    .option('--disableComments', 'ZenDesk disable comments on the published article');
+    .option('--disableComments', 'ZenDesk disable comments on the published article')
+    // Options for import
+    .option('--sourcePath <path>', 'The path of the source')
+    .option('--targetName <name>', 'The name of the new fixture')
+    .option('--currentQuestion <question>', 'The name of the question');
 
 
 program
@@ -71,6 +75,14 @@ program
     .action((path) => {
         const adxShow = require('./show/ADXShow.js');
         adxShow.show(program, path);
+    });
+
+program
+    .command('import [<path>]')
+    .description('import an askia xml in fixtures')
+    .action((path) => {
+        const adxImport = require('./import/ADXImport.js');
+        adxImport.adxImport(program, path);
     });
 
 

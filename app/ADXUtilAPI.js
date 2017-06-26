@@ -9,6 +9,7 @@ const Validator             = require('./validator/ADXValidator.js').Validator;
 const Builder               = require('./builder/ADXBuilder.js').Builder;
 const Publisher             = require('./publisher/ADXPublisher.js').Publisher;
 const Show                  = require('./show/ADXShow.js').Show;
+const Import                  = require('./import/ADXImport.js').Import;
 const Generator             = require('./generator/ADXGenerator.js').Generator;
 const Configurator          = require('./configurator/ADXConfigurator.js').Configurator;
 const InteractiveADXShell   = require('./common/InteractiveADXShell.js').InteractiveADXShell;
@@ -295,6 +296,39 @@ ADX.prototype.show = function show(options, callback) {
     options = options || {};
     options.adxShell = this._adxShell;
     show.show(options, callback);
+};
+
+/**
+ * Import an akia xml
+ *
+ *      const ADX = require('adxutil').ADX;
+ *      const myAdx = new ADX('path/to/adx/dir');
+ *
+ *      // Show the output of an ADX
+ *      const config = {
+ *          sourcePath : '\\adx\\file.xml',
+ *          targetName : 'fixture.xml',
+ *          currentQuestion : 'something'
+ *      };
+ *
+ *      myAdx.import(config, (err, output) => {
+ *          // Callback with the output of the ADX
+ *      });
+ *
+ * @param {Object} options Options
+ * @param {String} options.sourcePath Path to the askia xml
+ * @param {String} options.targetName Name of the new fixture
+ * @param {String} options.currentQuestion Question to use in the fixture
+ * @param {InteractiveADXShell} [options.adxShell] Interactive ADXShell process
+ * @param {Boolean} [options.silent=false] Silent mode: Don't message in the console but only through the callback
+ * @param {Function} callback Callback function
+ * @param {Error} callback.err Error
+ */
+ADX.prototype.adxImport = function adxImport(options, callback) {
+    const adximp = new Import(this.path);
+    options = options || {};
+    options.adxShell = this._adxShell;
+    adximp.adxImport(options, callback);
 };
 
 /**
