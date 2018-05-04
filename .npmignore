@@ -1,7 +1,7 @@
 # Current Project GIT Ignore
 ############################
 
-.git/
+.git
 docs/
 tmp/
 .nuget
