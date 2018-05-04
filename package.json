@@ -7,12 +7,11 @@
     "cli-color": "^0.2.2",
     "commander": "^1.1.1",
     "elementtree": "^0.1.7",
-    "gulp": "^3.9.1",
     "jszip": "^2.6.1",
     "ncp": "^2.0.0",
-    "node-zendesk": "^1.1.12",
-    "request": "^2.81.0",
-    "uuid": "^3.0.1"
+    "node-zendesk": "^1.2.1",
+    "request": "^2.85.0",
+    "uuid": "^3.2.1"
   },
   "bin": {
     "ADXUtil": "./app/ADXUtil.js"
