@@ -78,8 +78,8 @@ Import.prototype.writeMessage = function writeMessage(text) {
  * Import an akia xml
  *
  * @param {Object} options Options
- * @param {String} options.pathXML Path to the askia xml
- * @param {String} options.fileName Name of the new fixture
+ * @param {String} options.sourcePath Path to the askia xml
+ * @param {String} options.targetName Name of the new fixture
  * @param {String} options.currentQuestion Question to use in the fixture
  * @param {InteractiveADXShell} [options.adxShell] Interactive ADXShell process
  * @param {Boolean} [options.silent=false] Silent mode: Don't message in the console but only through the callback
@@ -87,7 +87,7 @@ Import.prototype.writeMessage = function writeMessage(text) {
  * @param {Error} callback.err Error
  */
 Import.prototype.adxImport = function adxImport(options, callback) {
-    if (!options || !options.pathXML) {
+    if (!options || !options.sourcePath) {
         if (!options.silent) {
             this.writeError(errMsg.noXMLPathDefinedForImport);
         }
@@ -97,7 +97,7 @@ Import.prototype.adxImport = function adxImport(options, callback) {
         return;
     }
 
-    if (!options || !options.fileName) {
+    if (!options || !options.targetName) {
         if (!options.silent) {
             this.writeError(errMsg.noFileDefinedForImport);
         }
@@ -120,8 +120,8 @@ Import.prototype.adxImport = function adxImport(options, callback) {
     const execFile = require('child_process').execFile;
     const args     = [
         'import',
-        '"-pathXML:' + options.pathXML + '"',
-        '"-fileName:' + options.fileName + '"',
+        '"-sourcePath:' + options.sourcePath + '"',
+        '"-targetName:' + options.targetName + '"',
         '"-currentQuestion:' + options.currentQuestion + '"'
     ];
 
