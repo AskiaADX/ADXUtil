@@ -21,9 +21,10 @@
     "url": "https://github.com/AskiaADX/ADXUtil.git"
   },
   "devDependencies": {
-    "gulp": "^3.9.0",
+    "del": "^3.0.0",
+    "gulp": "^3.9.1",
     "gulp-jsdoc3": "^1.0.1",
-    "gulp-shell": "^0.4.2",
+    "gulp-shell": "^0.4.3",
     "jasmine-node": "^1.14.5"
   },
   "scripts": {
